@@ -124,7 +124,7 @@
 		"@playwright/test": "1.63.0",
 		"@rolldown/plugin-babel": "0.2.3",
 		"@shadcn/lint": "0.2.0",
-		"@storybook/addon-a11y": "10.3.3",
+		"@storybook/addon-a11y": "10.5.10",
 		"@storybook/addon-docs": "10.3.3",
 		"@storybook/addon-links": "10.3.3",
 		"@storybook/addon-mcp": "^0.7.0",
