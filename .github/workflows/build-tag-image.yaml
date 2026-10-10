@@ -107,14 +107,43 @@ jobs:
       - name: Download Go modules
         run: ./.github/scripts/retry.sh -- go mod download
 
+      - name: Check disk space before build
+        run: |
+          set -euo pipefail
+          df -h
+          echo "---- biggest dirs"
+          sudo du -sh /home/runner/work/_temp 2>/dev/null || true
+          sudo du -sh /home/runner/go 2>/dev/null || true
+          sudo du -sh /usr/share/dotnet 2>/dev/null || true
+          sudo du -sh /usr/local/lib/android 2>/dev/null || true
+          sudo du -sh /opt/ghc 2>/dev/null || true
+
+      - name: Free up disk space
+        # Remove large SDKs that ship with the ubuntu-latest runner image but
+        # are not needed for this repository's Go+pnpm build. Frees up ~10 GB.
+        run: |
+          set -euxo pipefail
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/powershell
+          sudo rm -rf /usr/share/swift
+          df -h
+
       - name: Build fat binary (linux amd64)
         env:
           CODER_FORCE_VERSION: ${{ steps.version.outputs.version }}
+          # Turn on verbose make output so we can see what target fails
+          # instead of guessing at silent OOM.
+          MAKEFLAGS: ""
         run: |
-          set -euo pipefail
+          set -euxo pipefail
+          df -h
           # Use upstream Makefile target. Skips signing/notarization because
           # we only build linux/amd64.
           make build/coder_"${CODER_FORCE_VERSION}"_linux_amd64
+          df -h
+          ls -la build/ | head -20
 
       - name: Docker login (GHCR)
         uses: docker/login-action@v3
