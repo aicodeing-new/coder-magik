@@ -92,6 +92,12 @@ jobs:
       - name: Install pnpm dependencies
         uses: ./.github/actions/pnpm-install
 
+      - name: Install Go mise tools
+        # sqlc is required by scripts/generate.sh during `make build/...`
+        # (targets that depend on coderd/database/dbmetrics/*). Without it,
+        # the build dies with 'sqlc: command not found'.
+        run: ./.github/scripts/retry.sh -- mise install --locked go:github.com/coder/sqlc/cmd/sqlc
+
       - name: Download Go modules
         run: ./.github/scripts/retry.sh -- go mod download
 
