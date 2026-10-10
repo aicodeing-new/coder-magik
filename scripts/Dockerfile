@@ -8,6 +8,11 @@
 ARG BASE_IMAGE
 FROM $BASE_IMAGE
 
+# Coder binds to 127.0.0.1:3000 by default, which is unreachable from outside
+# the container. Bind to all interfaces so port publishing (-p 3000:3000)
+# works without extra flags.
+ENV CODER_ADDRESS=0.0.0.0:3000
+
 # LABEL doesn't add any real layers so it's fine (and easier) to do it here than
 # in the build script.
 ARG CODER_VERSION
