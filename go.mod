@@ -220,7 +220,7 @@ require (
 	github.com/pion/udp v0.1.4
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e
-	github.com/pkg/sftp v1.13.7
+	github.com/pkg/sftp v1.13.9
 	github.com/prometheus-community/pro-bing v0.9.0
 	github.com/prometheus/client_golang v1.24.1
 	github.com/prometheus/client_model v0.6.2
@@ -236,7 +236,7 @@ require (
 	github.com/swaggo/http-swagger/v2 v2.0.1
 	github.com/swaggo/swag v1.16.6
 	github.com/tidwall/gjson v1.19.0
-	github.com/u-root/u-root v0.14.0
+	github.com/u-root/u-root v0.16.0
 	github.com/unrolled/secure v1.17.0
 	github.com/valyala/fasthttp v1.74.0
 	github.com/wagslane/go-password-validator v0.3.0
@@ -427,7 +427,7 @@ require (
 	github.com/outcaste-io/ristretto v0.2.3 // indirect
 	github.com/pelletier/go-toml/v2 v2.3.1 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect
-	github.com/pierrec/lz4/v4 v4.1.18 // indirect
+	github.com/pierrec/lz4/v4 v4.1.22 // indirect
 	github.com/pion/transport/v2 v2.2.10 // indirect
 	github.com/pion/transport/v3 v3.0.7 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -458,8 +458,8 @@ require (
 	github.com/tinylib/msgp v1.6.3 // indirect
 	github.com/tklauser/go-sysconf v0.3.16 // indirect
 	github.com/tklauser/numcpus v0.11.0 // indirect
-	github.com/u-root/uio v0.0.0-20240209044354-b3d14b93376a // indirect
-	github.com/vishvananda/netlink v1.2.1-beta.2 // indirect
+	github.com/u-root/uio v0.0.0-20240224005618-d2acac8f3701 // indirect
+	github.com/vishvananda/netlink v1.3.0 // indirect
 	github.com/vishvananda/netns v0.0.4 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
