@@ -84,6 +84,15 @@ jobs:
             echo "docker_tag=$docker_tag"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Configure Go cache paths
+        run: | # zizmor: ignore[github-env] Go cache paths use only the runner-provided temp directory.
+          set -euo pipefail
+          {
+            printf 'GOPATH=%s/go\n' "$RUNNER_TEMP"
+            printf 'GOMODCACHE=%s/go/pkg/mod\n' "$RUNNER_TEMP"
+            printf 'GOCACHE=%s/go-build\n' "$RUNNER_TEMP"
+          } >> "$GITHUB_ENV"
+
       - name: Set up mise tools
         uses: ./.github/actions/setup-mise
         with:
