@@ -98,8 +98,8 @@ importers:
         specifier: 1.1.1
         version: 1.1.1(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       cn:
-        specifier: 0.3.2
-        version: 0.3.2
+        specifier: 0.4.0
+        version: 0.4.0
       color-convert:
         specifier: 2.0.1
         version: 2.0.1
@@ -3810,6 +3810,11 @@ packages:
 
   cn@0.3.2:
     resolution: {integrity: sha512-RKzY5Edavc8B2Ka6tjJecKFC4nm0p7lADY72xzICmiJSf4TkaxWXt0fHsib2P2G4FkFyXfSDi9oDtIBuCZvY2g==, tarball: https://registry.npmjs.org/cn/-/cn-0.3.2.tgz}
+    engines: {node: '>=20'}
+    hasBin: true
+
+  cn@0.4.0:
+    resolution: {integrity: sha512-qOAeUhPwPzBxx6jaeQdo646XIKliKHc2j1ZF7Ngb1o0pJZKH5gq8FkA0aVdUdPFUDXNXyUCXpCtoJISo6dhizg==, tarball: https://registry.npmjs.org/cn/-/cn-0.4.0.tgz}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -10027,6 +10032,8 @@ snapshots:
       - '@types/react-dom'
 
   cn@0.3.2: {}
+
+  cn@0.4.0: {}
 
   color-convert@2.0.1:
     dependencies:
