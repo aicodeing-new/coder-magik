@@ -99,6 +99,11 @@ jobs:
         # beyond what setup-mise installs.
         run: ./.github/scripts/retry.sh -- mise install --locked go:storj.io/drpc/cmd/protoc-gen-go-drpc go:github.com/coder/sqlc/cmd/sqlc
 
+      - name: Install zstd
+        # Required by `make build/coder-slim_X.tar.zst` (Makefile ~line 370).
+        # ubuntu-latest doesn't ship it out of the box.
+        run: sudo apt-get install -y zstd
+
       - name: Download Go modules
         run: ./.github/scripts/retry.sh -- go mod download
 
