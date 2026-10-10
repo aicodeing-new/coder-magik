@@ -1,0 +1,166 @@
+# Build and push the Coder Docker image to GHCR when a version tag is pushed.
+#
+# This workflow is custom to this fork. It produces a single linux/amd64 image
+# tagged with the git tag (e.g. v0.1.0) plus `latest`, and uploads nothing
+# else. It bypasses the upstream release pipeline, which is wired for Coder's
+# own infrastructure.
+#
+# Trigger:
+#     git tag v0.1.0
+#     git push origin v0.1.0
+
+name: build-tag-image
+
+permissions: {}
+
+on:
+  push:
+    tags:
+      # Match v1.2.3, v0.0.1-rc1, etc. Annotated tags are recommended but
+      # lightweight tags will also trigger.
+      - "v*"
+  # Allow manual trigger from the Actions tab for testing.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag/branch/ref to build (e.g. main, or v0.1.0)"
+        required: true
+        default: "main"
+
+env:
+  CODER_IMAGE_BASE: ghcr.io/aicodeing-new/coder-magik
+  # Skip building .deb/.rpm/.apk/.tar.gz before the Docker image. We only
+  # want the final image, not those intermediate artifacts.
+  DOCKER_IMAGE_NO_PREREQUISITES: "true"
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Required to push to ghcr.io with GITHUB_TOKEN.
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # version.sh requires full history to compute a sane dev version,
+          # but we override it with CODER_FORCE_VERSION below. Keeping
+          # fetch-depth: 0 makes annotated tags resolvable.
+          fetch-depth: 0
+          ref: ${{ github.ref }}
+
+      - name: Resolve version and ref
+        id: version
+        run: |
+          set -euo pipefail
+
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            ref="${GITHUB_REF_NAME}"
+            version="${GITHUB_REF_NAME#v}"
+          else
+            # Manual dispatch: treat input as a ref, fall back to a dev version.
+            ref="${{ inputs.tag }}"
+            version="0.0.0-dev.$(git rev-parse --short HEAD)"
+          fi
+
+          echo "ref=$ref"
+          echo "version=$version"
+
+          # Re-checkout the exact ref on manual dispatch (tag pushes are
+          # already on the right ref).
+          if [[ "${GITHUB_REF_TYPE}" != "tag" ]]; then
+            git fetch origin "$ref" --depth=1
+            git checkout "$ref"
+          fi
+
+          # Strip invalid chars for Docker tags (only [a-zA-Z0-9._-] allowed).
+          docker_tag="$(echo "$version" | tr -c 'a-zA-Z0-9._-' '-')"
+          echo "docker_tag=$docker_tag"
+
+          {
+            echo "ref=$ref"
+            echo "version=$version"
+            echo "docker_tag=$docker_tag"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Set up mise tools
+        uses: ./.github/actions/setup-mise
+        with:
+          install-args: "go node pnpm"
+
+      - name: Install pnpm dependencies
+        uses: ./.github/actions/pnpm-install
+
+      - name: Download Go modules
+        run: ./.github/scripts/retry.sh -- go mod download
+
+      - name: Build fat binary (linux amd64)
+        env:
+          CODER_FORCE_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          # Use upstream Makefile target. Skips signing/notarization because
+          # we only build linux/amd64.
+          make build/coder_"${CODER_FORCE_VERSION}"_linux_amd64
+
+      - name: Docker login (GHCR)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        env:
+          CODER_FORCE_VERSION: ${{ steps.version.outputs.version }}
+          CODER_IMAGE_BASE: ${{ env.CODER_IMAGE_BASE }}
+        run: |
+          set -euo pipefail
+
+          version="${CODER_FORCE_VERSION}"
+          docker_tag="${{ steps.version.outputs.docker_tag }}"
+
+          # Build the image using upstream script. It expects the binary at
+          # build/coder_${version}_linux_amd64 and tags the image under
+          # ${CODER_IMAGE_BASE}.
+          image_tag="$(./scripts/image_tag.sh --arch amd64 --version "$version")"
+          echo "image_tag=$image_tag"
+
+          ./scripts/build_docker.sh \
+            --arch amd64 \
+            --target "$image_tag" \
+            --version "$version" \
+            "build/coder_${version}_linux_amd64"
+
+          # Push the version-tagged image.
+          docker push "$image_tag"
+
+          # Also retag and push as ${CODER_IMAGE_BASE}:latest for tag builds.
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            latest="${CODER_IMAGE_BASE}:latest"
+            docker tag "$image_tag" "$latest"
+            docker push "$latest"
+            echo "Pushed $latest"
+          fi
+
+      - name: Summarize
+        if: always()
+        run: |
+          set -euo pipefail
+          image="${{ env.CODER_IMAGE_BASE }}"
+          tag="${{ steps.version.outputs.docker_tag }}"
+          {
+            echo "## Build complete"
+            echo
+            echo "**Ref:** ${{ github.ref }}"
+            echo "**Version:** ${{ steps.version.outputs.version }}"
+            echo
+            echo "### Pull commands"
+            echo '```'
+            echo "docker pull ${image}:v${tag}"
+            if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+              echo "docker pull ${image}:latest"
+            fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
