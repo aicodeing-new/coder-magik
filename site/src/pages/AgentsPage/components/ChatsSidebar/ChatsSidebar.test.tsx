@@ -1,0 +1,1892 @@
+import {
+	act,
+	fireEvent,
+	render,
+	screen,
+	waitFor,
+	within,
+} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { HttpResponse, http } from "msw";
+import { QueryClientProvider } from "react-query";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router";
+import { toast } from "sonner";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { API } from "#/api/api";
+import type * as TypesGen from "#/api/typesGenerated";
+import type { Chat } from "#/api/typesGenerated";
+import { TooltipProvider } from "#/components/Tooltip/Tooltip";
+import { ThemeOverride } from "#/contexts/ThemeProvider";
+import { DashboardContext } from "#/modules/dashboard/DashboardProvider";
+import { MockChat, MockChatDiffStatus } from "#/testHelpers/chatEntities";
+import { MockChatModel } from "#/testHelpers/chatModels";
+import {
+	MockAppearanceConfig,
+	MockBuildInfo,
+	MockChatProject,
+	MockDefaultOrganization,
+	MockEntitlements,
+	MockOrganization2,
+	MockUserOwner,
+} from "#/testHelpers/entities";
+import { createTestQueryClient } from "#/testHelpers/renderHelpers";
+import { server } from "#/testHelpers/server";
+import themes, { DEFAULT_THEME } from "#/theme";
+import {
+	AGENT_CHAT_STATUS_ORDER,
+	type AgentSidebarFilters,
+} from "../../utils/agentSidebarFilters";
+import { draftStorageKeys } from "../AgentCreateForm";
+import { ChatsSidebar } from "./ChatsSidebar";
+
+// ---- IntersectionObserver mock ----
+
+type IOCallback = (entries: Array<{ isIntersecting: boolean }>) => void;
+let observerCallback: IOCallback | null = null;
+let observeCount = 0;
+
+class MockIntersectionObserver {
+	observe = vi.fn(() => {
+		observeCount++;
+	});
+	disconnect = vi.fn();
+	unobserve = vi.fn();
+
+	constructor(cb: IOCallback) {
+		observerCallback = cb;
+	}
+}
+
+// ---- Auth mock ----
+
+vi.mock("#/hooks/useAuthenticated", async () => {
+	return {
+		useAuthenticated: () => ({
+			user: MockUserOwner,
+			permissions: {},
+			signOut: vi.fn(),
+		}),
+	};
+});
+
+// ---- Helpers ----
+
+const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+const buildChat = (overrides: Partial<Chat> = {}): Chat => ({
+	...MockChat,
+	id: "chat-default",
+	last_model_config_id: "model-1",
+	created_at: oneWeekAgo,
+	updated_at: oneWeekAgo,
+	...overrides,
+});
+
+type WrapperProps = React.PropsWithChildren<{
+	experiments?: TypesGen.Experiment[];
+	organizations?: TypesGen.Organization[];
+	initialEntry?: string;
+}>;
+
+const Wrapper: React.FC<WrapperProps> = ({
+	children,
+	experiments = [],
+	organizations = [MockDefaultOrganization],
+	initialEntry = "/agents",
+}) => {
+	const queryClient = createTestQueryClient();
+	const dashboardValue = {
+		entitlements: MockEntitlements,
+		experiments,
+		appearance: MockAppearanceConfig,
+		buildInfo: MockBuildInfo,
+		organizations,
+		showOrganizations: false,
+		canViewOrganizationSettings: false,
+	};
+	return (
+		<QueryClientProvider client={queryClient}>
+			<ThemeOverride theme={themes[DEFAULT_THEME]}>
+				<TooltipProvider>
+					<MemoryRouter initialEntries={[initialEntry]}>
+						<DashboardContext.Provider value={dashboardValue}>
+							{children}
+						</DashboardContext.Provider>
+					</MemoryRouter>
+				</TooltipProvider>
+			</ThemeOverride>
+		</QueryClientProvider>
+	);
+};
+
+const ProjectLocationProbe: React.FC = () => {
+	const location = useLocation();
+	return <div data-testid="location-pathname">{location.pathname}</div>;
+};
+
+const defaultSidebarFilters: AgentSidebarFilters = {
+	archiveStatus: "active",
+	groupBy: "date",
+	prStatuses: [],
+	chatStatuses: AGENT_CHAT_STATUS_ORDER,
+	unread: false,
+	sources: ["created_by_me"],
+};
+
+const defaultProps: React.ComponentProps<typeof ChatsSidebar> = {
+	chats: [buildChat({ id: "chat-1", title: "Chat One" })],
+	chatErrorReasons: {},
+	modelConfigs: [],
+	navigateAfterArchive: vi.fn(),
+	onRenameTitle: vi.fn(async () => {}),
+	onBeforeNewAgent: vi.fn(),
+	isSearchDialogOpen: false,
+	onSearchDialogOpenChange: vi.fn(),
+	isCreating: false,
+	sidebarFilters: defaultSidebarFilters,
+	onSidebarFiltersChange: vi.fn(),
+	currentUserId: MockUserOwner.id,
+};
+
+describe("ChatsSidebar projects", () => {
+	it("keeps a newer delete dialog open when an earlier delete finishes", async () => {
+		const user = userEvent.setup();
+		const mockOtherProject = {
+			...MockChatProject,
+			id: "other-project",
+			name: "Other",
+		};
+		let finishDelete: () => void = () => {};
+		const deleteFinished = new Promise<void>((resolve) => {
+			finishDelete = resolve;
+		});
+		const deletedProjectIds: string[] = [];
+		let projectListRequests = 0;
+		server.use(
+			http.get("/api/experimental/chats/projects", () => {
+				projectListRequests += 1;
+				return HttpResponse.json([MockChatProject, mockOtherProject]);
+			}),
+			http.delete(
+				"/api/experimental/organizations/:organization/chats/projects/:project",
+				async ({ params }) => {
+					deletedProjectIds.push(String(params.project));
+					if (params.project === MockChatProject.id) {
+						await deleteFinished;
+					}
+					return new HttpResponse(null, { status: 204 });
+				},
+			),
+		);
+		render(
+			<Wrapper experiments={["chat-projects"]}>
+				<ChatsSidebar {...defaultProps} />
+			</Wrapper>,
+		);
+
+		const deleteProject = async (name: string) => {
+			await user.click(
+				await screen.findByRole("button", {
+					name: `Open project actions for ${name}`,
+				}),
+			);
+			await user.click(
+				screen.getByRole("menuitem", { name: "Delete project" }),
+			);
+			await user.type(await screen.findByRole("textbox"), name);
+		};
+
+		await deleteProject(MockChatProject.name);
+		await user.click(screen.getByRole("button", { name: "Delete" }));
+		await waitFor(() =>
+			expect(deletedProjectIds).toEqual([MockChatProject.id]),
+		);
+		await user.keyboard("{Escape}");
+		await deleteProject(mockOtherProject.name);
+		// One delete runs at a time, so the earlier one keeps its callbacks.
+		expect(screen.getByRole("button", { name: /Delete$/ })).toBeDisabled();
+
+		const requestsBeforeFinish = projectListRequests;
+		finishDelete();
+		// The finished delete refetches the project list.
+		await waitFor(() =>
+			expect(projectListRequests).toBeGreaterThan(requestsBeforeFinish),
+		);
+		await user.click(screen.getByRole("button", { name: "Delete" }));
+		await waitFor(() =>
+			expect(deletedProjectIds).toEqual([
+				MockChatProject.id,
+				mockOtherProject.id,
+			]),
+		);
+	});
+
+	it("shows the Chats empty state once every chat is known to be in a project", async () => {
+		let resolveProjects: () => void = () => {};
+		const projectsLoaded = new Promise<void>((resolve) => {
+			resolveProjects = resolve;
+		});
+		let projectsRequested = false;
+		server.use(
+			http.get("/api/experimental/chats/projects", async () => {
+				projectsRequested = true;
+				await projectsLoaded;
+				return HttpResponse.json([MockChatProject]);
+			}),
+		);
+		const mockProjectChat = buildChat({
+			id: "project-chat",
+			title: "Project chat",
+			organization_id: MockChatProject.organization_id,
+			project_id: MockChatProject.id,
+		});
+
+		render(
+			<Wrapper experiments={["chat-projects"]}>
+				<ChatsSidebar {...defaultProps} chats={[mockProjectChat]} />
+			</Wrapper>,
+		);
+
+		// The chat's project is still loading, so its chat may yet be unfiled.
+		await waitFor(() => expect(projectsRequested).toBe(true));
+		expect(screen.queryByText("No agents yet")).toBeNull();
+
+		resolveProjects();
+		await screen.findByRole("link", { name: MockChatProject.name });
+		expect(screen.getByText("No agents yet")).toBeInTheDocument();
+		expect(screen.queryByRole("link", { name: /Project chat/ })).toBeNull();
+	});
+
+	it("keeps project chats out of the chat sections while projects load", async () => {
+		let resolveProjects: () => void = () => {};
+		const projectsLoaded = new Promise<void>((resolve) => {
+			resolveProjects = resolve;
+		});
+		let projectsRequested = false;
+		server.use(
+			http.get("/api/experimental/chats/projects", async () => {
+				projectsRequested = true;
+				await projectsLoaded;
+				return HttpResponse.json([MockChatProject]);
+			}),
+		);
+		const mockProjectChat = buildChat({
+			id: "project-chat",
+			title: "Project chat",
+			organization_id: MockChatProject.organization_id,
+			project_id: MockChatProject.id,
+		});
+		const mockLooseChat = buildChat({ id: "loose-chat", title: "Loose chat" });
+
+		render(
+			<Wrapper experiments={["chat-projects"]}>
+				<ChatsSidebar
+					{...defaultProps}
+					chats={[mockProjectChat, mockLooseChat]}
+				/>
+			</Wrapper>,
+		);
+
+		await waitFor(() => expect(projectsRequested).toBe(true));
+		await screen.findByRole("link", { name: /Loose chat/ });
+		expect(screen.queryByRole("link", { name: /Project chat/ })).toBeNull();
+
+		resolveProjects();
+		await screen.findByRole("link", { name: MockChatProject.name });
+		expect(screen.queryByRole("link", { name: /Project chat/ })).toBeNull();
+	});
+
+	it.each([false, true])(
+		"creates a project when there are no chats (select another organization: %s)",
+		async (selectAnotherOrganization) => {
+			const user = userEvent.setup();
+			let requestBody: unknown;
+			let requestOrganizationID: string | undefined;
+			let isProjectCreated = false;
+			server.use(
+				http.get("/api/experimental/chats/projects", () =>
+					HttpResponse.json(isProjectCreated ? [MockChatProject] : []),
+				),
+				http.post(
+					"/api/experimental/organizations/:organizationId/chats/projects",
+					async ({ request, params }) => {
+						requestOrganizationID = String(params.organizationId);
+						requestBody = await request.json();
+						isProjectCreated = true;
+						return HttpResponse.json(MockChatProject);
+					},
+				),
+			);
+
+			render(
+				<Wrapper
+					experiments={["chat-projects"]}
+					organizations={[MockOrganization2, MockDefaultOrganization]}
+				>
+					<ChatsSidebar {...defaultProps} chats={[]} />
+					<ProjectLocationProbe />
+				</Wrapper>,
+			);
+
+			await user.click(
+				await screen.findByRole("button", { name: "New project" }),
+			);
+			const dialog = await screen.findByRole("dialog", {
+				name: "Create a project",
+			});
+			await user.type(
+				within(dialog).getByRole("textbox", { name: /Project name/ }),
+				"New project name",
+			);
+			await user.type(
+				within(dialog).getByRole("textbox", { name: "Description" }),
+				"Project description",
+			);
+			if (selectAnotherOrganization) {
+				await user.click(
+					within(dialog).getByRole("combobox", { name: /Organization/ }),
+				);
+				await user.click(
+					screen.getByRole("option", {
+						name: new RegExp(MockOrganization2.display_name),
+					}),
+				);
+			}
+			await user.click(screen.getByRole("button", { name: "Create project" }));
+
+			await waitFor(() => {
+				expect(requestOrganizationID).toBe(
+					selectAnotherOrganization
+						? MockOrganization2.id
+						: MockDefaultOrganization.id,
+				);
+				expect(requestBody).toEqual({
+					name: "New project name",
+					description: "Project description",
+					icon: "",
+				});
+			});
+			await waitFor(() =>
+				expect(screen.getByTestId("location-pathname")).toHaveTextContent(
+					`/agents/projects/${MockChatProject.id}`,
+				),
+			);
+			expect(
+				await screen.findByRole("link", { name: MockChatProject.name }),
+			).toHaveAttribute("aria-current", "page");
+		},
+	);
+
+	it("uses the first accessible organization when no default is available", async () => {
+		const user = userEvent.setup();
+		let requestBody: unknown;
+		let requestOrganizationID: string | undefined;
+		server.use(
+			http.get("/api/experimental/chats/projects", () => HttpResponse.json([])),
+			http.post(
+				"/api/experimental/organizations/:organizationId/chats/projects",
+				async ({ request, params }) => {
+					requestOrganizationID = String(params.organizationId);
+					requestBody = await request.json();
+					return HttpResponse.json({
+						...MockChatProject,
+						organization_id: MockOrganization2.id,
+					});
+				},
+			),
+		);
+
+		render(
+			<Wrapper
+				experiments={["chat-projects"]}
+				organizations={[MockOrganization2]}
+			>
+				<ChatsSidebar {...defaultProps} />
+			</Wrapper>,
+		);
+
+		await user.click(
+			await screen.findByRole("button", { name: "New project" }),
+		);
+		const dialog = await screen.findByRole("dialog", {
+			name: "Create a project",
+		});
+		await user.type(
+			within(dialog).getByRole("textbox", { name: /Project name/ }),
+			"Accessible project",
+		);
+		await user.click(screen.getByRole("button", { name: "Create project" }));
+
+		await waitFor(() => {
+			expect(requestOrganizationID).toBe(MockOrganization2.id);
+			expect(requestBody).toMatchObject({ name: "Accessible project" });
+		});
+	});
+
+	it("retries a failed projects request", async () => {
+		const user = userEvent.setup();
+		let requestCount = 0;
+		server.use(
+			http.get("/api/experimental/chats/projects", () => {
+				requestCount++;
+				return requestCount === 1
+					? HttpResponse.json(
+							{ message: "Projects unavailable" },
+							{ status: 500 },
+						)
+					: HttpResponse.json([]);
+			}),
+		);
+
+		render(
+			<Wrapper experiments={["chat-projects"]}>
+				<ChatsSidebar {...defaultProps} />
+			</Wrapper>,
+		);
+
+		await user.click(await screen.findByRole("button", { name: "Retry" }));
+
+		await waitFor(() => expect(requestCount).toBe(2));
+	});
+
+	it("deletes the viewed project and its drafts, then leaves its page", async () => {
+		const user = userEvent.setup();
+		const draftKeys = draftStorageKeys(MockChatProject.id);
+		localStorage.setItem(draftKeys.text, "project draft");
+		localStorage.setItem(draftKeys.attachments, "[]");
+		let deletedProjectID: string | undefined;
+		server.use(
+			http.get("/api/experimental/chats/projects", () =>
+				HttpResponse.json([MockChatProject]),
+			),
+			http.delete(
+				"/api/experimental/organizations/:organizationId/chats/projects/:projectId",
+				({ params }) => {
+					deletedProjectID = String(params.projectId);
+					return new HttpResponse(null, { status: 204 });
+				},
+			),
+		);
+
+		render(
+			<Wrapper
+				experiments={["chat-projects"]}
+				initialEntry={`/agents/projects/${MockChatProject.id}`}
+			>
+				<ChatsSidebar {...defaultProps} />
+				<ProjectLocationProbe />
+			</Wrapper>,
+		);
+
+		await user.click(
+			await screen.findByRole("button", {
+				name: `Open project actions for ${MockChatProject.name}`,
+			}),
+		);
+		await user.click(screen.getByRole("menuitem", { name: "Delete project" }));
+		await user.type(
+			screen.getByLabelText("Name of the project to delete"),
+			MockChatProject.name,
+		);
+		await user.click(screen.getByRole("button", { name: "Delete" }));
+
+		await waitFor(() => {
+			expect(deletedProjectID).toBe(MockChatProject.id);
+		});
+		await waitFor(() => {
+			expect(localStorage.getItem(draftKeys.text)).toBeNull();
+		});
+		expect(localStorage.getItem(draftKeys.attachments)).toBeNull();
+		await waitFor(() =>
+			expect(screen.getByTestId("location-pathname")).toHaveTextContent(
+				/^\/agents$/,
+			),
+		);
+	});
+
+	it("reports a failed project deletion", async () => {
+		const user = userEvent.setup();
+		const toastError = vi.spyOn(toast, "error");
+		server.use(
+			http.get("/api/experimental/chats/projects", () =>
+				HttpResponse.json([MockChatProject]),
+			),
+			http.delete(
+				"/api/experimental/organizations/:organizationId/chats/projects/:projectId",
+				() =>
+					HttpResponse.json({ message: "Project is locked" }, { status: 500 }),
+			),
+		);
+
+		render(
+			<Wrapper experiments={["chat-projects"]}>
+				<ChatsSidebar {...defaultProps} />
+			</Wrapper>,
+		);
+
+		await user.click(
+			await screen.findByRole("button", {
+				name: `Open project actions for ${MockChatProject.name}`,
+			}),
+		);
+		await user.click(screen.getByRole("menuitem", { name: "Delete project" }));
+		await user.type(
+			screen.getByLabelText("Name of the project to delete"),
+			MockChatProject.name,
+		);
+		await user.click(screen.getByRole("button", { name: "Delete" }));
+
+		await waitFor(() => {
+			expect(toastError).toHaveBeenCalledWith("Project is locked");
+		});
+	});
+
+	it("names the organization when deleting a project whose name is shared", async () => {
+		const user = userEvent.setup();
+		const mockOtherProject = {
+			...MockChatProject,
+			id: "other-project",
+			organization_id: MockOrganization2.id,
+		};
+		server.use(
+			http.get("/api/experimental/chats/projects", () =>
+				HttpResponse.json([MockChatProject, mockOtherProject]),
+			),
+		);
+
+		render(
+			<Wrapper
+				experiments={["chat-projects"]}
+				organizations={[MockDefaultOrganization, MockOrganization2]}
+			>
+				<ChatsSidebar {...defaultProps} />
+			</Wrapper>,
+		);
+
+		await user.click(
+			await screen.findByRole("button", {
+				name: `Open project actions for ${MockChatProject.name} (${MockOrganization2.display_name})`,
+			}),
+		);
+		await user.click(screen.getByRole("menuitem", { name: "Delete project" }));
+
+		expect(
+			await screen.findByRole("dialog", {
+				name: `Delete "${MockChatProject.name}" from ${MockOrganization2.display_name}`,
+			}),
+		).toBeInTheDocument();
+	});
+
+	it("opens the folder of the project being viewed until the user collapses it", async () => {
+		const user = userEvent.setup();
+		server.use(
+			http.get("/api/experimental/chats/projects", () =>
+				HttpResponse.json([MockChatProject]),
+			),
+		);
+
+		render(
+			<Wrapper
+				experiments={["chat-projects"]}
+				initialEntry={`/agents/projects/${MockChatProject.id}`}
+			>
+				<ChatsSidebar {...defaultProps} />
+			</Wrapper>,
+		);
+
+		await user.click(
+			await screen.findByRole("button", {
+				name: `Collapse ${MockChatProject.name}`,
+			}),
+		);
+		await user.click(
+			screen.getByRole("button", { name: `Expand ${MockChatProject.name}` }),
+		);
+		expect(
+			screen.getByRole("link", { name: MockChatProject.name }),
+		).toHaveAttribute("aria-current", "page");
+		expect(screen.getByRole("link", { name: "New chat" })).not.toHaveAttribute(
+			"aria-current",
+		);
+	});
+
+	it("keeps other folders open when opening a chat in another project", async () => {
+		const user = userEvent.setup();
+		const mockOtherProject = {
+			...MockChatProject,
+			id: "chat-project-2",
+			name: "Research",
+		};
+		server.use(
+			http.get("/api/experimental/chats/projects", () =>
+				HttpResponse.json([MockChatProject, mockOtherProject]),
+			),
+		);
+		const mockFirstProjectChat = buildChat({
+			id: "first-project-chat",
+			title: "First project chat",
+			organization_id: MockChatProject.organization_id,
+			project_id: MockChatProject.id,
+		});
+		const mockOtherProjectChat = buildChat({
+			id: "other-project-chat",
+			title: "Other project chat",
+			organization_id: mockOtherProject.organization_id,
+			project_id: mockOtherProject.id,
+		});
+
+		render(
+			<Wrapper
+				experiments={["chat-projects"]}
+				initialEntry={`/agents/${mockFirstProjectChat.id}`}
+			>
+				<Routes>
+					<Route
+						path="/agents/:agentId"
+						element={
+							<ChatsSidebar
+								{...defaultProps}
+								chats={[mockFirstProjectChat, mockOtherProjectChat]}
+							/>
+						}
+					/>
+				</Routes>
+			</Wrapper>,
+		);
+
+		await user.click(
+			await screen.findByRole("button", {
+				name: `Expand ${mockOtherProject.name}`,
+			}),
+		);
+		await user.click(screen.getByRole("link", { name: /Other project chat/ }));
+
+		await waitFor(() =>
+			expect(
+				screen.getByRole("link", { name: /Other project chat/ }),
+			).toHaveAttribute("aria-current", "page"),
+		);
+		expect(
+			screen.getByRole("button", { name: `Collapse ${MockChatProject.name}` }),
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole("button", { name: `Collapse ${mockOtherProject.name}` }),
+		).toBeInTheDocument();
+	});
+});
+
+describe("ChatsSidebar section switcher", () => {
+	const LocationProbe: React.FC = () => {
+		const location = useLocation();
+		return <div data-testid="location-pathname">{location.pathname}</div>;
+	};
+
+	it.each([
+		["Workspaces", "/workspaces"],
+		["Templates", "/templates"],
+		["Agents", "/agents"],
+	])("navigates to %s", async (label, pathname) => {
+		const user = userEvent.setup();
+
+		render(
+			<Wrapper initialEntry="/agents/chat-1">
+				<ChatsSidebar {...defaultProps} />
+				<LocationProbe />
+			</Wrapper>,
+		);
+
+		await user.click(screen.getByRole("button", { name: "Agents" }));
+		await user.click(await screen.findByRole("menuitem", { name: label }));
+
+		await waitFor(() => {
+			expect(screen.getByTestId("location-pathname").textContent).toBe(
+				pathname,
+			);
+		});
+	});
+});
+
+describe("ChatsSidebar sections", () => {
+	it("renders another user's shared chats in Shared with you regardless of pin order", () => {
+		render(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					chats={[
+						buildChat({
+							id: "pinned-shared-chat",
+							title: "Pinned shared chat",
+							shared: true,
+							pin_order: 1,
+						}),
+						buildChat({
+							id: "shared-chat",
+							title: "Shared chat",
+							owner_id: "sharing-user-id",
+							shared: true,
+						}),
+						buildChat({
+							id: "shared-chat-pinned-by-owner",
+							title: "Shared chat pinned by its owner",
+							owner_id: "sharing-user-id",
+							shared: true,
+							pin_order: 1,
+						}),
+						buildChat({
+							id: "owned-shared-chat",
+							title: "Owned shared chat",
+							shared: true,
+							updated_at: new Date().toISOString(),
+						}),
+						buildChat({
+							id: "owned-chat",
+							title: "Owned chat",
+							updated_at: new Date().toISOString(),
+						}),
+					]}
+				/>
+			</Wrapper>,
+		);
+
+		const pinnedSection = screen.getByTestId("agents-section-toggle-Pinned");
+		const pinnedSharedNode = screen.getByTestId(
+			"agents-tree-node-pinned-shared-chat",
+		);
+		const sharedSection = screen.getByTestId(
+			"agents-section-toggle-Shared-with-you",
+		);
+		const sharedNode = screen.getByTestId("agents-tree-node-shared-chat");
+		const todaySection = screen.getByTestId("agents-section-toggle-Today");
+		const ownedNode = screen.getByTestId("agents-tree-node-owned-chat");
+
+		expect(pinnedSection).toHaveTextContent("Pinned (1)");
+		expect(sharedSection).toHaveTextContent("Shared with you (2)");
+		expect(todaySection).toHaveTextContent("Today (2)");
+		expect(
+			pinnedSection.compareDocumentPosition(pinnedSharedNode) &
+				Node.DOCUMENT_POSITION_FOLLOWING,
+		).toBeTruthy();
+		expect(
+			pinnedSharedNode.compareDocumentPosition(sharedSection) &
+				Node.DOCUMENT_POSITION_FOLLOWING,
+		).toBeTruthy();
+		expect(
+			sharedSection.compareDocumentPosition(sharedNode) &
+				Node.DOCUMENT_POSITION_FOLLOWING,
+		).toBeTruthy();
+		expect(
+			sharedNode.compareDocumentPosition(todaySection) &
+				Node.DOCUMENT_POSITION_FOLLOWING,
+		).toBeTruthy();
+		expect(
+			todaySection.compareDocumentPosition(ownedNode) &
+				Node.DOCUMENT_POSITION_FOLLOWING,
+		).toBeTruthy();
+	});
+});
+
+describe("ChatsSidebar pin actions", () => {
+	afterEach(() => vi.restoreAllMocks());
+
+	it.each([
+		{ action: "Pin agent", pinOrder: 0, expectedOrder: 1 },
+		{ action: "Unpin agent", pinOrder: 1, expectedOrder: 0 },
+	])(
+		"$action updates the chat",
+		async ({ action, pinOrder, expectedOrder }) => {
+			const user = userEvent.setup();
+			const update = vi
+				.spyOn(API.experimental, "updateChat")
+				.mockResolvedValue(undefined);
+			render(
+				<Wrapper>
+					<ChatsSidebar
+						{...defaultProps}
+						chats={[
+							buildChat({
+								id: "pin-chat",
+								title: "Pin chat",
+								pin_order: pinOrder,
+							}),
+						]}
+					/>
+				</Wrapper>,
+			);
+			await user.click(
+				screen.getByRole("button", { name: "Open actions for Pin chat" }),
+			);
+			await user.click(await screen.findByRole("menuitem", { name: action }));
+			await waitFor(() =>
+				expect(update).toHaveBeenCalledWith("pin-chat", {
+					pin_order: expectedOrder,
+				}),
+			);
+		},
+	);
+});
+
+describe("ChatsSidebar pinned reordering", () => {
+	const SORTABLE_INSTRUCTIONS = /pick up a draggable item/i;
+	const ROW_HEIGHT = 40;
+
+	// dnd-kit's keyboard sensor picks the drop target from measured
+	// rects, which jsdom reports as all zeros. Lay the sortable rows out
+	// vertically in document order so ArrowDown resolves to the next row.
+	const layoutSortableRows = () => {
+		const rows = screen.getAllByRole("button", {
+			description: SORTABLE_INSTRUCTIONS,
+		});
+		vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(
+			function (this: Element) {
+				const index = rows.findIndex((row) => row.contains(this));
+				const top = index === -1 ? 0 : index * ROW_HEIGHT;
+				const height = index === -1 ? 0 : ROW_HEIGHT;
+				return DOMRect.fromRect({ x: 0, y: top, width: 300, height });
+			},
+		);
+		return rows;
+	};
+
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	it.each([false, true])(
+		"reorders only the viewer's own pinned chats (failure: %s)",
+		async (fails) => {
+			const user = userEvent.setup();
+			const update = vi.spyOn(API.experimental, "updateChat");
+			const errorToast = vi.spyOn(toast, "error");
+			if (fails) {
+				update.mockRejectedValue(new Error("Reorder rejected"));
+			} else {
+				update.mockResolvedValue(undefined);
+			}
+			render(
+				<Wrapper>
+					<ChatsSidebar
+						{...defaultProps}
+						chats={[
+							buildChat({
+								id: "shared-chat-pinned-by-owner",
+								title: "Shared chat pinned by its owner",
+								owner_id: "sharing-user-id",
+								shared: true,
+								pin_order: 1,
+							}),
+							buildChat({
+								id: "own-first",
+								title: "Own first pinned chat",
+								pin_order: 1,
+							}),
+							buildChat({
+								id: "own-second",
+								title: "Own second pinned chat",
+								pin_order: 2,
+							}),
+						]}
+					/>
+				</Wrapper>,
+			);
+
+			const sortableRows = layoutSortableRows();
+
+			sortableRows[0].focus();
+			await user.keyboard("[Space]");
+			await user.keyboard("[ArrowDown]");
+			await user.keyboard("[Space]");
+
+			await waitFor(() =>
+				expect(update).toHaveBeenCalledWith("own-first", { pin_order: 2 }),
+			);
+			expect(update).toHaveBeenCalledTimes(1);
+			if (fails) {
+				await waitFor(() =>
+					expect(errorToast).toHaveBeenCalledWith("Reorder rejected"),
+				);
+			}
+		},
+	);
+});
+
+type MenuUser = ReturnType<typeof userEvent.setup>;
+
+const openFilterMenu = async (user: MenuUser) => {
+	await user.click(screen.getByRole("button", { name: "Filter agents" }));
+};
+
+// Every element reports a zero-size rect in jsdom, so Radix's pointer grace
+// area closes a submenu as soon as user-event moves the pointer into it.
+// Keyboard navigation drives the same selection path, and the real pointer
+// path is covered by the FilterPopover stories.
+const focusMenuItem = async (
+	user: MenuUser,
+	role: "menuitem" | "menuitemcheckbox" | "menuitemradio",
+	name: string | RegExp,
+) => {
+	const item = await screen.findByRole(role, { name });
+	for (let step = 0; step < 16 && document.activeElement !== item; step++) {
+		await user.keyboard("{ArrowDown}");
+	}
+	expect(item).toHaveFocus();
+};
+
+const toggleSubmenuOption = async (
+	user: MenuUser,
+	submenu: string | RegExp,
+	name: string,
+) => {
+	await openFilterMenu(user);
+	await focusMenuItem(user, "menuitem", submenu);
+	await user.keyboard("{ArrowRight}");
+	await focusMenuItem(user, "menuitemcheckbox", name);
+	await user.keyboard("{Enter}");
+	await user.keyboard("{Escape}{Escape}");
+};
+
+describe("ChatsSidebar filters", () => {
+	it("applies the archived checkbox", async () => {
+		const user = userEvent.setup();
+		const onSidebarFiltersChange = vi.fn();
+
+		render(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					sidebarFilters={defaultSidebarFilters}
+					onSidebarFiltersChange={onSidebarFiltersChange}
+				/>
+			</Wrapper>,
+		);
+
+		await user.click(screen.getByRole("button", { name: "Filter agents" }));
+		await user.click(
+			await screen.findByRole("menuitemcheckbox", { name: "Archived" }),
+		);
+
+		expect(onSidebarFiltersChange).toHaveBeenCalledWith({
+			...defaultSidebarFilters,
+			archiveStatus: "archived",
+		});
+	});
+
+	it("clears only result filters when applied filters return no agents", async () => {
+		const user = userEvent.setup();
+		const onSidebarFiltersChange = vi.fn();
+		const sidebarFilters: AgentSidebarFilters = {
+			...defaultSidebarFilters,
+			archiveStatus: "archived",
+			groupBy: "chat_status",
+			prStatuses: ["draft"],
+			chatStatuses: ["running"],
+			sources: ["shared_with_me"],
+		};
+
+		render(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					chats={[]}
+					sidebarFilters={sidebarFilters}
+					onSidebarFiltersChange={onSidebarFiltersChange}
+				/>
+			</Wrapper>,
+		);
+
+		expect(
+			screen.getByRole("button", { name: "Filter agents" }),
+		).toBeInTheDocument();
+		expect(
+			screen.getByText("No agents match these filters"),
+		).toBeInTheDocument();
+
+		await user.click(screen.getByRole("button", { name: "Clear filters" }));
+
+		expect(onSidebarFiltersChange).toHaveBeenCalledWith({
+			...sidebarFilters,
+			prStatuses: [],
+			chatStatuses: defaultSidebarFilters.chatStatuses,
+			sources: ["created_by_me"],
+		});
+	});
+
+	it("applies source filters", async () => {
+		const user = userEvent.setup();
+		const onSidebarFiltersChange = vi.fn();
+
+		const { rerender } = render(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					sidebarFilters={defaultSidebarFilters}
+					onSidebarFiltersChange={onSidebarFiltersChange}
+				/>
+			</Wrapper>,
+		);
+
+		await toggleSubmenuOption(user, "Source", "Shared with me");
+
+		expect(onSidebarFiltersChange).toHaveBeenLastCalledWith({
+			...defaultSidebarFilters,
+			sources: ["created_by_me", "shared_with_me"],
+		});
+
+		rerender(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					sidebarFilters={{
+						...defaultSidebarFilters,
+						sources: ["created_by_me", "shared_with_me"],
+					}}
+					onSidebarFiltersChange={onSidebarFiltersChange}
+				/>
+			</Wrapper>,
+		);
+
+		await toggleSubmenuOption(user, "Source", "Created by me");
+
+		expect(onSidebarFiltersChange).toHaveBeenLastCalledWith({
+			...defaultSidebarFilters,
+			sources: ["shared_with_me"],
+		});
+	});
+
+	it("resets a filter subset when its last option is cleared", async () => {
+		const user = userEvent.setup();
+		const onSidebarFiltersChange = vi.fn();
+		const sidebarFilters: AgentSidebarFilters = {
+			...defaultSidebarFilters,
+			chatStatuses: ["running"],
+			sources: ["shared_with_me"],
+		};
+
+		render(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					sidebarFilters={sidebarFilters}
+					onSidebarFiltersChange={onSidebarFiltersChange}
+				/>
+			</Wrapper>,
+		);
+
+		await toggleSubmenuOption(user, "Status", "Working");
+		await toggleSubmenuOption(user, /Source/, "Shared with me");
+
+		expect(onSidebarFiltersChange).toHaveBeenNthCalledWith(1, {
+			...sidebarFilters,
+			chatStatuses: defaultSidebarFilters.chatStatuses,
+		});
+		expect(onSidebarFiltersChange).toHaveBeenNthCalledWith(2, {
+			...sidebarFilters,
+			sources: defaultSidebarFilters.sources,
+		});
+	});
+
+	it("applies the unread checkbox", async () => {
+		const user = userEvent.setup();
+		const onSidebarFiltersChange = vi.fn();
+
+		render(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					sidebarFilters={defaultSidebarFilters}
+					onSidebarFiltersChange={onSidebarFiltersChange}
+				/>
+			</Wrapper>,
+		);
+
+		await user.click(screen.getByRole("button", { name: "Filter agents" }));
+		await user.click(
+			await screen.findByRole("menuitemcheckbox", { name: "Unread" }),
+		);
+
+		expect(onSidebarFiltersChange).toHaveBeenCalledWith({
+			...defaultSidebarFilters,
+			unread: true,
+		});
+	});
+
+	it("clears every sidebar filter from the menu", async () => {
+		const user = userEvent.setup();
+		const onSidebarFiltersChange = vi.fn();
+
+		render(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					sidebarFilters={{
+						...defaultSidebarFilters,
+						archiveStatus: "archived",
+						groupBy: "chat_status",
+						prStatuses: ["draft"],
+					}}
+					onSidebarFiltersChange={onSidebarFiltersChange}
+				/>
+			</Wrapper>,
+		);
+
+		await user.click(screen.getByRole("button", { name: "Filter agents" }));
+		await user.click(await screen.findByRole("menuitem", { name: "Reset" }));
+
+		expect(onSidebarFiltersChange).toHaveBeenCalledWith({
+			...defaultSidebarFilters,
+			groupBy: "chat_status",
+		});
+	});
+
+	it("groups unpinned chats by chat status", () => {
+		render(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					chats={[
+						buildChat({
+							id: "attention-chat",
+							title: "Needs action",
+							status: "requires_action",
+						}),
+						buildChat({
+							id: "error-chat",
+							title: "Failed chat",
+							status: "error",
+						}),
+						buildChat({
+							id: "working-chat",
+							title: "Working chat",
+							status: "running",
+						}),
+						buildChat({
+							id: "interrupting-chat",
+							title: "Interrupting chat",
+							status: "interrupting",
+						}),
+						buildChat({
+							id: "idle-chat",
+							title: "Idle chat",
+							status: "waiting",
+						}),
+					]}
+					sidebarFilters={{
+						...defaultSidebarFilters,
+						groupBy: "chat_status",
+					}}
+				/>
+			</Wrapper>,
+		);
+
+		const attentionSection = screen.getByTestId(
+			"agents-section-toggle-Requires-action",
+		);
+		const errorSection = screen.getByTestId("agents-section-toggle-Error");
+		const workingSection = screen.getByTestId("agents-section-toggle-Working");
+		const interruptingSection = screen.getByTestId(
+			"agents-section-toggle-Interrupting",
+		);
+		const idleSection = screen.getByTestId("agents-section-toggle-Idle");
+		const attentionNode = screen.getByTestId("agents-tree-node-attention-chat");
+		const errorNode = screen.getByTestId("agents-tree-node-error-chat");
+		const workingNode = screen.getByTestId("agents-tree-node-working-chat");
+		const interruptingNode = screen.getByTestId(
+			"agents-tree-node-interrupting-chat",
+		);
+		const idleNode = screen.getByTestId("agents-tree-node-idle-chat");
+
+		expect(
+			screen.queryByTestId("agents-section-toggle-Today"),
+		).not.toBeInTheDocument();
+		for (const [before, after] of [
+			[attentionSection, attentionNode],
+			[attentionNode, errorSection],
+			[errorSection, errorNode],
+			[errorNode, workingSection],
+			[workingSection, workingNode],
+			[workingNode, interruptingSection],
+			[interruptingSection, interruptingNode],
+			[interruptingNode, idleSection],
+			[idleSection, idleNode],
+		] as const) {
+			expect(
+				before.compareDocumentPosition(after) &
+					Node.DOCUMENT_POSITION_FOLLOWING,
+			).toBeTruthy();
+		}
+	});
+});
+
+describe("ChatsSidebar load-more behavior", () => {
+	beforeEach(() => {
+		observerCallback = null;
+		observeCount = 0;
+		vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	it("calls onLoadMore when the sentinel becomes visible", () => {
+		const onLoadMore = vi.fn();
+		render(
+			<Wrapper>
+				<ChatsSidebar {...defaultProps} hasNextPage onLoadMore={onLoadMore} />
+			</Wrapper>,
+		);
+
+		act(() => {
+			observerCallback?.([{ isIntersecting: true }]);
+		});
+
+		expect(onLoadMore).toHaveBeenCalledTimes(1);
+	});
+
+	it("does NOT call onLoadMore when isFetchingNextPage is true", () => {
+		const onLoadMore = vi.fn();
+		render(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					hasNextPage
+					onLoadMore={onLoadMore}
+					isFetchingNextPage
+				/>
+			</Wrapper>,
+		);
+
+		act(() => {
+			observerCallback?.([{ isIntersecting: true }]);
+		});
+
+		expect(onLoadMore).not.toHaveBeenCalled();
+	});
+
+	it("does NOT recreate the observer when re-rendered with a new onLoadMore reference", () => {
+		const onLoadMore1 = vi.fn();
+		const { rerender } = render(
+			<Wrapper>
+				<ChatsSidebar {...defaultProps} hasNextPage onLoadMore={onLoadMore1} />
+			</Wrapper>,
+		);
+
+		const countAfterMount = observeCount;
+
+		// Re-render with a brand-new function reference, which was the
+		// original bug trigger.
+		const onLoadMore2 = vi.fn();
+		rerender(
+			<Wrapper>
+				<ChatsSidebar {...defaultProps} hasNextPage onLoadMore={onLoadMore2} />
+			</Wrapper>,
+		);
+
+		// The observer should NOT have been torn down and recreated.
+		expect(observeCount).toBe(countAfterMount);
+
+		// The new callback should still be the one invoked.
+		act(() => {
+			observerCallback?.([{ isIntersecting: true }]);
+		});
+		expect(onLoadMore1).not.toHaveBeenCalled();
+		expect(onLoadMore2).toHaveBeenCalledTimes(1);
+	});
+
+	it("does NOT spam onLoadMore across multiple re-renders", () => {
+		const onLoadMore = vi.fn();
+		const { rerender } = render(
+			<Wrapper>
+				<ChatsSidebar {...defaultProps} hasNextPage onLoadMore={onLoadMore} />
+			</Wrapper>,
+		);
+
+		// Sentinel becomes visible once.
+		act(() => {
+			observerCallback?.([{ isIntersecting: true }]);
+		});
+		expect(onLoadMore).toHaveBeenCalledTimes(1);
+
+		// Parent re-renders many times with new inline arrow callbacks
+		// (the pattern that caused the original bug).
+		for (let i = 0; i < 10; i++) {
+			rerender(
+				<Wrapper>
+					<ChatsSidebar
+						{...defaultProps}
+						hasNextPage
+						onLoadMore={() => onLoadMore()}
+					/>
+				</Wrapper>,
+			);
+		}
+
+		// Re-renders alone should NOT trigger additional onLoadMore calls;
+		// only a new IntersectionObserver entry should.
+		expect(onLoadMore).toHaveBeenCalledTimes(1);
+	});
+
+	it("resumes loading after isFetchingNextPage goes from true to false", () => {
+		const onLoadMore = vi.fn();
+		const { rerender } = render(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					hasNextPage
+					onLoadMore={onLoadMore}
+					isFetchingNextPage
+				/>
+			</Wrapper>,
+		);
+
+		// Blocked while fetching.
+		act(() => {
+			observerCallback?.([{ isIntersecting: true }]);
+		});
+		expect(onLoadMore).not.toHaveBeenCalled();
+
+		// Fetch completes.
+		rerender(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					hasNextPage
+					onLoadMore={onLoadMore}
+					isFetchingNextPage={false}
+				/>
+			</Wrapper>,
+		);
+
+		// Observer fires again while sentinel is still visible.
+		act(() => {
+			observerCallback?.([{ isIntersecting: true }]);
+		});
+		expect(onLoadMore).toHaveBeenCalledTimes(1);
+	});
+
+	it("recreates the observer when isFetchingNextPage transitions to false so visible sentinels re-trigger", () => {
+		const onLoadMore = vi.fn();
+		const { rerender } = render(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					hasNextPage
+					onLoadMore={onLoadMore}
+					isFetchingNextPage={false}
+				/>
+			</Wrapper>,
+		);
+
+		const countAfterMount = observeCount;
+		expect(countAfterMount).toBe(1);
+
+		// Start fetching, observer is torn down.
+		rerender(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					hasNextPage
+					onLoadMore={onLoadMore}
+					isFetchingNextPage
+				/>
+			</Wrapper>,
+		);
+
+		// Fetch completes, a fresh observer is created, firing
+		// an initial entry that detects the still-visible sentinel.
+		rerender(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					hasNextPage
+					onLoadMore={onLoadMore}
+					isFetchingNextPage={false}
+				/>
+			</Wrapper>,
+		);
+
+		expect(observeCount).toBe(countAfterMount + 1);
+	});
+
+	it("does NOT render the sentinel when hasNextPage is false", () => {
+		const onLoadMore = vi.fn();
+		render(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					hasNextPage={false}
+					onLoadMore={onLoadMore}
+				/>
+			</Wrapper>,
+		);
+
+		// No observer should have been created since the sentinel
+		// is not rendered.
+		expect(observeCount).toBe(0);
+	});
+});
+
+describe("ChatsSidebar pull requests", () => {
+	const mockMultiPRChat = buildChat({
+		id: "multi-pr",
+		title: "Multiple pull requests",
+		diff_statuses: [
+			{
+				...MockChatDiffStatus,
+				chat_id: "multi-pr",
+				git_branch: "feat/one",
+				url: "https://github.com/coder/coder/pull/1",
+				pr_number: 1,
+				pull_request_state: "open",
+				pull_request_title: "feat: add login page",
+			},
+			{
+				...MockChatDiffStatus,
+				chat_id: "multi-pr",
+				git_branch: "feat/two",
+				url: "https://github.com/coder/coder/pull/2",
+				pr_number: 2,
+				pull_request_state: "merged",
+				pull_request_title: "feat: add login tests",
+			},
+		],
+	});
+
+	it("announces the pull request state when the chat tracks one pull request", () => {
+		render(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					chats={[
+						buildChat({
+							id: "one-pr",
+							title: "One pull request",
+							diff_statuses: [
+								{
+									...MockChatDiffStatus,
+									chat_id: "one-pr",
+									url: "https://github.com/coder/coder/pull/1",
+									pull_request_state: "open",
+									pull_request_title: "",
+									additions: 0,
+									deletions: 0,
+									changed_files: 0,
+								},
+							],
+						}),
+					]}
+				/>
+			</Wrapper>,
+		);
+
+		expect(
+			screen.getByRole("img", { name: /pull request/i }),
+		).toHaveAccessibleName("Pull request open");
+	});
+
+	it("announces the tracked pull request count when the chat tracks several", () => {
+		render(
+			<Wrapper>
+				<ChatsSidebar {...defaultProps} chats={[mockMultiPRChat]} />
+			</Wrapper>,
+		);
+
+		// The count and the glyph are one named image, so the link
+		// does not announce the count twice.
+		expect(
+			screen.getByRole("img", { name: /pull request/i }),
+		).toHaveAccessibleName("2 pull requests");
+		const link = screen.getByRole("link", {
+			name: /multiple pull requests/i,
+		});
+		expect(link).toHaveAccessibleName(
+			/Multiple pull requests.*2 pull requests/,
+		);
+		expect(link).not.toHaveAccessibleName(/2 pull requests.*2 pull requests/);
+	});
+
+	it("links every pull request from the actions menu of a multi-PR chat", async () => {
+		const user = userEvent.setup();
+
+		render(
+			<Wrapper>
+				<ChatsSidebar {...defaultProps} chats={[mockMultiPRChat]} />
+			</Wrapper>,
+		);
+
+		await user.click(
+			screen.getByRole("button", {
+				name: "Open actions for Multiple pull requests",
+			}),
+		);
+		await user.click(await screen.findByRole("menuitem", { name: "2 PRs" }));
+
+		const links = await screen.findAllByRole("menuitem", { name: /PR #/ });
+		expect(links.map((link) => link.getAttribute("href"))).toEqual([
+			"https://github.com/coder/coder/pull/1",
+			"https://github.com/coder/coder/pull/2",
+		]);
+		expect(links[1]).toHaveAccessibleName(/Pull request merged/);
+	});
+
+	it("leaves pull requests without a URL out of the actions menu", async () => {
+		const user = userEvent.setup();
+
+		render(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					chats={[
+						buildChat({
+							id: "unlinked-pr",
+							title: "Unlinked pull request",
+							diff_statuses: [
+								{
+									...MockChatDiffStatus,
+									chat_id: "unlinked-pr",
+									git_branch: "feat/one",
+									url: "https://github.com/coder/coder/pull/1",
+									pr_number: 1,
+								},
+								{
+									...MockChatDiffStatus,
+									chat_id: "unlinked-pr",
+									git_branch: "feat/two",
+									url: "",
+									pr_number: 2,
+								},
+							],
+						}),
+					]}
+				/>
+			</Wrapper>,
+		);
+
+		await user.click(
+			screen.getByRole("button", {
+				name: "Open actions for Unlinked pull request",
+			}),
+		);
+
+		// One linkable PR is left, so the menu links it directly.
+		expect(
+			await screen.findByRole("menuitem", { name: /PR #1/ }),
+		).toHaveAttribute("href", "https://github.com/coder/coder/pull/1");
+	});
+
+	it("links the pull request for viewers of a shared chat", async () => {
+		const user = userEvent.setup();
+
+		render(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					chats={[
+						buildChat({
+							id: "shared-pr",
+							title: "Shared pull request",
+							owner_id: "sharing-user",
+							diff_statuses: [
+								{
+									...MockChatDiffStatus,
+									chat_id: "shared-pr",
+									url: "https://github.com/coder/coder/pull/7",
+									pr_number: 7,
+								},
+							],
+						}),
+					]}
+				/>
+			</Wrapper>,
+		);
+
+		await user.click(
+			screen.getByRole("button", {
+				name: "Open actions for Shared pull request",
+			}),
+		);
+
+		expect(
+			await screen.findByRole("menuitem", { name: /PR #7/ }),
+		).toHaveAttribute("href", "https://github.com/coder/coder/pull/7");
+	});
+});
+
+describe("ChatsSidebar subtitles", () => {
+	const modelConfigs: TypesGen.ChatModel[] = [
+		{
+			...MockChatModel,
+			id: "model-1",
+			model: "gpt-4o",
+			display_name: "GPT-4o",
+			created_at: oneWeekAgo,
+			updated_at: oneWeekAgo,
+		},
+	];
+
+	it("shows the last turn summary when present and no error exists", () => {
+		render(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					chats={[
+						buildChat({
+							id: "summary-chat",
+							title: "Summary chat",
+							last_turn_summary: "Updated the Terraform template",
+						}),
+					]}
+					modelConfigs={modelConfigs}
+				/>
+			</Wrapper>,
+		);
+
+		expect(
+			screen.getByText("Updated the Terraform template"),
+		).toBeInTheDocument();
+		expect(screen.queryByText("GPT-4o")).not.toBeInTheDocument();
+	});
+
+	it("shows the error when both error and last turn summary exist", () => {
+		render(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					chats={[
+						buildChat({
+							id: "summary-error-chat",
+							title: "Summary error chat",
+							status: "error",
+							last_error: {
+								message: "Workspace startup failed",
+								retryable: false,
+							},
+							last_turn_summary: "Provisioned a workspace",
+						}),
+					]}
+					modelConfigs={modelConfigs}
+				/>
+			</Wrapper>,
+		);
+
+		expect(screen.getByText("Workspace startup failed")).toBeInTheDocument();
+		expect(
+			screen.queryByText("Provisioned a workspace"),
+		).not.toBeInTheDocument();
+	});
+
+	it("falls back to the model name when no last turn summary exists", () => {
+		render(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					chats={[
+						buildChat({
+							id: "model-fallback-chat",
+							title: "Model fallback chat",
+						}),
+					]}
+					modelConfigs={modelConfigs}
+				/>
+			</Wrapper>,
+		);
+
+		expect(screen.getByText("GPT-4o")).toBeInTheDocument();
+	});
+
+	it("falls back to the model name when the last turn summary is blank", () => {
+		render(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					chats={[
+						buildChat({
+							id: "blank-summary-chat",
+							title: "Blank summary chat",
+							last_turn_summary: "   ",
+						}),
+					]}
+					modelConfigs={modelConfigs}
+				/>
+			</Wrapper>,
+		);
+
+		expect(screen.getByText("GPT-4o")).toBeInTheDocument();
+	});
+});
+
+describe("ChatsSidebar read state actions", () => {
+	afterEach(() => vi.restoreAllMocks());
+
+	it.each([
+		{ action: "Mark as read", read: true, fails: false },
+		{ action: "Mark as unread", read: false, fails: false },
+		{ action: "Mark as read", read: true, fails: true },
+		{ action: "Mark as unread", read: false, fails: true },
+	])(
+		"$action persists the read state (failure: $fails)",
+		async ({ action, read, fails }) => {
+			const user = userEvent.setup();
+			const update = vi.spyOn(API.experimental, "updateChat");
+			const errorToast = vi.spyOn(toast, "error");
+			if (fails) {
+				update.mockRejectedValue(new Error("Read state rejected"));
+			} else {
+				update.mockResolvedValue(undefined);
+			}
+			render(
+				<Wrapper>
+					<ChatsSidebar
+						{...defaultProps}
+						chats={[
+							buildChat({
+								id: "read-state-chat",
+								title: "Read state chat",
+								has_unread: read,
+							}),
+						]}
+					/>
+				</Wrapper>,
+			);
+			await user.click(
+				screen.getByRole("button", {
+					name: "Open actions for Read state chat",
+				}),
+			);
+			await user.click(await screen.findByRole("menuitem", { name: action }));
+			await waitFor(() =>
+				expect(update).toHaveBeenCalledWith("read-state-chat", { read }),
+			);
+			if (fails) {
+				await waitFor(() =>
+					expect(errorToast).toHaveBeenCalledWith("Read state rejected"),
+				);
+			}
+		},
+	);
+});
+
+describe("ChatsSidebar copy actions", () => {
+	// Radix submenu items do not react to userEvent clicks in jsdom, so the
+	// selection itself uses fireEvent.
+	const openCopySubmenu = async (
+		user: ReturnType<typeof userEvent.setup>,
+		title: string,
+	) => {
+		await user.click(
+			screen.getByRole("button", { name: `Open actions for ${title}` }),
+		);
+		await user.click(await screen.findByRole("menuitem", { name: "Copy" }));
+	};
+
+	it.each(["dropdown", "context"])(
+		"copies the chat ID directly from the %s menu without a branch",
+		async (menu) => {
+			// userEvent.setup() swaps in its own clipboard stub, so the spy has to
+			// come after it.
+			const user = userEvent.setup();
+			const writeText = vi
+				.spyOn(navigator.clipboard, "writeText")
+				.mockResolvedValue();
+			render(
+				<Wrapper>
+					<ChatsSidebar
+						{...defaultProps}
+						chats={[buildChat({ id: "copy-chat", title: "Copy chat" })]}
+					/>
+				</Wrapper>,
+			);
+
+			if (menu === "dropdown") {
+				await user.click(
+					screen.getByRole("button", { name: "Open actions for Copy chat" }),
+				);
+			} else {
+				await user.pointer({
+					target: screen.getByTestId("agents-tree-node-copy-chat"),
+					keys: "[MouseRight]",
+				});
+			}
+			await user.click(
+				await screen.findByRole("menuitem", { name: "Copy ID" }),
+			);
+
+			await waitFor(() => {
+				expect(writeText).toHaveBeenCalledWith("copy-chat");
+			});
+		},
+	);
+
+	it.each([
+		["Copy ID", "branch-chat"],
+		["Copy branch", "jakehwll/copy-branch"],
+	])(
+		"copies %s from the submenu when a branch is available",
+		async (label, value) => {
+			const user = userEvent.setup();
+			const writeText = vi
+				.spyOn(navigator.clipboard, "writeText")
+				.mockResolvedValue();
+			render(
+				<Wrapper>
+					<ChatsSidebar
+						{...defaultProps}
+						chats={[
+							buildChat({
+								id: "branch-chat",
+								title: "Branch chat",
+								diff_status: {
+									chat_id: "branch-chat",
+									pull_request_title: "",
+									pull_request_draft: false,
+									changes_requested: false,
+									additions: 0,
+									deletions: 0,
+									changed_files: 0,
+									head_branch: "jakehwll/copy-branch",
+								},
+							}),
+						]}
+					/>
+				</Wrapper>,
+			);
+
+			await openCopySubmenu(user, "Branch chat");
+			fireEvent.click(await screen.findByRole("menuitem", { name: label }));
+
+			await waitFor(() => {
+				expect(writeText).toHaveBeenCalledWith(value);
+			});
+		},
+	);
+
+	it("copies the ID of a chat the user does not own", async () => {
+		const user = userEvent.setup();
+		const writeText = vi
+			.spyOn(navigator.clipboard, "writeText")
+			.mockResolvedValue();
+		render(
+			<Wrapper>
+				<ChatsSidebar
+					{...defaultProps}
+					chats={[
+						buildChat({
+							id: "shared-copy-chat",
+							title: "Shared copy chat",
+							owner_id: "sharing-user-id",
+							shared: true,
+						}),
+					]}
+				/>
+			</Wrapper>,
+		);
+
+		await user.click(
+			screen.getByRole("button", { name: "Open actions for Shared copy chat" }),
+		);
+		await user.click(await screen.findByRole("menuitem", { name: "Copy ID" }));
+
+		await waitFor(() => {
+			expect(writeText).toHaveBeenCalledWith("shared-copy-chat");
+		});
+	});
+});

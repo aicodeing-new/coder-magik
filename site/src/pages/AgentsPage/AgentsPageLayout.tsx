@@ -1,0 +1,556 @@
+import { cn } from "cn";
+import { useEffect, useEffectEvent, useState } from "react";
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "react-query";
+import {
+	Outlet,
+	useLocation,
+	useMatch,
+	useNavigate,
+	useParams,
+	useSearchParams,
+} from "react-router";
+import { toast } from "sonner";
+import { watchChats } from "#/api/api";
+import { getErrorMessage } from "#/api/errors";
+import {
+	addChildToParentInCache,
+	applyWatchedChatArchived,
+	applyWatchedChatCreatedOrUnarchived,
+	cancelChatListRefetches,
+	cancelLoadedChatEntityRefetch,
+	chatEntityKey,
+	findChatInListCaches,
+	infiniteChats,
+	invalidateChatCostTree,
+	invalidateChatDiffContents,
+	invalidateChatEntity,
+	invalidateChatListQueries,
+	invalidateChatSearches,
+	invalidateChatsByWorkspace,
+	mergeWatchedChatIntoCaches,
+	prependToInfiniteChatsCache,
+	proposeChatTitle,
+	shouldInvalidateChatSearches,
+	shouldInvalidateChatsByWorkspace,
+	updateChatTitle,
+	updateInfiniteChatsCache,
+	userChatPersonalModelOverrides,
+} from "#/api/queries/chats";
+import type * as TypesGen from "#/api/typesGenerated";
+import { useAuthenticated } from "#/hooks/useAuthenticated";
+import {
+	getDefaultOrganizationId,
+	useDashboard,
+} from "#/modules/dashboard/useDashboard";
+import { canAccessCoderAgentsSettings } from "#/modules/permissions";
+import { pageTitle } from "#/utils/page";
+import { createReconnectingWebSocket } from "#/utils/reconnectingWebSocket";
+import { emptyInputStorageKey } from "./components/AgentCreateForm";
+import { AUTOMATIONS_PATH } from "./components/Automations/automationsFlag";
+import {
+	type ChatDetailError,
+	chatDetailErrorsEqual,
+} from "./components/ChatConversation/chatError";
+import { getChatCostTreeID } from "./components/ChatConversation/chatHelpers";
+import { isActiveChatStatus } from "./components/ChatConversation/chatStore";
+import {
+	ChatsSidebar,
+	isSettingsView,
+	sidebarViewFromPath,
+} from "./components/ChatsSidebar/ChatsSidebar";
+import { ResizableChatsSidebarFrame } from "./components/ChatsSidebar/ResizableChatsSidebarFrame";
+import { useAgentsPageKeybindings } from "./hooks/useAgentsPageKeybindings";
+import { useAgentsPWA } from "./hooks/useAgentsPWA";
+import { useOrganizationChatModels } from "./hooks/useOrganizationChatModels";
+import {
+	AGENT_CHAT_STATUS_ORDER,
+	getAgentSidebarFilters,
+} from "./utils/agentSidebarFilters";
+import { shouldNavigateAfterArchive } from "./utils/agentWorkspaceUtils";
+import { maybePlayChime } from "./utils/chime";
+import { readDeepLinkState } from "./utils/deepLinkState";
+
+export type AgentsPageOutletContext = {
+	chatErrorReasons: Record<string, ChatDetailError>;
+	setChatErrorReason: (chatId: string, reason: ChatDetailError) => void;
+	clearChatErrorReason: (chatId: string) => void;
+	navigateAfterArchive: (chatId: string) => void;
+	/**
+	 * The active chat's children from the chat list cache, which watch
+	 * events keep fresh. The entity cache's embedded children are only a
+	 * fetch-time snapshot, so gating archive actions on them could leave
+	 * the actions disabled after a child finishes.
+	 */
+	activeChatChildren: readonly TypesGen.Chat[] | undefined;
+	onRenameTitle?: (chatId: string, title: string) => Promise<void>;
+	/** Opens the shared rename dialog so both menus drive the same instance. */
+	onOpenRenameDialog?: (chat: TypesGen.Chat) => void;
+	isSidebarCollapsed: boolean;
+	onToggleSidebarCollapsed: () => void;
+	onExpandSidebar: () => void;
+	onChatReady: () => void;
+};
+
+const FILTER_MEMBERSHIP_EVENT_KINDS = new Set<TypesGen.ChatWatchEventKind>([
+	"diff_status_change",
+	"status_change",
+]);
+
+export const shouldInvalidateFilteredChatList = (
+	chat: TypesGen.Chat,
+	eventKind: TypesGen.ChatWatchEventKind,
+): boolean =>
+	!chat.parent_chat_id && FILTER_MEMBERSHIP_EVENT_KINDS.has(eventKind);
+
+// The status in other event kinds may be older than the cached status.
+export const shouldEvaluateChime = (
+	chat: TypesGen.Chat,
+	eventKind: TypesGen.ChatWatchEventKind,
+): boolean => eventKind === "status_change" && !chat.parent_chat_id;
+
+// Summary and title generation can bill after the turn reports a non-active
+// status, so invalidate the root-keyed cost query when those events arrive.
+const POST_TURN_BILLED_EVENT_KINDS = new Set<TypesGen.ChatWatchEventKind>([
+	"chat_summary_change",
+	"summary_change",
+	"title_change",
+]);
+
+export const chatCostIdToInvalidate = (
+	chat: TypesGen.Chat,
+	eventKind: TypesGen.ChatWatchEventKind,
+): string | undefined => {
+	if (POST_TURN_BILLED_EVENT_KINDS.has(eventKind)) {
+		return getChatCostTreeID(chat);
+	}
+	if (eventKind !== "status_change" || isActiveChatStatus(chat.status)) {
+		return undefined;
+	}
+	return getChatCostTreeID(chat);
+};
+
+const AgentsPageLayout: React.FC = () => {
+	useAgentsPWA();
+	const queryClient = useQueryClient();
+	const navigate = useNavigate();
+	const location = useLocation();
+	const [searchParams, setSearchParams] = useSearchParams();
+	const { agentId } = useParams();
+	const isPlainComposerRoute = useMatch("/agents") !== null;
+	const { permissions, user } = useAuthenticated();
+	const { organizations } = useDashboard();
+	const defaultOrganizationId = getDefaultOrganizationId(organizations);
+	// The personal-overrides feature flag is deployment-wide but read through
+	// an organization-scoped endpoint, so fall back to any accessible
+	// organization for users outside the default organization.
+	const personalOverridesOrganizationId =
+		defaultOrganizationId ?? organizations[0]?.id ?? "";
+	const isAgentsAdmin = permissions.editDeploymentConfig;
+	const canManageAgentSettings = canAccessCoderAgentsSettings(permissions);
+
+	const [sidebarFilters, setSidebarFilters] = getAgentSidebarFilters(
+		searchParams,
+		setSearchParams,
+		location.state,
+	);
+	const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
+
+	// Opts out of the global scrollbar gutter; see html[data-agents-layout]
+	// in index.css.
+	useEffect(() => {
+		const html = document.documentElement;
+		html.dataset.agentsLayout = "";
+		return () => {
+			delete html.dataset.agentsLayout;
+		};
+	}, []);
+
+	const archivedFilter = sidebarFilters.archiveStatus === "archived";
+	const statuses =
+		sidebarFilters.chatStatuses.length === AGENT_CHAT_STATUS_ORDER.length
+			? undefined
+			: sidebarFilters.chatStatuses;
+	const chatsQuery = useInfiniteQuery(
+		infiniteChats({
+			archived: archivedFilter,
+			prStatuses: sidebarFilters.prStatuses,
+			statuses,
+			chatStatus: sidebarFilters.unread ? "unread" : undefined,
+			sources: sidebarFilters.sources,
+		}),
+	);
+	const organizationModels = useOrganizationChatModels(
+		organizations.map((organization) => organization.id),
+	);
+	const personalModelOverridesQuery = useQuery(
+		userChatPersonalModelOverrides(personalOverridesOrganizationId),
+	);
+	const [chatErrorReasons, setChatErrorReasons] = useState<
+		Record<string, ChatDetailError>
+	>({});
+	const setChatErrorReason = (chatId: string, reason: ChatDetailError) => {
+		const trimmedMessage = reason.message.trim();
+		if (!chatId || !trimmedMessage) {
+			return;
+		}
+		const nextReason: ChatDetailError = {
+			...reason,
+			message: trimmedMessage,
+		};
+		setChatErrorReasons((current) => {
+			const existing = current[chatId];
+			if (chatDetailErrorsEqual(existing, nextReason)) {
+				return current;
+			}
+			return {
+				...current,
+				[chatId]: nextReason,
+			};
+		});
+	};
+	const clearChatErrorReason = (chatId: string) => {
+		if (!chatId) {
+			return;
+		}
+		setChatErrorReasons((current) => {
+			if (!(chatId in current)) {
+				return current;
+			}
+			const next = { ...current };
+			delete next[chatId];
+			return next;
+		});
+	};
+
+	const proposeTitleMutation = useMutation(proposeChatTitle(queryClient));
+	const renameTitleMutation = useMutation({
+		...updateChatTitle(queryClient),
+		onError: (error: unknown) => {
+			toast.error(getErrorMessage(error, "Failed to rename chat."));
+		},
+	});
+	const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+	const chatList = chatsQuery.data?.pages.flat() ?? [];
+
+	const activeChatIdForWatch = useEffectEvent(() => agentId);
+	const [completedArchives, setCompletedArchives] = useState<string[]>([]);
+	// Completion must outlive the initiating row, but not this layout.
+	const navigateAfterArchive = (chatId: string) => {
+		setCompletedArchives((completed) => [...completed, chatId]);
+	};
+	useEffect(() => {
+		if (completedArchives.length === 0) return;
+		const activeChat = agentId
+			? queryClient.getQueryData<TypesGen.Chat>(chatEntityKey(agentId))
+			: undefined;
+		if (
+			completedArchives.some((chatId) =>
+				shouldNavigateAfterArchive(agentId, chatId, activeChat?.root_chat_id),
+			)
+		) {
+			void navigate({ pathname: "/agents", search: location.search });
+		}
+		setCompletedArchives((completed) =>
+			completed.slice(completedArchives.length),
+		);
+	}, [agentId, completedArchives, location.search, navigate, queryClient]);
+	const requestProposeTitle = async (chatId: string): Promise<string> => {
+		const result = await proposeTitleMutation.mutateAsync(chatId);
+		return result.title;
+	};
+	const requestRenameTitle = async (chatId: string, title: string) => {
+		await renameTitleMutation.mutateAsync({ chatId, title });
+	};
+	const handleToggleSidebarCollapsed = () =>
+		setIsSidebarCollapsed((prev) => !prev);
+
+	const handleNewAgent = () => {
+		// Only clear the draft when the user is already on the empty
+		// state and explicitly requests a blank slate.  When navigating
+		// back from a conversation the existing draft is preserved.
+		// A composer prefilled from a prompt link shows the link's text,
+		// not the draft, so the draft is preserved there too. A debug link
+		// can fall back to the draft-backed composer, so it is not exempt.
+		// Other routes, such as a project composer, keep this draft too.
+		if (
+			isPlainComposerRoute &&
+			readDeepLinkState(location.state).prompt === undefined
+		) {
+			localStorage.removeItem(emptyInputStorageKey);
+		}
+		navigate({ pathname: "/agents", search: location.search });
+	};
+
+	const handleOpenSettings = () => {
+		// Already there: keep the original `from` so the back button
+		// still returns to the view the user opened settings from.
+		if (isSettingsView(sidebarViewFromPath(location.pathname))) {
+			return;
+		}
+		navigate("/agents/settings", {
+			state: { from: location.pathname + location.search },
+		});
+	};
+
+	// Optimistically clear the unread indicator for the active
+	// chat. The server marks chats as read on stream connect
+	// and disconnect, but the list cache is not refetched until
+	// window focus. Without this, navigating away from a chat
+	// causes its cached has_unread to reappear as a stale dot.
+	useEffect(() => {
+		if (!agentId) {
+			return;
+		}
+		updateInfiniteChatsCache(queryClient, (chats) => {
+			let changed = false;
+			const next = chats.map((c) => {
+				if (c.id !== agentId || !c.has_unread) return c;
+				changed = true;
+				return { ...c, has_unread: false };
+			});
+			return changed ? next : chats;
+		});
+		void invalidateChatListQueries(queryClient);
+		void invalidateChatSearches(queryClient);
+	}, [agentId, queryClient]);
+	useEffect(() => {
+		return createReconnectingWebSocket({
+			connect() {
+				const ws = watchChats();
+
+				ws.addEventListener("message", (event) => {
+					if (event.parseError) {
+						console.warn("Failed to parse chat watch event:", event.parseError);
+						return;
+					}
+					const chatEvent = event.parsedMessage;
+					const updatedChat = chatEvent.chat;
+					// The old membership is only available before the cache write below.
+					const prevStatus = findChatInListCaches(
+						queryClient,
+						updatedChat.id,
+					)?.status;
+					if (shouldEvaluateChime(updatedChat, chatEvent.kind)) {
+						maybePlayChime(
+							prevStatus,
+							updatedChat.status,
+							updatedChat.id,
+							activeChatIdForWatch(),
+						);
+					}
+
+					if (chatEvent.kind === "deleted") {
+						// The server publishes `deleted` when a chat is
+						// archived (one event per family member); there is
+						// no hard-delete wire event. Patch archive state in
+						// place so an open route stays mounted and flips to
+						// its read-only state.
+						applyWatchedChatArchived(queryClient, updatedChat);
+						return;
+					}
+					if (chatEvent.kind === "diff_status_change") {
+						// Only refetch the diff file contents. The chat's
+						// diff_status field is already written into the
+						// chatKey and infinite-list caches below.
+						void invalidateChatDiffContents(queryClient, updatedChat.id);
+					}
+					// Merge watch payloads by event kind so stale field
+					// snapshots do not clobber fresher cached metadata.
+
+					// Cancel in-flight list and per-chat refetches so
+					// they cannot overwrite the cache update below with
+					// stale server data. This matters when a title_change
+					// event races with a refetch triggered by
+					// createChat.onSuccess or the onOpen invalidation:
+					// the refetch may have been issued before the async
+					// title generation finished, so its response carries
+					// the fallback title.
+					void cancelChatListRefetches(queryClient);
+					void cancelLoadedChatEntityRefetch(queryClient, updatedChat.id);
+
+					if (chatEvent.kind === "created") {
+						if (updatedChat.parent_chat_id) {
+							// Child chat: add to its parent's children
+							// array. If the parent is not in any loaded
+							// page, the child is silently dropped.
+							addChildToParentInCache(
+								queryClient,
+								updatedChat,
+								updatedChat.parent_chat_id,
+							);
+							// A family unarchive and a new sub-agent with a
+							// mounted initial fetch both need entity recovery.
+							const cachedChat = queryClient.getQueryData<TypesGen.Chat>(
+								chatEntityKey(updatedChat.id),
+							);
+							if (
+								cachedChat?.archived ||
+								(cachedChat === undefined &&
+									queryClient.getQueryState(chatEntityKey(updatedChat.id)) !==
+										undefined)
+							) {
+								applyWatchedChatCreatedOrUnarchived(queryClient, updatedChat);
+							}
+						} else {
+							// `created` also fires for unarchive transitions.
+							applyWatchedChatCreatedOrUnarchived(queryClient, updatedChat);
+							prependToInfiniteChatsCache(queryClient, updatedChat);
+						}
+					} else {
+						mergeWatchedChatIntoCaches(queryClient, updatedChat, {
+							eventKind: chatEvent.kind,
+							activeChatId: activeChatIdForWatch(),
+							changedDiffStatus: chatEvent.changed_diff_status,
+						});
+						if (shouldInvalidateFilteredChatList(updatedChat, chatEvent.kind)) {
+							void invalidateChatListQueries(queryClient);
+						}
+						if (shouldInvalidateChatSearches(chatEvent.kind)) {
+							void invalidateChatSearches(queryClient);
+						}
+						if (shouldInvalidateChatsByWorkspace(chatEvent.kind)) {
+							void invalidateChatsByWorkspace(queryClient);
+						}
+						const costChatId = chatCostIdToInvalidate(
+							updatedChat,
+							chatEvent.kind,
+						);
+						if (costChatId) {
+							void invalidateChatCostTree(queryClient, costChatId);
+						}
+						if (chatEvent.kind === "context_dirty") {
+							// The watch payload carries only the lightweight
+							// context flags (the merge above applies them);
+							// refetch the open chat to pull the pinned
+							// resources the single-chat GET computes. Only the
+							// active chat has an observer, so other chats are
+							// merely marked stale.
+							void invalidateChatEntity(queryClient, updatedChat.id);
+						}
+					}
+				});
+				return ws;
+			},
+			onOpen() {
+				void invalidateChatListQueries(queryClient);
+				void invalidateChatsByWorkspace(queryClient);
+				void invalidateChatSearches(queryClient);
+			},
+		});
+	}, [queryClient]);
+
+	useAgentsPageKeybindings({
+		onNewAgent: handleNewAgent,
+		onToggleSearch: () => setIsSearchDialogOpen((open) => !open),
+		onOpenSettings: handleOpenSettings,
+	});
+
+	// Mobile can't fit the sidebar nav and content side by side,
+	// so we show one or the other depending on the route depth.
+	const sidebarView = sidebarViewFromPath(location.pathname);
+	const isSettingsPanel = isSettingsView(sidebarView);
+	const isSettingsIndex = isSettingsPanel && !sidebarView.section;
+	const isSettingsDetail = isSettingsPanel && Boolean(sidebarView.section);
+	// On mobile the automations page replaces the sidebar, like a settings
+	// detail page.
+	const isFullPageRoute =
+		isSettingsDetail || location.pathname.startsWith(AUTOMATIONS_PATH);
+
+	// The sidebar expects plain string error messages, but the outlet
+	// context carries structured ChatDetailError objects.
+	const sidebarChatErrorReasons = Object.fromEntries(
+		Object.entries(chatErrorReasons).map(([chatId, error]) => [
+			chatId,
+			error.message,
+		]),
+	);
+
+	// State for the shared rename-chat dialog. Lifted here so both the
+	// sidebar menu and the chat top bar open the same dialog instance.
+	const [chatPendingRename, setChatPendingRename] =
+		useState<TypesGen.Chat | null>(null);
+
+	const outletContextValue: AgentsPageOutletContext = {
+		chatErrorReasons,
+		setChatErrorReason,
+		clearChatErrorReason,
+		navigateAfterArchive,
+		activeChatChildren: chatList.find((c) => c.id === agentId)?.children,
+		onOpenRenameDialog: setChatPendingRename,
+		isSidebarCollapsed,
+		onToggleSidebarCollapsed: handleToggleSidebarCollapsed,
+		onExpandSidebar: () => setIsSidebarCollapsed(false),
+		onChatReady: () => {},
+	};
+
+	return (
+		<div
+			data-testid="agents-page-layout"
+			className="flex h-full min-h-0 flex-col overflow-hidden bg-surface-primary sm:flex-row"
+		>
+			<title>{pageTitle("Agents")}</title>
+			<ResizableChatsSidebarFrame
+				className={cn(
+					"sm:h-full sm:min-h-0 sm:border-b-0",
+					agentId
+						? "hidden sm:block shrink-0 h-[42dvh] min-h-[240px] border-b border-border"
+						: isFullPageRoute
+							? "hidden sm:block shrink-0"
+							: "order-2 sm:order-0 flex-1 min-h-0 border-b border-border sm:flex-none sm:border-t-0 sm:border-b-0",
+					isSidebarCollapsed && "sm:hidden",
+				)}
+			>
+				<ChatsSidebar
+					chats={chatList}
+					currentUserId={user.id}
+					chatErrorReasons={sidebarChatErrorReasons}
+					modelConfigs={organizationModels.models}
+					isLoadingModelConfigs={organizationModels.isLoading}
+					onArchiveSuccess={clearChatErrorReason}
+					navigateAfterArchive={navigateAfterArchive}
+					onRenameTitle={requestRenameTitle}
+					onProposeTitle={requestProposeTitle}
+					chatPendingRename={chatPendingRename}
+					onChatPendingRenameChange={setChatPendingRename}
+					onBeforeNewAgent={handleNewAgent}
+					isSearchDialogOpen={isSearchDialogOpen}
+					onSearchDialogOpenChange={setIsSearchDialogOpen}
+					isCreating={false}
+					isLoading={chatsQuery.isLoading}
+					loadError={chatsQuery.error}
+					onRetryLoad={() => void chatsQuery.refetch()}
+					hasNextPage={chatsQuery.hasNextPage}
+					onLoadMore={() => void chatsQuery.fetchNextPage()}
+					isFetchingNextPage={chatsQuery.isFetchingNextPage}
+					sidebarFilters={sidebarFilters}
+					onSidebarFiltersChange={setSidebarFilters}
+					onCollapse={() => setIsSidebarCollapsed(true)}
+					isPersonalModelOverridesEnabled={
+						personalModelOverridesQuery.data?.enabled
+					}
+					isAdmin={isAgentsAdmin}
+					canManageAgentSettings={canManageAgentSettings}
+				/>
+			</ResizableChatsSidebarFrame>
+			<div
+				data-testid="agents-main-panel"
+				className={cn(
+					"min-h-0 min-w-0 flex-1 flex-col bg-surface-primary",
+					isSettingsIndex ? "hidden sm:flex" : "flex",
+					!agentId &&
+						!isFullPageRoute &&
+						sidebarView.panel === "chats" &&
+						"contents sm:flex sm:flex-1 sm:flex-col",
+				)}
+			>
+				<Outlet context={outletContextValue} />
+			</div>
+		</div>
+	);
+};
+export default AgentsPageLayout;

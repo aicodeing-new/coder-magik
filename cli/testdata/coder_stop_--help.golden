@@ -1,0 +1,17 @@
+coder v0.0.0-devel
+
+USAGE:
+  coder stop [flags] <workspace>
+
+  Stop a workspace
+
+OPTIONS:
+      --template-version string
+          Stop with a named version of the workspace template. Defaults to the
+          workspace's current version.
+
+  -y, --yes bool
+          Bypass confirmation prompts.
+
+———
+Run `coder --help` for a list of global options.

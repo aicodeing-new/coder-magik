@@ -1,0 +1,17 @@
+coder v0.0.0-devel
+
+USAGE:
+  coder rename [flags] <workspace> <new name>
+
+  Rename a workspace
+
+    - Rename a workspace without a confirmation prompt:
+  
+       $ coder rename <workspace> <new name> --yes
+
+OPTIONS:
+  -y, --yes bool
+          Bypass confirmation prompts.
+
+———
+Run `coder --help` for a list of global options.

@@ -1,0 +1,351 @@
+import { useFormik } from "formik";
+import { useState } from "react";
+import TextareaAutosize from "react-textarea-autosize";
+import { toast } from "sonner";
+import type * as TypesGen from "#/api/typesGenerated";
+import { Alert, AlertDescription } from "#/components/Alert/Alert";
+import { ErrorAlert } from "#/components/Alert/ErrorAlert";
+import { Button } from "#/components/Button/Button";
+import { Loader } from "#/components/Loader/Loader";
+import {
+	SettingsHeader,
+	SettingsHeaderDescription,
+	SettingsHeaderTitle,
+} from "#/components/SettingsHeader/SettingsHeader";
+import { Spinner } from "#/components/Spinner/Spinner";
+import { Switch } from "#/components/Switch/Switch";
+import { TextPreviewDialog } from "#/pages/AgentsPage/components/TextPreviewDialog";
+import { OrganizationSettingsSection } from "#/pages/AISettingsPage/components/OrganizationSettingsSection";
+import { SettingsSection } from "#/pages/AISettingsPage/components/SettingsSection";
+import { countInvisibleCharacters } from "#/utils/invisibleUnicode";
+
+const TEXTAREA_MAX_ROWS = 9;
+
+export type InstructionsPageViewProps = {
+	canEditDeploymentConfig: boolean;
+	systemPromptData: TypesGen.ChatSystemPromptResponse | undefined;
+	planModeInstructionsData:
+		| TypesGen.ChatPlanModeInstructionsResponse
+		| undefined;
+	deploymentInstructionsError: unknown;
+	onSaveSystemPrompt: (
+		req: TypesGen.UpdateChatSystemPromptRequest,
+	) => Promise<void> | void;
+	onSavePlanModeInstructions: (
+		req: TypesGen.UpdateChatPlanModeInstructionsRequest,
+	) => Promise<void> | void;
+	onResetSystemPromptSave: () => void;
+	onResetPlanModeInstructionsSave: () => void;
+	isSaving: boolean;
+	isSaveSystemPromptError: boolean;
+	isSavePlanModeInstructionsError: boolean;
+	organization: TypesGen.Organization | undefined;
+	organizations: readonly TypesGen.Organization[];
+	onSelectOrganization: (organization: TypesGen.Organization) => void;
+	requestedOrganizationDenied: boolean;
+	isOrganizationAccessLoading: boolean;
+	organizationAccessError: unknown;
+	organizationInstructions: React.ReactNode;
+};
+
+export const InstructionsPageView: React.FC<InstructionsPageViewProps> = ({
+	canEditDeploymentConfig,
+	deploymentInstructionsError,
+	organization,
+	organizations,
+	onSelectOrganization,
+	requestedOrganizationDenied,
+	isOrganizationAccessLoading,
+	organizationAccessError,
+	organizationInstructions,
+	...formProps
+}) => (
+	<div className="flex max-w-4xl flex-col gap-10">
+		<SettingsHeader>
+			<SettingsHeaderTitle>Instructions</SettingsHeaderTitle>
+			<SettingsHeaderDescription>
+				Control the instructions Coder Agents adds to chats.
+			</SettingsHeaderDescription>
+		</SettingsHeader>
+
+		{canEditDeploymentConfig && (
+			<SettingsSection
+				title="Deployment instructions"
+				description="Added to chats in every organization."
+			>
+				<DeploymentInstructions
+					error={deploymentInstructionsError}
+					{...formProps}
+				/>
+			</SettingsSection>
+		)}
+
+		{isOrganizationAccessLoading && <Loader label="Loading organizations" />}
+		{organizationAccessError != null && (
+			<ErrorAlert error={organizationAccessError} />
+		)}
+		{organization && (
+			<OrganizationSettingsSection
+				title="Organization instructions"
+				description="Added after the deployment instructions when a new chat is created in this organization. Existing chats are not affected."
+				organization={organization}
+				organizations={organizations}
+				onSelectOrganization={onSelectOrganization}
+				requestedOrganizationDenied={requestedOrganizationDenied}
+			>
+				{organizationInstructions}
+			</OrganizationSettingsSection>
+		)}
+	</div>
+);
+
+type DeploymentInstructionsProps = Pick<
+	InstructionsPageViewProps,
+	keyof InstructionsFormProps
+> & {
+	error: unknown;
+};
+
+const DeploymentInstructions: React.FC<DeploymentInstructionsProps> = ({
+	systemPromptData,
+	planModeInstructionsData,
+	error,
+	...formProps
+}) => {
+	// Without this gate, Formik would initialize from empty query fallbacks and
+	// keep those values after query data loads.
+	if (
+		systemPromptData === undefined ||
+		planModeInstructionsData === undefined
+	) {
+		return error != null ? (
+			<ErrorAlert error={error} />
+		) : (
+			<Loader label="Loading deployment instructions" />
+		);
+	}
+
+	return (
+		<>
+			{error != null && <ErrorAlert error={error} />}
+			<InstructionsForm
+				systemPromptData={systemPromptData}
+				planModeInstructionsData={planModeInstructionsData}
+				{...formProps}
+			/>
+		</>
+	);
+};
+
+type InstructionsFormProps = {
+	systemPromptData: TypesGen.ChatSystemPromptResponse;
+	planModeInstructionsData: TypesGen.ChatPlanModeInstructionsResponse;
+	onSaveSystemPrompt: (
+		req: TypesGen.UpdateChatSystemPromptRequest,
+	) => Promise<void> | void;
+	onSavePlanModeInstructions: (
+		req: TypesGen.UpdateChatPlanModeInstructionsRequest,
+	) => Promise<void> | void;
+	onResetSystemPromptSave: () => void;
+	onResetPlanModeInstructionsSave: () => void;
+	isSaving: boolean;
+	isSaveSystemPromptError: boolean;
+	isSavePlanModeInstructionsError: boolean;
+};
+
+const InstructionsForm: React.FC<InstructionsFormProps> = ({
+	systemPromptData,
+	planModeInstructionsData,
+	onSaveSystemPrompt,
+	onSavePlanModeInstructions,
+	onResetSystemPromptSave,
+	onResetPlanModeInstructionsSave,
+	isSaving,
+	isSaveSystemPromptError,
+	isSavePlanModeInstructionsError,
+}) => {
+	const [showDefaultPromptPreview, setShowDefaultPromptPreview] =
+		useState(false);
+	const defaultSystemPrompt = systemPromptData.default_system_prompt ?? "";
+	const initialValues = {
+		system_prompt: systemPromptData.system_prompt ?? "",
+		include_default_system_prompt:
+			systemPromptData.include_default_system_prompt ?? false,
+		plan_mode_instructions:
+			planModeInstructionsData.plan_mode_instructions ?? "",
+	};
+
+	const form = useFormik({
+		initialValues,
+		onSubmit: async (values, { resetForm, setValues }) => {
+			onResetSystemPromptSave();
+			onResetPlanModeInstructionsSave();
+
+			try {
+				if (
+					values.system_prompt !== initialValues.system_prompt ||
+					values.include_default_system_prompt !==
+						initialValues.include_default_system_prompt
+				) {
+					await onSaveSystemPrompt({
+						system_prompt: values.system_prompt,
+						include_default_system_prompt: values.include_default_system_prompt,
+					});
+				}
+
+				if (
+					values.plan_mode_instructions !== initialValues.plan_mode_instructions
+				) {
+					await onSavePlanModeInstructions({
+						plan_mode_instructions: values.plan_mode_instructions,
+					});
+				}
+			} catch (error) {
+				await setValues(values, false);
+				throw error;
+			}
+
+			toast.success("Instructions saved successfully.");
+			resetForm({ values });
+		},
+	});
+
+	const systemInvisibleCharCount = countInvisibleCharacters(
+		form.values.system_prompt,
+	);
+	const planModeInvisibleCharCount = countInvisibleCharacters(
+		form.values.plan_mode_instructions,
+	);
+	const isDisabled = isSaving || form.isSubmitting;
+
+	return (
+		<>
+			<form
+				className="flex flex-col rounded-lg border border-solid border-border p-6"
+				onSubmit={form.handleSubmit}
+			>
+				<div className="flex items-center gap-2 font-sans text-sm font-normal leading-6 text-content-primary">
+					<Switch
+						checked={form.values.include_default_system_prompt}
+						onCheckedChange={(checked) =>
+							form.setFieldValue("include_default_system_prompt", checked)
+						}
+						aria-label="Include Coder Agents default system prompt"
+						disabled={isDisabled}
+					/>
+					<div className="flex min-w-0 items-center gap-1.5">
+						<span>Include Coder Agents default system prompt.</span>
+						<Button
+							size="xs"
+							variant="subtle"
+							type="button"
+							onClick={() => setShowDefaultPromptPreview(true)}
+							className="min-w-0 px-0 font-sans text-sm font-normal leading-6 text-content-link hover:text-content-link"
+						>
+							View prompt
+						</Button>
+					</div>
+				</div>
+
+				<label
+					className="mt-4 mb-2 font-sans text-sm font-bold leading-6 text-content-primary"
+					htmlFor="system_prompt"
+				>
+					Additional system instructions
+				</label>
+				<TextareaAutosize
+					className="w-full resize-none overflow-y-auto rounded-lg border border-solid border-border bg-surface-primary px-4 py-3 font-sans text-sm font-normal leading-6 text-content-primary placeholder:text-content-secondary focus:outline-hidden focus:ring-2 focus:ring-content-link/30 scrollbar-thin"
+					id="system_prompt"
+					placeholder="Instructions appended to every agent session"
+					name="system_prompt"
+					value={form.values.system_prompt}
+					onChange={form.handleChange}
+					disabled={isDisabled}
+					minRows={1}
+					maxRows={TEXTAREA_MAX_ROWS}
+				/>
+				{systemInvisibleCharCount > 0 && (
+					<Alert severity="warning" className="mt-2">
+						<AlertDescription>
+							This text contains {systemInvisibleCharCount} invisible Unicode{" "}
+							{systemInvisibleCharCount !== 1 ? "characters" : "character"} that
+							could hide content. These will be stripped on save.
+						</AlertDescription>
+					</Alert>
+				)}
+
+				<label
+					className="mt-8 mb-2 font-sans text-sm font-bold leading-6 text-content-primary"
+					htmlFor="plan_mode_instructions"
+				>
+					Additional plan mode instructions
+				</label>
+				<TextareaAutosize
+					className="w-full resize-none overflow-y-auto rounded-lg border border-solid border-border bg-surface-primary px-4 py-3 font-sans text-sm font-normal leading-6 text-content-primary placeholder:text-content-secondary focus:outline-hidden focus:ring-2 focus:ring-content-link/30 scrollbar-thin"
+					id="plan_mode_instructions"
+					placeholder="Instructions applied when the agent enters plan mode"
+					name="plan_mode_instructions"
+					value={form.values.plan_mode_instructions}
+					onChange={form.handleChange}
+					disabled={isDisabled}
+					minRows={4}
+					maxRows={TEXTAREA_MAX_ROWS}
+				/>
+				{planModeInvisibleCharCount > 0 && (
+					<Alert severity="warning" className="mt-2">
+						<AlertDescription>
+							This text contains {planModeInvisibleCharCount} invisible Unicode{" "}
+							{planModeInvisibleCharCount !== 1 ? "characters" : "character"}{" "}
+							that could hide content. These will be stripped on save.
+						</AlertDescription>
+					</Alert>
+				)}
+
+				{isSaveSystemPromptError && (
+					<p className="m-0 mt-4 text-xs text-content-destructive">
+						Failed to save system prompt.
+					</p>
+				)}
+				{isSavePlanModeInstructionsError && (
+					<p className="m-0 mt-4 text-xs text-content-destructive">
+						Failed to save plan mode instructions.
+					</p>
+				)}
+
+				<div className="mt-8 flex justify-end gap-4">
+					<Button
+						variant="outline"
+						type="button"
+						onClick={() => {
+							// Save failures leave mutation errors outside Formik state, so
+							// both stores must reset before the clean form disables actions.
+							onResetSystemPromptSave();
+							onResetPlanModeInstructionsSave();
+							form.resetForm({ values: initialValues });
+						}}
+						disabled={
+							isDisabled ||
+							(!form.dirty &&
+								!isSaveSystemPromptError &&
+								!isSavePlanModeInstructionsError)
+						}
+					>
+						Cancel
+					</Button>
+					<Button type="submit" disabled={isDisabled || !form.dirty}>
+						{isSaving && <Spinner loading className="size-4" />}
+						Save
+					</Button>
+				</div>
+			</form>
+
+			{showDefaultPromptPreview && (
+				<TextPreviewDialog
+					content={defaultSystemPrompt}
+					fileName="Default System Prompt"
+					onClose={() => setShowDefaultPromptPreview(false)}
+				/>
+			)}
+		</>
+	);
+};
