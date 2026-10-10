@@ -160,7 +160,7 @@
 		"jest-canvas-mock": "2.5.2",
 		"jest-websocket-mock": "2.5.0",
 		"jsdom": "27.2.0",
-		"knip": "5.71.0",
+		"knip": "5.88.1",
 		"msw": "2.4.8",
 		"oxlint": "1.80.0",
 		"protobufjs": "7.6.5",
