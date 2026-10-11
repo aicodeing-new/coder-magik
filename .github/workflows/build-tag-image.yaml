@@ -29,6 +29,9 @@ on:
 
 env:
   CODER_IMAGE_BASE: ghcr.io/aicodeing-new/coder-magik
+  # This fork follows the upstream 2.38 development series. Keep the server
+  # protocol version independent of the fork's image release tags.
+  CODER_SERVER_VERSION: "2.38.0-devel"
   # Skip building .deb/.rpm/.apk/.tar.gz before the Docker image. We only
   # want the final image, not those intermediate artifacts.
   DOCKER_IMAGE_NO_PREREQUISITES: "true"
@@ -52,37 +55,59 @@ jobs:
 
       - name: Resolve version and ref
         id: version
+        env:
+          BUILD_REF: ${{ inputs.tag }}
         run: |
           set -euo pipefail
 
+          release=false
           if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
             ref="${GITHUB_REF_NAME}"
-            version="${GITHUB_REF_NAME#v}"
+            release=true
           else
-            # Manual dispatch: treat input as a ref, fall back to a dev version.
-            ref="${{ inputs.tag }}"
+            ref="$BUILD_REF"
+            git fetch origin "$ref" --depth=1
+            git checkout --detach FETCH_HEAD
+            if [[ "$ref" == v* ]] && git show-ref --verify --quiet "refs/tags/$ref"; then
+              release=true
+            fi
+          fi
+
+          if [[ "$release" == true ]]; then
+            version="${ref#v}"
+          else
             version="0.0.0-dev.$(git rev-parse --short HEAD)"
           fi
 
+          # Desktop and CLI clients validate the server's upstream version.
+          # Retain the fork release and revision as SemVer build metadata.
+          release_metadata="$(printf '%s' "$version" | tr -c 'a-zA-Z0-9.-' '.')"
+          server_version="${CODER_SERVER_VERSION}+magik.${release_metadata}.$(git rev-parse --short HEAD)"
+
           echo "ref=$ref"
           echo "version=$version"
-
-          # Re-checkout the exact ref on manual dispatch (tag pushes are
-          # already on the right ref).
-          if [[ "${GITHUB_REF_TYPE}" != "tag" ]]; then
-            git fetch origin "$ref" --depth=1
-            git checkout "$ref"
-          fi
+          echo "server_version=$server_version"
 
           # Strip invalid chars for Docker tags (only [a-zA-Z0-9._-] allowed).
-          docker_tag="$(echo "$version" | tr -c 'a-zA-Z0-9._-' '-')"
+          docker_tag="$(printf '%s' "$version" | tr -c 'a-zA-Z0-9._-' '-')"
           echo "docker_tag=$docker_tag"
 
           {
             echo "ref=$ref"
             echo "version=$version"
+            echo "server_version=$server_version"
             echo "docker_tag=$docker_tag"
+            echo "release=$release"
           } >> "$GITHUB_OUTPUT"
+
+      - name: Configure Go cache paths
+        run: | # zizmor: ignore[github-env] Go cache paths use only the runner-provided temp directory.
+          set -euo pipefail
+          {
+            printf 'GOPATH=%s/go\n' "$RUNNER_TEMP"
+            printf 'GOMODCACHE=%s/go/pkg/mod\n' "$RUNNER_TEMP"
+            printf 'GOCACHE=%s/go-build\n' "$RUNNER_TEMP"
+          } >> "$GITHUB_ENV"
 
       - name: Set up mise tools
         uses: ./.github/actions/setup-mise
@@ -118,7 +143,7 @@ jobs:
 
       - name: Build fat binary (linux amd64)
         env:
-          CODER_FORCE_VERSION: ${{ steps.version.outputs.version }}
+          CODER_FORCE_VERSION: ${{ steps.version.outputs.server_version }}
           VERBOSE: "1"
         run: |
           set -euxo pipefail
@@ -138,18 +163,19 @@ jobs:
 
       - name: Build and push Docker image
         env:
-          CODER_FORCE_VERSION: ${{ steps.version.outputs.version }}
+          CODER_FORCE_VERSION: ${{ steps.version.outputs.server_version }}
+          IMAGE_VERSION: ${{ steps.version.outputs.version }}
           CODER_IMAGE_BASE: ${{ env.CODER_IMAGE_BASE }}
+          PUBLISH_LATEST: ${{ steps.version.outputs.release }}
         run: |
           set -euo pipefail
 
           version="${CODER_FORCE_VERSION}"
-          docker_tag="${{ steps.version.outputs.docker_tag }}"
 
           # Build the image using upstream script. It expects the binary at
           # build/coder_${version}_linux_amd64 and tags the image under
           # ${CODER_IMAGE_BASE}.
-          image_tag="$(./scripts/image_tag.sh --arch amd64 --version "$version")"
+          image_tag="$(./scripts/image_tag.sh --arch amd64 --version "$IMAGE_VERSION")"
           echo "image_tag=$image_tag"
 
           ./scripts/build_docker.sh \
@@ -162,7 +188,7 @@ jobs:
           docker push "$image_tag"
 
           # Also retag and push as ${CODER_IMAGE_BASE}:latest for tag builds.
-          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+          if [[ "$PUBLISH_LATEST" == "true" ]]; then
             latest="${CODER_IMAGE_BASE}:latest"
             docker tag "$image_tag" "$latest"
             docker push "$latest"
@@ -170,21 +196,26 @@ jobs:
           fi
 
       - name: Summarize
-        if: always()
+        env:
+          BUILD_REF: ${{ steps.version.outputs.ref }}
+          BUILD_VERSION: ${{ steps.version.outputs.version }}
+          SERVER_VERSION: ${{ steps.version.outputs.server_version }}
+          PUBLISH_LATEST: ${{ steps.version.outputs.release }}
         run: |
           set -euo pipefail
-          image="${{ env.CODER_IMAGE_BASE }}"
-          tag="${{ steps.version.outputs.docker_tag }}"
+          image="$CODER_IMAGE_BASE"
+          image_tag="$(./scripts/image_tag.sh --arch amd64 --version "$BUILD_VERSION")"
           {
             echo "## Build complete"
             echo
-            echo "**Ref:** ${{ github.ref }}"
-            echo "**Version:** ${{ steps.version.outputs.version }}"
+            echo "**Ref:** $BUILD_REF"
+            echo "**Version:** $BUILD_VERSION"
+            echo "**Server version:** $SERVER_VERSION"
             echo
             echo "### Pull commands"
             echo '```'
-            echo "docker pull ${image}:v${tag}"
-            if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            echo "docker pull ${image_tag}"
+            if [[ "$PUBLISH_LATEST" == "true" ]]; then
               echo "docker pull ${image}:latest"
             fi
             echo '```'
