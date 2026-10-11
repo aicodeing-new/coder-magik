@@ -29,6 +29,9 @@ on:
 
 env:
   CODER_IMAGE_BASE: ghcr.io/aicodeing-new/coder-magik
+  # This fork follows the upstream 2.38 development series. Keep the server
+  # protocol version independent of the fork's image release tags.
+  CODER_SERVER_VERSION: "2.38.0-devel"
   # Skip building .deb/.rpm/.apk/.tar.gz before the Docker image. We only
   # want the final image, not those intermediate artifacts.
   DOCKER_IMAGE_NO_PREREQUISITES: "true"
@@ -76,8 +79,14 @@ jobs:
             version="0.0.0-dev.$(git rev-parse --short HEAD)"
           fi
 
+          # Desktop and CLI clients validate the server's upstream version.
+          # Retain the fork release and revision as SemVer build metadata.
+          release_metadata="$(printf '%s' "$version" | tr -c 'a-zA-Z0-9.-' '.')"
+          server_version="${CODER_SERVER_VERSION}+magik.${release_metadata}.$(git rev-parse --short HEAD)"
+
           echo "ref=$ref"
           echo "version=$version"
+          echo "server_version=$server_version"
 
           # Strip invalid chars for Docker tags (only [a-zA-Z0-9._-] allowed).
           docker_tag="$(printf '%s' "$version" | tr -c 'a-zA-Z0-9._-' '-')"
@@ -86,6 +95,7 @@ jobs:
           {
             echo "ref=$ref"
             echo "version=$version"
+            echo "server_version=$server_version"
             echo "docker_tag=$docker_tag"
             echo "release=$release"
           } >> "$GITHUB_OUTPUT"
@@ -133,7 +143,7 @@ jobs:
 
       - name: Build fat binary (linux amd64)
         env:
-          CODER_FORCE_VERSION: ${{ steps.version.outputs.version }}
+          CODER_FORCE_VERSION: ${{ steps.version.outputs.server_version }}
           VERBOSE: "1"
         run: |
           set -euxo pipefail
@@ -153,7 +163,8 @@ jobs:
 
       - name: Build and push Docker image
         env:
-          CODER_FORCE_VERSION: ${{ steps.version.outputs.version }}
+          CODER_FORCE_VERSION: ${{ steps.version.outputs.server_version }}
+          IMAGE_VERSION: ${{ steps.version.outputs.version }}
           CODER_IMAGE_BASE: ${{ env.CODER_IMAGE_BASE }}
           PUBLISH_LATEST: ${{ steps.version.outputs.release }}
         run: |
@@ -164,7 +175,7 @@ jobs:
           # Build the image using upstream script. It expects the binary at
           # build/coder_${version}_linux_amd64 and tags the image under
           # ${CODER_IMAGE_BASE}.
-          image_tag="$(./scripts/image_tag.sh --arch amd64 --version "$version")"
+          image_tag="$(./scripts/image_tag.sh --arch amd64 --version "$IMAGE_VERSION")"
           echo "image_tag=$image_tag"
 
           ./scripts/build_docker.sh \
@@ -188,6 +199,7 @@ jobs:
         env:
           BUILD_REF: ${{ steps.version.outputs.ref }}
           BUILD_VERSION: ${{ steps.version.outputs.version }}
+          SERVER_VERSION: ${{ steps.version.outputs.server_version }}
           PUBLISH_LATEST: ${{ steps.version.outputs.release }}
         run: |
           set -euo pipefail
@@ -198,6 +210,7 @@ jobs:
             echo
             echo "**Ref:** $BUILD_REF"
             echo "**Version:** $BUILD_VERSION"
+            echo "**Server version:** $SERVER_VERSION"
             echo
             echo "### Pull commands"
             echo '```'
