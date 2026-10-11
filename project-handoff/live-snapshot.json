@@ -1,0 +1,210 @@
+{
+  "date": "2026-10-11",
+  "timezone": "Asia/Shanghai",
+  "source": "authenticated API and kubectl read-only selected fields",
+  "secret_values_included": false,
+  "errors": [],
+  "deployments": [
+    {
+      "name": "coder",
+      "ready_replicas": 1,
+      "containers": [
+        {
+          "name": "coder",
+          "image": "swr.cn-north-4.myhuaweicloud.com/pixiu-public/admins/coder-magik:v1.0.3-amd64",
+          "selected_nonsecret_env": [
+            {
+              "name": "CODER_ENTERPRISE_HARDCODE_LICENSE",
+              "value": "true"
+            },
+            {
+              "name": "CODER_TELEMETRY_ENABLE",
+              "value": "false"
+            },
+            {
+              "name": "CODER_UPDATE_CHECK",
+              "value": "false"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "coder-feishu-sso",
+      "ready_replicas": 1,
+      "containers": [
+        {
+          "name": "dex",
+          "image": "harbor.magikcloud.cn/library/dex@sha256:fd4ab5d117005b927433133f1d7db7cc30fbb537c377912b75b349edff47df01",
+          "selected_nonsecret_env": []
+        },
+        {
+          "name": "feishu-adapter",
+          "image": "harbor.magikcloud.cn/library/python@sha256:2b4f19dae3a777dfc3b76730bda1e82e1f66ab2a2686fa93ca78edbfb4f04ffe",
+          "selected_nonsecret_env": []
+        }
+      ]
+    }
+  ],
+  "buildinfo": {
+    "version": "v2.38.0-devel+magik.1.0.3.47e1868",
+    "external_url": "https://github.com/coder/coder/commit/47e18689dfe0ebac46eafe037f17a81aefd011a3",
+    "telemetry": false,
+    "dashboard_url": "https://coder.magikcloud.cn",
+    "deployment_id": "09e25b2f-f288-4e3d-a958-31beb31a1b81",
+    "agent_api_version": "1.0",
+    "provisioner_api_version": "1.20"
+  },
+  "template": {
+    "id": "dbf99fc1-e511-4958-9762-b4b7f8346919",
+    "name": "kubernetes",
+    "active_version_id": "caa06bab-4918-42a6-8706-6d49a1c6190d",
+    "organization_id": "3734883b-7a6e-4edd-84e2-604c9ca2555e"
+  },
+  "entitlements": {
+    "has_license": true,
+    "require_telemetry": false,
+    "warnings": [],
+    "errors": [],
+    "features": {
+      "access_control": {
+        "entitlement": "entitled",
+        "enabled": true
+      },
+      "advanced_template_scheduling": {
+        "entitlement": "entitled",
+        "enabled": true
+      },
+      "agent_runtime_hours": {
+        "entitlement": "entitled",
+        "enabled": false
+      },
+      "ai_governance_user_limit": {
+        "entitlement": "entitled",
+        "enabled": false
+      },
+      "aibridge": {
+        "entitlement": "entitled",
+        "enabled": true
+      },
+      "appearance": {
+        "entitlement": "entitled",
+        "enabled": false
+      },
+      "audit_log": {
+        "entitlement": "entitled",
+        "enabled": true
+      },
+      "boundary": {
+        "entitlement": "entitled",
+        "enabled": false
+      },
+      "browser_only": {
+        "entitlement": "entitled",
+        "enabled": false
+      },
+      "connection_log": {
+        "entitlement": "entitled",
+        "enabled": true
+      },
+      "control_shared_ports": {
+        "entitlement": "entitled",
+        "enabled": true
+      },
+      "custom_roles": {
+        "entitlement": "entitled",
+        "enabled": false
+      },
+      "external_provisioner_daemons": {
+        "entitlement": "entitled",
+        "enabled": true
+      },
+      "external_token_encryption": {
+        "entitlement": "entitled",
+        "enabled": false
+      },
+      "high_availability": {
+        "entitlement": "entitled",
+        "enabled": false
+      },
+      "managed_agent_limit": {
+        "entitlement": "entitled",
+        "enabled": false
+      },
+      "multiple_external_auth": {
+        "entitlement": "entitled",
+        "enabled": false
+      },
+      "multiple_organizations": {
+        "entitlement": "entitled",
+        "enabled": false
+      },
+      "scim": {
+        "entitlement": "entitled",
+        "enabled": false
+      },
+      "service_accounts": {
+        "entitlement": "entitled",
+        "enabled": false
+      },
+      "template_rbac": {
+        "entitlement": "entitled",
+        "enabled": true
+      },
+      "user_limit": {
+        "entitlement": "entitled",
+        "enabled": false
+      },
+      "user_role_management": {
+        "entitlement": "entitled",
+        "enabled": true
+      },
+      "workspace_batch_actions": {
+        "entitlement": "entitled",
+        "enabled": false
+      },
+      "workspace_external_agent": {
+        "entitlement": "entitled",
+        "enabled": false
+      },
+      "workspace_prebuilds": {
+        "entitlement": "entitled",
+        "enabled": false
+      },
+      "workspace_proxy": {
+        "entitlement": "entitled",
+        "enabled": true
+      }
+    }
+  },
+  "workspace": {
+    "id": "315cec12-fd72-468f-babb-ae06b774f3dd",
+    "name": "yunqiao-amaranth-pelican-21",
+    "owner_name": "yzhang",
+    "outdated": false,
+    "latest_build": {
+      "status": "running",
+      "template_version_id": "caa06bab-4918-42a6-8706-6d49a1c6190d",
+      "transition": "start"
+    }
+  },
+  "workspace_pods": [
+    {
+      "name": "coder-315cec12-fd72-468f-babb-ae06b774f3dd-79dc9c78d-btgtg",
+      "node": "hgx-096",
+      "ip": "10.0.1.48",
+      "phase": "Running"
+    }
+  ],
+  "workspace_pvcs": [
+    {
+      "name": "coder-315cec12-fd72-468f-babb-ae06b774f3dd-home",
+      "capacity": {
+        "storage": "50Gi"
+      },
+      "storage_class": "ceph-fs",
+      "phase": "Bound",
+      "volume": "pvc-d625e037-7ca1-468a-90ae-d4b07968e0a8"
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+P2P诊断与机房中继方案
+
+已经实测的证据
+- CODER_BLOCK_DIRECT=false，没有强制禁止P2P。
+- 原内置DERP region999，Coder Embedded Relay；公网入口coder.magikcloud.cn。
+- STUN为Google五地址19302；诊断另测Cloudflare3478/miwifi3478。
+- Windows实际CLI可STUN，UDP=true、IPv4=true、IPv6=false，公网映射180.87.170.74:27697。
+- Windows局域网192.168.6.73、gateway192.168.6.1；Tailscale100.64.0.6，MTU1280。
+- WindowsFirewall三profile disabled；没有改防火墙。低MTU提示不是已证实的主要原因，不乱调Tailscale MTU。
+- VSCode历史network samples p2p=false，preferredDERP为Coder Embedded Relay，RTT约100至147ms。
+- 用户重启空间后Windows直接coder ping实测106/108/116ms，都经ali-prod DERP，agent明确STUN UDP不通。
+- hgx-121 10.0.2.25 default10.0.2.254，ICMP TTL观测10.0.53.37/10.0.53.1后无响应。
+- 当前hgx-096 10.0.1.48 default10.0.1.254，同样Google/Cloudflare/miwifi直接STUN均超时。
+- hgx-121 UDP53访问223.5.5.5/114.114.114.114成功；不能笼统称所有UDP被禁。
+- 已查看hgx-121主机iptables INPUT/OUTPUT及raw/mangle ACCEPT，无明确匹配公共STUN的本机拦截。
+- 上游准确丢包设备、ACL及NAT类型未定位；TTL没有ICMP响应不能证明那一跳是阻断点。
+- cpu22 10.0.4.22 default10.0.4.254，本机直接STUN同样超时。
+- cpu22 Xray10809 mixed HTTP/SOCKS5，UDP=true，VMess proxy/direct/block；另V2Ray10808 SOCKS代理。
+- 从GPU通过cpu22:10809 SOCKS5 UDP Associate请求Google19302、Cloudflare3478收到合法STUN响应。
+- HTTP_PROXY只影响支持该代理的HTTP/TCP路径，不会让Coder P2P UDP自动通过SOCKS5。
+- 用户最终确认GPU全不能上网，只有三CPU能上网。不能因此推断CPU都有公网IP/入站开放/直接UDP允许。
+
+结论
+当前是GPU直接公网UDP路径受限，公网P2P不具备条件，保持中继是合理结果。
+简单替换Google STUN、加ALL_PROXY或把CPU设默认网关，都不能保证恢复原生P2P。
+没有为此关闭防火墙、修改路由、重启代理、抢占GPU或打透明UDP代理补丁。
+诊断临时coder-p2p-diagnostic和coder-p2p-trace Pod已经清理，未使用GPU。
+证据：/root/coder-deploy/ali-prod/p2p-diagnostic-20261011.json和私有Windows netcheck JSON。
+
+用户当前接受讨论的推荐部署方向
+控制面继续ali-prod，每个GPU机房部署专用DERP，GPU只走内网连接中继。
+研发客户端走该机房公网入口，通过CPU中继到GPU；仍是relay，不宣称p2p=true。
+用户补充cpu22前已有Envoy Gateway可终止TLS，最终方案复用yunqiao现有magik-gw HTTPS443。
+DERP普通Pod固定cpu22，无hostNetwork/hostPID、无GPU、无宿主机数据、无额外RBAC，HTTP8080。
+独立1Gi ceph-fs PVC保存中继身份；Service80->8080。
+HTTPRoute到envoy-gateway-system/magik-gw sectionhttps，域名yunqiao-derp.magikcloud.cn。
+BackendTrafficPolicy允许websocket和derp，request/connectionIdle timeout0s，HTTPRoute request/backendRequest0s。
+证书在Gateway终止，现有wildcard可复用；不挂PodTLSSecret，不占主机8443。
+该Gateway后端全局策略只匹配model.magikcompute.ai/gateway=true标签，新route不加该标签，避免继承推理请求buffer/retry。
+GPU侧模板host_aliases把该域名解析到内部Gateway Service10.251.106.156，并同时加NO_PROXY/no_proxy。
+公网DNS指向机房Gateway公网入口，不指向ali-prod；实际公网IP/映射仍未提供或验证。
+若走ali-prod反向隧道、境外Xray出口或第三方代理，不能声称绕行已解决。
+
+部署包的位置和状态
+/root/coder-deploy/ali-prod/derp-yunqiao/
+/mnt/d/Downloads/coder-yunqiao-derp-envoy.zip
+文件：Dockerfile、go.mod/go.sum、01-relay.yaml、02-coder-derp-map.yaml、03-coder-deployment-patch.yaml、04-workspace-template-snippet.tf、README.txt。
+构建DERP使用Coder当前tailscale fork e42b84be7a30，Go1.26.5，runtime distroless nonroot。
+预期镜像harbor.magikcloud.cn/library/derper:coder-e42b84b-amd64；这不是已存在/已推送的镜像。
+Region901 Yunqiao Relay，HostName上述域名，DERPPort443，STUNPort=-1，IPv6=none。
+没有开启verify-clients经本地tailscaled验证，它不兼容普通Coder agent身份；独立DERP不自动使用Coder/飞书账号鉴权。
+如果公网入口需限制，仅在公司已有入口/VPN策略按实际来源配置，不自行开放任意敏感范围。
+
+已完成验证
+- 本地编译实际binary。
+- /derp/probe HTTP200；原生Upgrade:derp以及websocket subprotocol derp均HTTP101。
+- yunqiao manifests client/schema dry-run通过；ali-prod ConfigMap与strategic patch server dry-run通过。
+- 当前Gateway HTTPS listener配置和证书覆盖核对。
+未完成
+- 容器Docker build/push、Harbor拉取验证、生产创建资源、Gateway真实转发/公网访问/断线重连/带宽测试。
+- 没有加入生产Coder custom DERP map，没有修改当前模板hostaliases/NO_PROXY。
+- YAML dry-run不会证明Envoy控制器接受策略或转发真实DERP流量。
+
+实施次序
+先准备镜像和域名/公网入口，部署yunqiao中继，验证route/status及公网和GPU内部/derp/probe和HTTP101。
+再发布模板DNS/NO_PROXY修改，更新测试空间，最后给ali-prod挂DERP map并验证Windows实际coder ping。
+03补丁保留现有内置relay作为迁移条件，relay自动选择，不保证所有流量绕过ali-prod。
+如需保证不经ali-prod，先为所有相关GPU集群验证可用custom relay，再关闭CODER_DERP_SERVER_ENABLE；不能提前全局关闭。
+两个同region中继做HA需要正确mesh；不能随意复制Deployment到多副本就认为高可用。尚未设计或实现HA。
+网页终端/控制面代理Web应用仍可能经ali-prod，这不等同于Workspace Proxy地理分布功能。
+未执行机房公网映射。当前唯一已准备的中继为yunqiao，beast01专用中继未准备。
+
+官方资料
+https://coder.com/docs/admin/networking
+https://coder.com/docs/admin/networking/stun
+https://coder.com/docs/admin/networking/troubleshooting
+https://tailscale.com/docs/reference/derp-servers/custom-derp-servers

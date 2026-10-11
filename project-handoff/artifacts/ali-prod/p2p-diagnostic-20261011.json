@@ -1,0 +1,67 @@
+{
+  "cluster": "yunqiao",
+  "node": "hgx-096",
+  "node_ip": "10.0.1.48",
+  "workspace_status": "running",
+  "block_direct": false,
+  "windows": {
+    "stun_google": "reachable",
+    "stun_cloudflare": "reachable",
+    "stun_miwifi": "reachable",
+    "udp": true
+  },
+  "gpu_node": {
+    "default_gateway": "10.0.1.254",
+    "stun_google": "timeout",
+    "stun_cloudflare": "timeout",
+    "stun_miwifi": "timeout"
+  },
+  "observed_gateway_hops": [
+    "10.0.2.254",
+    "10.0.53.37",
+    "10.0.53.1"
+  ],
+  "conclusion": "Direct public STUN UDP unavailable on GPU nodes and cpu-22. SOCKS5 UDP via cpu-22:10809 succeeds, but Coder P2P UDP does not use the configured HTTP_PROXY. Actual upstream gateway ACL/NAT and unrestricted direct UDP availability remain unverified.",
+  "p2p_restored": false,
+  "previous_test": {
+    "node": "hgx-121",
+    "node_ip": "10.0.2.25",
+    "workspace_status": "stopped",
+    "gpu_node": {
+      "stun_google": "timeout",
+      "stun_cloudflare": "timeout",
+      "stun_miwifi": "timeout",
+      "public_dns_udp53": "reachable",
+      "host_input_policy": "ACCEPT",
+      "host_output_policy": "ACCEPT"
+    },
+    "observed_gateway_hops": [
+      "10.0.2.254",
+      "10.0.53.37",
+      "10.0.53.1"
+    ]
+  },
+  "workspace": "yzhang/yunqiao-amaranth-pelican-21",
+  "windows_ping": {
+    "p2p": false,
+    "relay": "Coder Embedded Relay",
+    "rtt_ms": [
+      106,
+      108,
+      116
+    ]
+  },
+  "proxy_node": {
+    "node": "yunqiao-cpu-22",
+    "ip": "10.0.4.22",
+    "default_gateway": "10.0.4.254",
+    "inbound": "Xray mixed HTTP/SOCKS5, UDP enabled",
+    "port": 10809,
+    "direct_stun": "timeout",
+    "socks5_udp_from_workspace": {
+      "google": "valid binding response",
+      "cloudflare": "valid binding response"
+    },
+    "gpu_network_nat_rules_observed": false
+  }
+}

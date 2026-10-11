@@ -1,0 +1,407 @@
+[
+  {
+    "source_path": "/root/coder/.github/workflows/build-tag-image.yaml",
+    "included": true,
+    "size_bytes": 7895,
+    "sha256": "04592d5beb88fe5e40c9fd5cf6e596b0bf39005de5611b0267bfb1247b58f351",
+    "included_path": "artifacts/repository/.github/workflows/build-tag-image.yaml"
+  },
+  {
+    "source_path": "/root/coder/scripts/Dockerfile",
+    "included": true,
+    "size_bytes": 1264,
+    "sha256": "175b31f3005faadfa57a71e65b047d1f14fb913b3d3337a569466555fdb17fd3",
+    "included_path": "artifacts/repository/scripts/Dockerfile"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/beast01-proxy.yaml",
+    "included": true,
+    "size_bytes": 491,
+    "sha256": "e6f67766cbd68f0f37ab88f13823ad59a4933991fa6853a8214f10c41b65b918",
+    "included_path": "artifacts/ali-prod/beast01-proxy.yaml"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/beast01-rbac.yaml",
+    "included": true,
+    "size_bytes": 1235,
+    "sha256": "0d8d0f282d6190506aa25b451900df5cbd57ddda6ef082970ebeb6de98fff103",
+    "included_path": "artifacts/ali-prod/beast01-rbac.yaml"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/bootstrap.py",
+    "included": true,
+    "size_bytes": 3208,
+    "sha256": "e5e423f99b5f69fe4557a27f922ddefe7be3777936cea828eb5e46153c3d34cd",
+    "included_path": "artifacts/ali-prod/bootstrap.py"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/coder-backend-policy.yaml",
+    "included": true,
+    "size_bytes": 275,
+    "sha256": "1069da1eb6051f8c2f6b4f9aff6ab92c728da8b8d17186d77e4f4ca5749317b8",
+    "included_path": "artifacts/ali-prod/coder-backend-policy.yaml"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/derp-yunqiao/01-relay.yaml",
+    "included": true,
+    "size_bytes": 3410,
+    "sha256": "b2ec1539d3d47ef74e9f5ea16fb3f0e0b3ead459f78ae93a71df4f7c608ee010",
+    "included_path": "artifacts/ali-prod/derp-yunqiao/01-relay.yaml"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/derp-yunqiao/02-coder-derp-map.yaml",
+    "included": true,
+    "size_bytes": 635,
+    "sha256": "8e4d11f240f60332a943580166523ebc3e1cdd7e88961a0e3e4c637648dddb96",
+    "included_path": "artifacts/ali-prod/derp-yunqiao/02-coder-derp-map.yaml"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/derp-yunqiao/03-coder-deployment-patch.yaml",
+    "included": true,
+    "size_bytes": 569,
+    "sha256": "1a2cc314640a85f6e0acd727450d8c65fbc0d7aba6abffaa7c36217ed087a5f7",
+    "included_path": "artifacts/ali-prod/derp-yunqiao/03-coder-deployment-patch.yaml"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/derp-yunqiao/04-workspace-template-snippet.tf",
+    "included": true,
+    "size_bytes": 575,
+    "sha256": "a1ae96c278638918216ef40a11ff1596bd899fc7151f4be8be49e35096633b36",
+    "included_path": "artifacts/ali-prod/derp-yunqiao/04-workspace-template-snippet.tf"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/derp-yunqiao/Dockerfile",
+    "included": true,
+    "size_bytes": 380,
+    "sha256": "24a37296411b60517e09f7e3fdc9227ef75698ac43c110a18887548f3271a44c",
+    "included_path": "artifacts/ali-prod/derp-yunqiao/Dockerfile"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/derp-yunqiao/README.txt",
+    "included": true,
+    "size_bytes": 6758,
+    "sha256": "813a0eb89cd2813723064f6e630fd10af4002f8b50525b875466d19d89c8e89e",
+    "included_path": "artifacts/ali-prod/derp-yunqiao/README.txt"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/derp-yunqiao/go.mod",
+    "included": true,
+    "size_bytes": 166,
+    "sha256": "1e55bffad28f61e122c91d2b5b701b85334e54f0c658061f4c6cf89a86282e17",
+    "included_path": "artifacts/ali-prod/derp-yunqiao/go.mod"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/derp-yunqiao/go.sum",
+    "included": true,
+    "size_bytes": 6379,
+    "sha256": "39fe8b2f3a0a78653e0c4cc42d72656fc832c782819da7b352a776feb63ff0f8",
+    "included_path": "artifacts/ali-prod/derp-yunqiao/go.sum"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/feishu-sso/adapter-configmap.yaml",
+    "included": true,
+    "size_bytes": 5529,
+    "sha256": "91280a547314359a0eff79313ac2a58c471737f505a18b662f544aa75b1cf9ca",
+    "included_path": "artifacts/ali-prod/feishu-sso/adapter-configmap.yaml"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/feishu-sso/adapter.py",
+    "included": true,
+    "size_bytes": 5002,
+    "sha256": "c9ef10b4f7124cbcfff84ecb6a5e5268406bea618195129448150601532d2ac5",
+    "included_path": "artifacts/ali-prod/feishu-sso/adapter.py"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/feishu-sso/configure.py",
+    "included": true,
+    "size_bytes": 2647,
+    "sha256": "fa34aed35018cda653c6f2912ba839c99a9877463ead24a91e5b51d515fdac8b",
+    "included_path": "artifacts/ali-prod/feishu-sso/configure.py"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/feishu-sso/db-bootstrap.go",
+    "included": true,
+    "size_bytes": 1375,
+    "sha256": "b5386fcc562b993b3e116a7e7ba0f5de7c0210d13d12acf59965fe1d4ac95f50",
+    "included_path": "artifacts/ali-prod/feishu-sso/db-bootstrap.go"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/feishu-sso/deployment.yaml",
+    "included": true,
+    "size_bytes": 2793,
+    "sha256": "ba5afdb9c29c16ab76cf93c437e0e0604044d8ccce2ecaebafe5ad1866cfb14e",
+    "included_path": "artifacts/ali-prod/feishu-sso/deployment.yaml"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/feishu-sso/test_adapter.py",
+    "included": true,
+    "size_bytes": 3180,
+    "sha256": "a593de149afb3d618bf0c2c8a39edffb4df259fa67e2aa60e2a5ef93768d502b",
+    "included_path": "artifacts/ali-prod/feishu-sso/test_adapter.py"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/gpu-template/.terraform.lock.hcl",
+    "included": true,
+    "size_bytes": 460,
+    "sha256": "d630e304f1ac8229f364306f077b3ce641afe33bc141bbfc547b639736bae858",
+    "included_path": "artifacts/ali-prod/gpu-template/.terraform.lock.hcl"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/gpu-template/main.tf",
+    "included": true,
+    "size_bytes": 12520,
+    "sha256": "a301de2c403eec1a2c4c3c865805d0e9fb6413951b52d425d61e3c71d8b3883d",
+    "included_path": "artifacts/ali-prod/gpu-template/main.tf"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/gpu-template/modules.tf",
+    "included": true,
+    "size_bytes": 1331,
+    "sha256": "aa1b85c5abc367d7f8a95a95d072342f657868ef590ce2693f02405091ab09b4",
+    "included_path": "artifacts/ali-prod/gpu-template/modules.tf"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/gpu-template/scripts/install-codex-vscode.sh",
+    "included": true,
+    "size_bytes": 1481,
+    "sha256": "6df8771b351dfbe1d91ceccf8972af8c512d51df8b0c62a6870fd5b90054ddc5",
+    "included_path": "artifacts/ali-prod/gpu-template/scripts/install-codex-vscode.sh"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/httproute.yaml",
+    "included": true,
+    "size_bytes": 827,
+    "sha256": "080d64a4b55d55798ac675ad938e6b91449b57260606e0778b3c1fdc879cca2f",
+    "included_path": "artifacts/ali-prod/httproute.yaml"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/p2p-diagnostic-20261011.json",
+    "included": true,
+    "size_bytes": 1818,
+    "sha256": "935504f83636c47401d51208fda16884dcf6ae7bd5ef8df885e94c5fe0f34bb1",
+    "included_path": "artifacts/ali-prod/p2p-diagnostic-20261011.json"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/release-v1.0.3.json",
+    "included": true,
+    "size_bytes": 472,
+    "sha256": "bd544d1944affcba43c7570a22dad101a3c848501adec427a10c114a591595db",
+    "included_path": "artifacts/ali-prod/release-v1.0.3.json"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/terraform-mirror.yaml",
+    "included": true,
+    "size_bytes": 711,
+    "sha256": "1e4f2da39c304dee3a4dfa517b97935ed0f4f87d2d04f0406cdf66d480317a55",
+    "included_path": "artifacts/ali-prod/terraform-mirror.yaml"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/yunqiao-proxy.yaml",
+    "included": true,
+    "size_bytes": 479,
+    "sha256": "1f147dfbb1f5a2752be2c9877ac310fa33a36cec72be015a9dfee0f20a2cf755",
+    "included_path": "artifacts/ali-prod/yunqiao-proxy.yaml"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/yunqiao-rbac.yaml",
+    "included": true,
+    "size_bytes": 1235,
+    "sha256": "0d8d0f282d6190506aa25b451900df5cbd57ddda6ef082970ebeb6de98fff103",
+    "included_path": "artifacts/ali-prod/yunqiao-rbac.yaml"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/README.md",
+    "exists": true,
+    "included": false,
+    "reason": "historical drift, credential/private content, or large/reconstructable dependency; use operational guidance before accessing"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/feishu-sso/README.md",
+    "exists": true,
+    "included": false,
+    "reason": "historical drift, credential/private content, or large/reconstructable dependency; use operational guidance before accessing"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/values.yaml",
+    "exists": true,
+    "included": false,
+    "reason": "historical drift, credential/private content, or large/reconstructable dependency; use operational guidance before accessing"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/rendered.yaml",
+    "exists": true,
+    "included": false,
+    "reason": "historical drift, credential/private content, or large/reconstructable dependency; use operational guidance before accessing"
+  },
+  {
+    "source_path": "/root/coder-deploy-private",
+    "exists": true,
+    "included": false,
+    "reason": "historical drift, credential/private content, or large/reconstructable dependency; use operational guidance before accessing"
+  },
+  {
+    "source_path": "/root/.config/coder-ali-prod",
+    "exists": true,
+    "included": false,
+    "reason": "historical drift, credential/private content, or large/reconstructable dependency; use operational guidance before accessing"
+  },
+  {
+    "source_path": "/mnt/d/Downloads/ali-prod-kubeconfig-admin.yaml",
+    "exists": true,
+    "included": false,
+    "reason": "historical drift, credential/private content, or large/reconstructable dependency; use operational guidance before accessing"
+  },
+  {
+    "source_path": "/mnt/d/Downloads/beast01-apiserver.yaml",
+    "exists": true,
+    "included": false,
+    "reason": "historical drift, credential/private content, or large/reconstructable dependency; use operational guidance before accessing"
+  },
+  {
+    "source_path": "/mnt/d/Downloads/yunqiao-ops-admin.yaml",
+    "exists": true,
+    "included": false,
+    "reason": "historical drift, credential/private content, or large/reconstructable dependency; use operational guidance before accessing"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/chart-source/helm/coder",
+    "exists": true,
+    "included": false,
+    "reason": "historical drift, credential/private content, or large/reconstructable dependency; use operational guidance before accessing"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/providers",
+    "exists": true,
+    "included": false,
+    "reason": "historical drift, credential/private content, or large/reconstructable dependency; use operational guidance before accessing"
+  },
+  {
+    "source_path": "/tmp/coder-stun-probe.py",
+    "included": true,
+    "sha256": "8433cb98a4210843c9c935a1dbd6349911ac2c4440ef01e1a4eb92fe786b481a",
+    "category": "network diagnostic script; no credentials",
+    "included_path": "artifacts/diagnostics/coder-stun-probe.py"
+  },
+  {
+    "source_path": "/tmp/coder-egress-probe.py",
+    "included": true,
+    "sha256": "54b0488d924810ae5bcc206c1b842b32f727fab689f949cf4656eb48af172ee5",
+    "category": "network diagnostic script; no credentials",
+    "included_path": "artifacts/diagnostics/coder-egress-probe.py"
+  },
+  {
+    "source_path": "/tmp/coder-stun-trace.py",
+    "included": true,
+    "sha256": "10d4fcd57c62c101b120ef059ef406e668c33c46c854efd68a3337f160a03326",
+    "category": "network diagnostic script; no credentials",
+    "included_path": "artifacts/diagnostics/coder-stun-trace.py"
+  },
+  {
+    "source_path": "/mnt/d/Downloads/coder-stun-diagnostic.ps1",
+    "included": true,
+    "sha256": "006f6d57cc5a1ba6494a03188fbd67fc5e0c580f099b435265a1b35ba74eb163",
+    "category": "network diagnostic script; no credentials",
+    "included_path": "artifacts/diagnostics/coder-stun-diagnostic.ps1"
+  },
+  {
+    "source_path": "/mnt/d/Downloads/coder-selectable-image-20261011.png",
+    "exists": true,
+    "included": false,
+    "reason": "historical download/screenshot/binary; current safe source artifacts are included separately"
+  },
+  {
+    "source_path": "/mnt/d/Downloads/coder-selectable-gpu-20261011.png",
+    "exists": true,
+    "included": false,
+    "reason": "historical download/screenshot/binary; current safe source artifacts are included separately"
+  },
+  {
+    "source_path": "/mnt/d/Downloads/coder-health-access-url-20261011.png",
+    "exists": true,
+    "included": false,
+    "reason": "historical download/screenshot/binary; current safe source artifacts are included separately"
+  },
+  {
+    "source_path": "/mnt/d/Downloads/coder-feishu-login-20261011.png",
+    "exists": true,
+    "included": false,
+    "reason": "historical download/screenshot/binary; current safe source artifacts are included separately"
+  },
+  {
+    "source_path": "/mnt/d/Downloads/coder-gpu-template-codex-vscode.zip",
+    "exists": true,
+    "included": false,
+    "reason": "historical download/screenshot/binary; current safe source artifacts are included separately"
+  },
+  {
+    "source_path": "/mnt/d/Downloads/coder-beast01-modules.tf",
+    "exists": true,
+    "included": false,
+    "reason": "historical download/screenshot/binary; current safe source artifacts are included separately"
+  },
+  {
+    "source_path": "/mnt/d/Downloads/coder-beast01-main.tf",
+    "exists": true,
+    "included": false,
+    "reason": "historical download/screenshot/binary; current safe source artifacts are included separately"
+  },
+  {
+    "source_path": "/mnt/d/Downloads/coder-ali-prod-deployment.tar.gz",
+    "exists": true,
+    "included": false,
+    "reason": "historical download/screenshot/binary; current safe source artifacts are included separately"
+  },
+  {
+    "source_path": "/mnt/d/Downloads/coder-ali-prod-deployment-with-proxy.tar.gz",
+    "exists": true,
+    "included": false,
+    "reason": "historical download/screenshot/binary; current safe source artifacts are included separately"
+  },
+  {
+    "source_path": "/mnt/d/Downloads/coder-ali-prod-deployment-multicluster.tar.gz",
+    "exists": true,
+    "included": false,
+    "reason": "historical download/screenshot/binary; current safe source artifacts are included separately"
+  },
+  {
+    "source_path": "/mnt/d/Downloads/coder-ali-prod-deployment-host-runtime.tar.gz",
+    "exists": true,
+    "included": false,
+    "reason": "historical download/screenshot/binary; current safe source artifacts are included separately"
+  },
+  {
+    "source_path": "/mnt/d/Downloads/coder-ali-prod-deployment-gpu-selectable.tar.gz",
+    "exists": true,
+    "included": false,
+    "reason": "historical download/screenshot/binary; current safe source artifacts are included separately"
+  },
+  {
+    "source_path": "/mnt/d/Downloads/coder-ali-prod-deployment-fullnode.tar.gz",
+    "exists": true,
+    "included": false,
+    "reason": "historical download/screenshot/binary; current safe source artifacts are included separately"
+  },
+  {
+    "source_path": "/mnt/d/Downloads/coder-ali-prod-deployment-feishu-sso.tar.gz",
+    "exists": true,
+    "included": false,
+    "reason": "historical download/screenshot/binary; current safe source artifacts are included separately"
+  },
+  {
+    "source_path": "/mnt/d/Downloads/coder-v1.0.3-windows-amd64.exe",
+    "exists": true,
+    "included": false,
+    "reason": "historical download/screenshot/binary; current safe source artifacts are included separately"
+  },
+  {
+    "source_path": "/mnt/d/Downloads/coder-yunqiao-derp-envoy.zip",
+    "exists": true,
+    "included": false,
+    "reason": "historical download/screenshot/binary; current safe source artifacts are included separately"
+  },
+  {
+    "source_path": "/root/.codex/attachments/00b89c3d-12ad-4c8c-bb59-dedd4d3b768e/已粘贴的文本.txt",
+    "included": false,
+    "reason": "original user Terraform error attachment; may contain sensitive logs; exact content not re-exported"
+  }
+]

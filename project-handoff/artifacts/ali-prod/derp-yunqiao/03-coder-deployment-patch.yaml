@@ -1,0 +1,19 @@
+# Strategic merge patch for ali-prod Deployment/coder, not a standalone resource.
+spec:
+  template:
+    spec:
+      containers:
+        - name: coder
+          env:
+            - name: CODER_DERP_CONFIG_PATH
+              value: /etc/coder-derp/derpmap.json
+            - name: CODER_DERP_SERVER_ENABLE
+              value: "true"
+          volumeMounts:
+            - name: custom-derp-map
+              mountPath: /etc/coder-derp
+              readOnly: true
+      volumes:
+        - name: custom-derp-map
+          configMap:
+            name: coder-custom-derp-map

@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: coder-terraform-providers
+  namespace: coder
+spec:
+  accessModes: ["ReadWriteMany"]
+  storageClassName: nfs-csi-fgxbb
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coder-terraform-config
+  namespace: coder
+data:
+  terraform.rc: |
+    disable_checkpoint = true
+    provider_installation {
+      filesystem_mirror {
+        path = "/opt/terraform-providers"
+        include = ["registry.terraform.io/coder/coder", "registry.terraform.io/hashicorp/kubernetes"]
+      }
+      direct {
+        exclude = ["registry.terraform.io/coder/coder", "registry.terraform.io/hashicorp/kubernetes"]
+      }
+    }

@@ -1,0 +1,12 @@
+{
+  "tag": "v1.0.3",
+  "commit": "47e18689dfe0ebac46eafe037f17a81aefd011a3",
+  "server_version": "v2.38.0-devel+magik.1.0.3.47e1868",
+  "image": "ghcr.io/aicodeing-new/coder-magik:v1.0.3-amd64",
+  "build_url": "https://github.com/aicodeing-new/coder-magik/actions/runs/38120234645",
+  "status": "success",
+  "deployed": false,
+  "runner": "office-ubuntu",
+  "digest": "sha256:fe206d581300d8f00b93108acd88a7d077dea56ae4a294b593cdfa799ef3c443",
+  "version_verified": true
+}

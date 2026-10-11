@@ -1,0 +1,84 @@
+当前部署和访问资料
+核对日期2026-10-11；实时状态另见live-snapshot.json。
+
+控制面
+入口：https://coder.magikcloud.cn
+Kubernetes namespace：coder
+Deployment：coder，1副本，两个内置provisioner。
+实际生产镜像：swr.cn-north-4.myhuaweicloud.com/pixiu-public/admins/coder-magik:v1.0.3-amd64。
+服务/内置CLI版本：v2.38.0-devel+magik.1.0.3.47e1868。
+CODER_ADDRESS=0.0.0.0:8080；Dockerfile默认3000需Helm环境覆盖为8080。
+资源原配置requests CPU500m/memory2Gi，limits CPU2/memory4Gi。
+平台只挂受限GPU集群kubeconfig，不使用GPU集群admin权限处理工作空间。
+
+集群管理入口，不导出其内容
+ali-prod：/mnt/d/Downloads/ali-prod-kubeconfig-admin.yaml；API47.101.72.46:6443。
+beast01：/mnt/d/Downloads/beast01-apiserver.yaml；APIbeast01-k8s-apiserver.magikcloud.cn:44317。
+yunqiao：/mnt/d/Downloads/yunqiao-ops-admin.yaml；API47.100.252.27:44303。
+GPU namespace：两集群均为coder-workspaces。
+ServiceAccount/Role/RoleBinding：coder-provisioner，限namespace。
+权限：PVC CRUD、Deployment CRUD、Pods/Pods日志/Events只读，未开放Secrets或Service管理。
+Coder Secret：coder-gpu-kubeconfig，挂/mnt/secrets/kube，包含beast01/yunqiao受限context。
+不要把admin kubeconfig放进Coder或开发Pod。
+
+数据库
+RDS：pgm-uf6ms6ff0v0ptdun.rwlb.rds.aliyuncs.com:5432。
+数据库coder，用户magik，TZ Asia/Shanghai。
+密码只从ali-prod/coder Secret coder-db-url读取，键url，注入CODER_PG_CONNECTION_URL。
+用户原始参数sslmode=prefer；驱动不支持prefer且该RDS拒绝SSLRequest，当前实际disable。
+不能未经验证直接改require；需先确认RDS已启用TLS。
+SSO单独数据库coder_sso，同一RDS实例，保存Dex签名密钥，不改Coder业务表。
+重建/迁移时需同时保护coder和coder_sso，否则用户OIDC身份和签名/会话行为会变化。
+
+Terraform离线依赖
+TF_CLI_CONFIG_FILE=/etc/terraform/terraform.rc。
+只读provider镜像路径/opt/terraform-providers，PVC coder-terraform-providers。
+ali-prod该PVC为1Gi RWX，StorageClass nfs-csi-fgxbb。
+provider coder/coder2.19.0、hashicorp/kubernetes2.38.0，linux/amd64。
+ZIP和SHA256SUMS在/root/coder-deploy/ali-prod/providers/；需同步额外provider/版本/架构。
+文件系统mirror配置在terraform-mirror.yaml及ConfigMap coder-terraform-config。
+不要把默认模板config_path="~/.kube/config"带入平台，实际用受限挂载路径和context参数。
+
+Gateway
+ali-prod：envoy-gateway-system/magik-gw，TLS；coder HTTPRoute及coder-feishu-sso路由。
+Coder BackendTrafficPolicy coder-upgrades允许websocket和derp。HTTPRoute请求超时0s。
+不设置useClientProtocol=true，HTTP后端不支持h2c。
+yunqiao：同名envoy-gateway-system/magik-gw，https监听443，允许所有namespace附加route。
+yunqiao Service magik-gw：ClusterIP10.251.106.156，443映射NodePort30000；Gateway状态地址10.0.4.23。
+yunqiao证书Secret cert-magikcloud-cn，覆盖*.magikcloud.cn，当前有效2026-09-24至2026-12-23。
+顶层Programmed=False，原因131个地址超过16个上限；HTTPS listener Programmed/Accepted/ResolvedRefs=True。
+这是既有状态告警，本次只核查未修复，不应认为新DERP已能公网访问。
+
+代理
+beast01：http://172.16.2.219:10809。
+yunqiao：http://10.0.4.22:10809。
+各集群ConfigMap coder-workspace-proxy通过env_from设置HTTP_PROXY/HTTPS_PROXY/NO_PROXY及对应小写。
+现有NO_PROXY包含localhost、回环、RFC1918、169.254/16、.svc/.cluster.local；完整值见代理yaml。
+ALL_PROXY未设置。需更新大小写两份并重建Pod，ConfigMap更新不会刷新已运行进程环境。
+
+平台对象
+组织coder：3734883b-7a6e-4edd-84e2-604c9ca2555e。
+admin yzhang：2e9bb987-3ca9-47cd-923e-e20b1a0a6fa9。
+kubernetes模板：dbf99fc1-e511-4958-9762-b4b7f8346919。
+当前active version：caa06bab-4918-42a6-8706-6d49a1c6190d，codex-vscode-preinstall-20261011。
+当前测试空间：yzhang/yunqiao-amaranth-pelican-21。
+UUID315cec12-fd72-468f-babb-ae06b774f3dd；Running；outdated=false；同active version。
+所在hgx-096，10.0.1.48；Pod coder-315cec12-fd72-468f-babb-ae06b774f3dd-79dc9c78d-btgtg。
+PVC coder-315cec12-fd72-468f-babb-ae06b774f3dd-home，50Gi，ceph-fs，RWO，Bound。
+PVC/PV UID、Pod和节点均是快照，不用于硬编码未来操作。
+旧空间zy-test-1 UUID4010b120-1ddd-4eda-b2ec-b926f869ea8c，历史10Gi，最后已知Stopped，未本次重查。
+
+Coder登录
+Linux CLI /usr/bin/coder（之前为v2.38.0+c3c6a67）。
+独立config /root/.config/coder-ali-prod，url和session为真实认证文件，session不能打印。
+其他/root/.config/coderv2属于另一套平台，不能用来发布这里的模板。
+用户已在本机完成ali-prod CLI登录，不需要每次重新问凭据；但会话失效需重新登录。
+
+Windows客户端位置
+Windows用户17550，VS Code配置：C:\Users\17550\AppData\Roaming\Code\User\settings.json。
+Coder插件1.16.4，登录目录：C:\Users\17550\AppData\Roaming\Code\User\globalStorage\coder.coder-remote\coder.magikcloud.cn。
+新CLI：该目录bin\coder-windows-amd64-v1.0.3.exe。
+coder.binaryDestination指向新文件；该文件已验证报告2.38.0-devel+magik.1.0.3.47e1868。
+原CLI文件被旧SSH进程占用，未杀会话或覆盖它。已留原CLI备份。
+Windowsinterop：/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe。
+诊断需使用上述Windows实际CLI与config，不要只用WSL ping替代客户端结论。

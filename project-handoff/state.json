@@ -1,0 +1,104 @@
+{
+  "record_date": "2026-10-11",
+  "timezone": "Asia/Shanghai",
+  "project": "aicodeing-new/coder-magik",
+  "source_root": "/root/coder",
+  "deployment_root": "/root/coder-deploy/ali-prod",
+  "production": {
+    "url": "https://coder.magikcloud.cn",
+    "cluster": "ali-prod",
+    "namespace": "coder",
+    "image": "swr.cn-north-4.myhuaweicloud.com/pixiu-public/admins/coder-magik:v1.0.3-amd64",
+    "version": "v2.38.0-devel+magik.1.0.3.47e1868",
+    "release_commit": "47e18689dfe0ebac46eafe037f17a81aefd011a3",
+    "release_tag": "v1.0.3"
+  },
+  "template": {
+    "name": "kubernetes",
+    "id": "dbf99fc1-e511-4958-9762-b4b7f8346919",
+    "active_version_id": "caa06bab-4918-42a6-8706-6d49a1c6190d",
+    "active_version_name": "codex-vscode-preinstall-20261011",
+    "clusters": [
+      "beast01",
+      "yunqiao"
+    ],
+    "gpu_range": [
+      0,
+      8
+    ],
+    "gpu_default": 8,
+    "custom_image": true,
+    "codex_vscode_preinstall": true,
+    "hostNetwork": true,
+    "privileged": true,
+    "persistent_home": "/home/coder"
+  },
+  "credentials": {
+    "coder_cli_directory": "/root/.config/coder-ali-prod",
+    "ali_prod_kubeconfig": "/mnt/d/Downloads/ali-prod-kubeconfig-admin.yaml",
+    "beast01_kubeconfig": "/mnt/d/Downloads/beast01-apiserver.yaml",
+    "yunqiao_kubeconfig": "/mnt/d/Downloads/yunqiao-ops-admin.yaml",
+    "kubernetes_secrets": [
+      "coder-db-url",
+      "coder-gpu-kubeconfig",
+      "coder-feishu",
+      "coder-sso-private",
+      "coder-sso-config"
+    ],
+    "secret_values_included": false
+  },
+  "sso": {
+    "provider": "Feishu via Dex and Python adapter",
+    "deployment": "coder-feishu-sso",
+    "native_coder_integration": false,
+    "app_id": "cli_a929453a72f8dcbb",
+    "redirect": "https://coder.magikcloud.cn/sso/callback",
+    "issuer": "https://coder.magikcloud.cn/sso",
+    "identity": "open_id@feishu.invalid",
+    "database": "coder_sso",
+    "user_login_verified": true
+  },
+  "derp": {
+    "current": "ali-prod embedded relay region999",
+    "gpu_direct_public_udp": "unavailable in tests",
+    "windows_stun": "working",
+    "cpu22_socks5_udp": "working",
+    "p2p_restored": false,
+    "yunqiao_gateway_variant_prepared": true,
+    "relay_image_built_container": false,
+    "relay_image_pushed": false,
+    "resources_deployed": false,
+    "coder_patch_applied": false,
+    "workspace_dns_patch_published": false,
+    "end_to_end_validated": false,
+    "proposed_hostname": "yunqiao-derp.magikcloud.cn",
+    "internal_gateway_service_ip": "10.251.106.156",
+    "manifest_directory": "/root/coder-deploy/ali-prod/derp-yunqiao"
+  },
+  "license": {
+    "existing_entitlement_override_env": "CODER_ENTERPRISE_HARDCODE_LICENSE",
+    "live_env_value": "true",
+    "live_has_license": true,
+    "live_feature_count": 27,
+    "live_enabled_count": 10,
+    "all_features_validated": false
+  },
+  "reporting": {
+    "live_telemetry": false,
+    "update_check": false,
+    "tallyman_publisher_disabled_in_code": true,
+    "trial_generation_disabled_in_code": true,
+    "strict_zero_egress_proven": false,
+    "disabled_transition_snapshot_possible": true
+  },
+  "known_drift": [
+    "values.yaml image v1.0.2; missing current license env",
+    "rendered.yaml and old README history stale",
+    "release-v1.0.3.json deployed=false is historical"
+  ],
+  "scope": "all available conversation knowledge and inspected evidence; not a verbatim full historical transcript",
+  "portable_handoff_directory": "project-handoff",
+  "artifact_directory": "project-handoff/artifacts",
+  "historical_handoff_root": "/root/coder-deploy/handoff",
+  "canonical_memory": "repository project-handoff/; external snapshot retained as historical backup"
+}

@@ -1,0 +1,33 @@
+待办和下一位agent的推进顺序
+
+最接近当前用户目标：机房DERP落地
+1. 确认用户希望实际部署，沿用已有DERP讨论与新指令，不重复请求已明确授权的步骤。
+2. 公网域名和Gateway入口未确认，不能用出站代理可用推断入站可用。
+3. 构建并推送harbor.magikcloud.cn/library/derper:coder-e42b84b-amd64，配置namespace拉取权限。
+4. 按已准备的Gateway方案部署yunqiao，先验证HTTPRoute/BackendTrafficPolicy接受及真实HTTP101。
+5. 发布template hostaliases/NO_PROXY，更新测试空间，再挂ali-prod DERP map；验证Windows真实连接和文件传输。
+6. 没有用户要求前不关ali-prod relay，不修改机房网关或共享Gateway全局策略，不把未完成方案称已上线。
+7. 若要保障所有开发流量不绕ali-prod，需考虑其他集群relay及必要HA，再决定关闭内置中继。
+
+配置漂移整理
+旧values.yaml/rendered.yaml/历史README有v1.0.2，且缺当前license env。
+应在下一次部署工作中核对实际Helm状态、Deployment与本地源，形成完整可复用配置，避免退回旧版本。
+本交接任务只记录并提示，没有自动运行Helm或改变这些历史源。
+
+未实现/未全面验证
+- 原生Coder飞书认证集成，当前采用独立OIDC adapter。
+- 公司专用vLLM/SGLang GPU开发镜像、依赖持久化初始化和镜像拉取全链路。
+- 无既有VSCodeServer的新空间Codex插件完整bootstrap测试；Windows实际Codex登录/模型请求。
+- 多节点EP编排、headless Service/稳定DNS、IB/NCCL/RDMA性能及端口策略。
+- 更严格的用户配额、研发组限制、主机权限隔离、GPU共享隔离。
+- 所有27个enterprise feature的开启和验收，不能把has_license=true当作验收。
+- 服务端“曾启用 -> 禁用”遥测状态通知路径及全进程出站审计。
+- VSCode CLI自动更新中断的精确网络层原因及unsigned自定义发布的长期自动升级方式。
+- GPU直接UDP出口的实际网关ACL/NAT定位；当前已有网络限制解释，未恢复P2P。
+- Gateway顶层Programmed=False地址数量超限告警，HTTPSlistener仍正常；后续按实际影响处理。
+- SSO/RDS备份恢复演练、证书续期、可靠性/中继带宽容量测试。
+
+完成状态判断
+“准备YAML”≠“已部署”；“dry-run”≠“实际协议升级”；“Agent healthy”≠“P2P直连”；“独立PVC”≠“privileged安全隔离”。
+“镜像tag1.0.3”≠“服务版本1.0.3”；“自定义镜像可填”≠“其中推理服务自动启动”。
+状态发生变化后同步state.json/新快照/当前说明，保留历史事件及证据。

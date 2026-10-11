@@ -1,0 +1,13 @@
+# Apply to ali-prod after validating internal and external access.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coder-custom-derp-map
+  namespace: coder
+data:
+  derpmap.json: "{\n  \"Regions\": {\n    \"901\": {\n      \"RegionID\": 901,\n \
+    \     \"RegionCode\": \"yunqiao\",\n      \"RegionName\": \"Yunqiao Relay\",\n\
+    \      \"Nodes\": [\n        {\n          \"Name\": \"yunqiao-1\",\n         \
+    \ \"RegionID\": 901,\n          \"HostName\": \"yunqiao-derp.magikcloud.cn\",\n\
+    \          \"DERPPort\": 443,\n          \"STUNPort\": -1,\n          \"IPv6\"\
+    : \"none\"\n        }\n      ]\n    }\n  }\n}\n"

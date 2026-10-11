@@ -1,0 +1,222 @@
+# Build and push the Coder Docker image to GHCR when a version tag is pushed.
+#
+# This workflow is custom to this fork. It produces a single linux/amd64 image
+# tagged with the git tag (e.g. v0.1.0) plus `latest`, and uploads nothing
+# else. It bypasses the upstream release pipeline, which is wired for Coder's
+# own infrastructure.
+#
+# Trigger:
+#     git tag v0.1.0
+#     git push origin v0.1.0
+
+name: build-tag-image
+
+permissions: {}
+
+on:
+  push:
+    tags:
+      # Match v1.2.3, v0.0.1-rc1, etc. Annotated tags are recommended but
+      # lightweight tags will also trigger.
+      - "v*"
+  # Allow manual trigger from the Actions tab for testing.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag/branch/ref to build (e.g. main, or v0.1.0)"
+        required: true
+        default: "main"
+
+env:
+  CODER_IMAGE_BASE: ghcr.io/aicodeing-new/coder-magik
+  # This fork follows the upstream 2.38 development series. Keep the server
+  # protocol version independent of the fork's image release tags.
+  CODER_SERVER_VERSION: "2.38.0-devel"
+  # Skip building .deb/.rpm/.apk/.tar.gz before the Docker image. We only
+  # want the final image, not those intermediate artifacts.
+  DOCKER_IMAGE_NO_PREREQUISITES: "true"
+
+jobs:
+  build-and-push:
+    runs-on: [self-hosted, Linux, X64]
+    permissions:
+      contents: read
+      # Required to push to ghcr.io with GITHUB_TOKEN.
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # version.sh requires full history to compute a sane dev version,
+          # but we override it with CODER_FORCE_VERSION below. Keeping
+          # fetch-depth: 0 makes annotated tags resolvable.
+          fetch-depth: 0
+          ref: ${{ github.ref }}
+
+      - name: Resolve version and ref
+        id: version
+        env:
+          BUILD_REF: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+
+          release=false
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            ref="${GITHUB_REF_NAME}"
+            release=true
+          else
+            ref="$BUILD_REF"
+            git fetch origin "$ref" --depth=1
+            git checkout --detach FETCH_HEAD
+            if [[ "$ref" == v* ]] && git show-ref --verify --quiet "refs/tags/$ref"; then
+              release=true
+            fi
+          fi
+
+          if [[ "$release" == true ]]; then
+            version="${ref#v}"
+          else
+            version="0.0.0-dev.$(git rev-parse --short HEAD)"
+          fi
+
+          # Desktop and CLI clients validate the server's upstream version.
+          # Retain the fork release and revision as SemVer build metadata.
+          release_metadata="$(printf '%s' "$version" | tr -c 'a-zA-Z0-9.-' '.')"
+          server_version="${CODER_SERVER_VERSION}+magik.${release_metadata}.$(git rev-parse --short HEAD)"
+
+          echo "ref=$ref"
+          echo "version=$version"
+          echo "server_version=$server_version"
+
+          # Strip invalid chars for Docker tags (only [a-zA-Z0-9._-] allowed).
+          docker_tag="$(printf '%s' "$version" | tr -c 'a-zA-Z0-9._-' '-')"
+          echo "docker_tag=$docker_tag"
+
+          {
+            echo "ref=$ref"
+            echo "version=$version"
+            echo "server_version=$server_version"
+            echo "docker_tag=$docker_tag"
+            echo "release=$release"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Configure Go cache paths
+        run: | # zizmor: ignore[github-env] Go cache paths use only the runner-provided temp directory.
+          set -euo pipefail
+          {
+            printf 'GOPATH=%s/go\n' "$RUNNER_TEMP"
+            printf 'GOMODCACHE=%s/go/pkg/mod\n' "$RUNNER_TEMP"
+            printf 'GOCACHE=%s/go-build\n' "$RUNNER_TEMP"
+          } >> "$GITHUB_ENV"
+
+      - name: Set up mise tools
+        uses: ./.github/actions/setup-mise
+        with:
+          install-args: "go node pnpm protoc protoc-gen-go"
+
+      - name: Install pnpm dependencies
+        uses: ./.github/actions/pnpm-install
+
+      - name: Install Go mise tools
+        # sqlc is required by coderd/database/generate.sh;
+        # protoc-gen-go-drpc is required by scripts/atomic_protoc.sh.
+        # Both are go-based mise tools that need explicit installation
+        # beyond what setup-mise installs.
+        run: ./.github/scripts/retry.sh -- mise install --locked go:storj.io/drpc/cmd/protoc-gen-go-drpc go:github.com/coder/sqlc/cmd/sqlc
+
+      - name: Install zstd
+        # Required by `make build/coder-slim_X.tar.zst` (Makefile ~line 370).
+        run: |
+          set -euo pipefail
+          if ! command -v zstd >/dev/null 2>&1; then
+            sudo -n apt-get install -y zstd
+          fi
+
+      - name: Download Go modules
+        run: ./.github/scripts/retry.sh -- go mod download
+
+      - name: Check disk space before build
+        run: |
+          set -euo pipefail
+          df -h "$GITHUB_WORKSPACE" "$RUNNER_TEMP"
+          du -sh "$RUNNER_TEMP" "$(go env GOCACHE)" "$(go env GOMODCACHE)" 2>/dev/null || true
+
+      - name: Build fat binary (linux amd64)
+        env:
+          CODER_FORCE_VERSION: ${{ steps.version.outputs.server_version }}
+          VERBOSE: "1"
+        run: |
+          set -euxo pipefail
+          df -h
+          # Use upstream Makefile target. Skips signing/notarization because
+          # we only build linux/amd64.
+          make build/coder_"${CODER_FORCE_VERSION}"_linux_amd64
+          df -h
+          ls -la build/ | head -20
+
+      - name: Docker login (GHCR)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        env:
+          CODER_FORCE_VERSION: ${{ steps.version.outputs.server_version }}
+          IMAGE_VERSION: ${{ steps.version.outputs.version }}
+          CODER_IMAGE_BASE: ${{ env.CODER_IMAGE_BASE }}
+          PUBLISH_LATEST: ${{ steps.version.outputs.release }}
+        run: |
+          set -euo pipefail
+
+          version="${CODER_FORCE_VERSION}"
+
+          # Build the image using upstream script. It expects the binary at
+          # build/coder_${version}_linux_amd64 and tags the image under
+          # ${CODER_IMAGE_BASE}.
+          image_tag="$(./scripts/image_tag.sh --arch amd64 --version "$IMAGE_VERSION")"
+          echo "image_tag=$image_tag"
+
+          ./scripts/build_docker.sh \
+            --arch amd64 \
+            --target "$image_tag" \
+            --version "$version" \
+            "build/coder_${version}_linux_amd64"
+
+          # Push the version-tagged image.
+          docker push "$image_tag"
+
+          # Also retag and push as ${CODER_IMAGE_BASE}:latest for tag builds.
+          if [[ "$PUBLISH_LATEST" == "true" ]]; then
+            latest="${CODER_IMAGE_BASE}:latest"
+            docker tag "$image_tag" "$latest"
+            docker push "$latest"
+            echo "Pushed $latest"
+          fi
+
+      - name: Summarize
+        env:
+          BUILD_REF: ${{ steps.version.outputs.ref }}
+          BUILD_VERSION: ${{ steps.version.outputs.version }}
+          SERVER_VERSION: ${{ steps.version.outputs.server_version }}
+          PUBLISH_LATEST: ${{ steps.version.outputs.release }}
+        run: |
+          set -euo pipefail
+          image="$CODER_IMAGE_BASE"
+          image_tag="$(./scripts/image_tag.sh --arch amd64 --version "$BUILD_VERSION")"
+          {
+            echo "## Build complete"
+            echo
+            echo "**Ref:** $BUILD_REF"
+            echo "**Version:** $BUILD_VERSION"
+            echo "**Server version:** $SERVER_VERSION"
+            echo
+            echo "### Pull commands"
+            echo '```'
+            echo "docker pull ${image_tag}"
+            if [[ "$PUBLISH_LATEST" == "true" ]]; then
+              echo "docker pull ${image}:latest"
+            fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

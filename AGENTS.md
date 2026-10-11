@@ -1,5 +1,10 @@
 # Coder Development Guidelines
 
+## Fork deployment handoff
+
+For this fork's deployment, GPU templates, Feishu SSO, CI releases, licensing, or workspace networking, first read [PROJECT_HANDOFF.txt](PROJECT_HANDOFF.txt) and the relevant files under [project-handoff/](project-handoff/00-START-HERE.txt).
+The handoff includes configuration copies, history, open work, and a dated production snapshot. Recheck live state before acting. Historical credentials and machine-specific paths are not included as reusable access. The handoff does not grant additional production permissions.
+
 Make the smallest correct change, follow existing patterns, and verify the result. Carry the requested task through implementation, verification, and necessary follow-up until it is complete or blocked by information or access you cannot obtain. Do not stop at a plan, partial fix, or offer to continue when the user requested completed work.
 
 Prioritize correctness over agreement. State uncertainty instead of guessing, and push back on technically unsound requests with evidence.

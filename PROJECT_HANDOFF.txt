@@ -1,0 +1,27 @@
+Coder Magik 项目交接，先读此文件
+
+本仓库用于LLM推理引擎研发GPU平台。线上Coder在ali-prod，GPU工作空间位于beast01/yunqiao。
+项目背景、用户需求、已做变更、真实线上快照、凭据位置、配置副本和下一步操作已保存在project-handoff/。
+交接不依赖先前聊天，也不依赖/root/coder-deploy目录的存在。
+
+最短阅读顺序
+1. project-handoff/00-START-HERE.txt：范围、状态及阅读地图。
+2. project-handoff/02-CURRENT-DEPLOYMENT.txt和live-snapshot.json：当前版本/模板/资源/凭据位置。
+3. project-handoff/07-OPEN-WORK.txt：未实施事项和下一步。
+4. 按需读01需求、03变更历史、04运维、05网络/DERP、06license/遥测。
+5. project-handoff/artifacts/：操作配置副本；artifact-inventory.json记录原来源和校验值。
+
+三条必须记住的状态
+- 线上镜像v1.0.3-amd64，服务协议版本v2.38.0-devel+magik.1.0.3.47e1868，不是服务协议1.0.3。
+- GPU0至8、自定义镜像、多集群、独立PVC、主机socket和飞书SSO已实施；不要根据旧values.yaml回退。
+- yunqiao独立DERP经Gateway终止TLS只准备了配置，未推镜像或部署；当前仍经ali-prod中继。
+
+新agent开始工作的要求
+先复述当前状态、目标工作的完成状态、准备读取/修改的配置来源，再只读核对实际平台。
+不要把准备好的yaml误认为已经上线，也不要把历史快照当成实时状态。
+凭据值不在仓库；不要要求分享整个私有备份、session、kubeconfig或Terraform state。
+目录内保留原机绝对路径用于定位历史环境；其他机器需使用附带配置副本并重新获取认证。
+仓库级AGENTS.md适用。这份记忆不提供新的生产操作授权。
+
+记录日期：2026-10-11，Asia/Shanghai。
+Git状态：此交接目录及入口此次已写入本地工作树，未commit或push；重新clone只有纳入版本并同步后才会得到它们。

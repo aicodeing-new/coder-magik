@@ -1,0 +1,69 @@
+变更历史和验证
+
+源代码/CI初期
+- 初始fork提交6920b2f1574c694796dc0482d3b42f54f423b2a7包含enterprise授权开关和遥测/试用/usage上报限制。
+- 构建工作流精简为.github/workflows/build-tag-image.yaml，tag v*和workflow_dispatch支持。
+- 原先多次build失败，用户提供Actions运行38042455478/job114185245125；完整日志未保留，不能逐次推断失败阶段。
+- 可由Git证实的修复包括sqlc、protoc/protoc-gen-go/drpc、zstd安装，磁盘空间检查，Go cache路径和自托管runner环境。
+- 749fa62配置self-hosted Go cache；2f93c33修复手工tag build版本解析；6c959e4修复客户端版本。
+- runner是组织office-ubuntu（self-hosted/Linux/X64）。工作流按标签匹配，并非按runner名强绑定。
+- office-ubuntu在国内，用户确认上层网络分流可访问海外；不能简单认为所有构建失败都是GOPROXY问题。
+- 8c5f668修复镜像默认监听0.0.0.0，曾使用1.0.2+8c5f668发布版本。
+
+首次上线与模板
+- 2026-10-10控制面部署ali-prod/coder，初始镜像SWRv1.0.2-amd64；外部RDS，已有Gateway终止TLS。
+- Terraform缺少正确kubeconfig/provider镜像/代理，导致构建或Agent curl下载停滞。
+- 修复使用平台挂载的受限kubeconfig、离线provider镜像以及每集群代理ConfigMap。
+- beast01-fullnode-20261010实现8GPU预约、hostNetwork/privileged、独立PVC、20Gi shm等。
+- zy-test-1停止/更新前后PVC UID相同，通过临时验证Pod读出校验文件persistence-ok；未抢占线上GPU。
+- 当时新Pod因Insufficient nvidia.com/gpu等待；初期缺少实际GPU运行验证，后来yunqiao空间已实际使用，不等于所有硬件能力都测过。
+- gpu-multicluster-20261010接入yunqiao受限context、RBAC、代理，单模板选择集群。
+- gpu-host-runtime-20261010映射Docker/containerd socket；读取hgx-088/b30025主机运行时验证，未操作生产容器。
+- health/access-url警告通过Gateway derp/websocket升级支持修复，HTTP101和Agent重新连接验证通过，用户确认恢复。
+
+飞书SSO
+- 用户要求添加飞书SSO，提供App ID和Secret，Secret不写交接包。
+- 应用没有邮箱，用户希望使用手机号等；实现实际无需手机号或邮箱，使用稳定open_id映射合成邮箱。
+- Dexv2.46.0+Python stdlib adapter独立Deployment上线，/sso路径接入已有网关。
+- 20029重定向无效，用户在飞书安全设置保存/sso/callback后消除。
+- 用户扫码授权后确认登录；API确认active OIDC账号，真实交换和注册成功。
+- 用户问为何不集成Coder镜像，最终保留独立OIDC方案，原生集成尚未做。
+
+2026-10-11模板和发布
+- GPU数量参数0至8/default8及创建表单修复完成，0/1/8计划、Terraform init/validate和浏览器验证通过。
+- PR29 fix/self-hosted-go-cache合并main，merge commit47e18689dfe0ebac46eafe037f17a81aefd011a3。
+- 按用户授权创建annotated v1.0.3并push，触发run38120234645。
+- office-ubuntu完整fat/slim agent构建及GHCR推送成功，约23分钟。
+- 当时的Dependabot更新分支未全部合并；避免声称所有分支都已合并。
+- 产物ghcr.io/aicodeing-new/coder-magik:v1.0.3-amd64，digest sha256:fe206d581300d8f00b93108acd88a7d077dea56ae4a294b593cdfa799ef3c443。
+- 用户后来同步到SWR并更新生产，Desktop用户确认能连接。本次线上核对再次证实实际v1.0.3。
+- image-selectable-20261011，version50dd2f3b-750c-4a68-b29d-715b8b0f104c，加入开发镜像参数。
+  验证GPU0默认镜像、8自定义tag、1digest及PVC不变；浏览器验证文本框，没有为此额外占GPU。
+- codex-vscode-preinstall-20261011，versioncaa06bab-4918-42a6-8706-6d49a1c6190d，加入独立coder_script预装插件。
+  已复用真实VSCode Server安装openai.chatgpt26.1007.21434-linux-x64及openai.codex-audio26.1007.21434。
+  当时手工运行脚本两次验证幂等，目录约931MB；当前空间已更新到该模板。
+  没有验证“全新空间无VSCodeServer”的完整启动路径，也没有专门重启来证明插件持久化。
+
+Windows VS Code自动CLI更新故障
+- 对话框Failed to update CLI binary. Run v1.0.2+8c5f668 anyway?
+- 本地Coder.log显示下载中途aborted，两次约6秒/15.7MB；不是已证实的PGP失败。
+- 正确WindowsCLI完整61,140,992 bytes，SHA1 a1e39903c97d83e183c47040224b78ffdd711f82，完整下载验证成功。
+- custom fork.asc返回404，不应依赖上游签名验证覆盖自编译产物。
+- 下载新CLI另存Windows缓存新文件，改coder.binaryDestination。保持原正在使用的CLI进程不动。
+- 私有备份vscode-settings-before-cli-update-20261011.json保留全部原配置，不可对外导出。
+- 建议用户Reload Window后重连；自动更新流程的根本中断层仍未确定。
+
+P2P和DERP准备
+- 原yun空间在hgx-121停止；用户重新启动后调度hgx-096。
+- Windows STUN正常，两GPU节点直接Google/Cloudflare/miwifi STUN均超时；详见05。
+- 用户明确只有CPU能上网，GPU都不能直接公网访问。
+- 推荐CPU机房独立DERP，控制面不迁移。
+- 最初8443/TLS Pod方案仅准备，用户补充现有Envoy Gateway可终止TLS后替换成HTTP Pod+现有HTTPS Gateway。
+- 最终文件已编译和本地协议验证、YAML校验/配置dry-run，并输出下载ZIP。
+- 未推镜像、未创建coder-networking资源、未应用Coder补丁、未发布DERP相关模板变化。
+
+关键链接
+PR：https://github.com/aicodeing-new/coder-magik/pull/29
+成功run：https://github.com/aicodeing-new/coder-magik/actions/runs/38120234645
+CI配置：/root/coder/.github/workflows/build-tag-image.yaml
+部署资产：/root/coder-deploy/ali-prod/

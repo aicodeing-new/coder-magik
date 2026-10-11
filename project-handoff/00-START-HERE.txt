@@ -1,0 +1,57 @@
+项目内自包含交接资料
+从仓库根目录阅读 project-handoff/00-START-HERE.txt；本目录所有专题、快照、配置和诊断脚本均已随目录保存。
+不需要访问原/root/coder-deploy目录才能理解项目和找到所附配置。
+文中绝对路径是2026-10-11原部署机器上的操作/凭据位置，不保证在其他机器存在。
+异机操作：配置副本优先使用本目录artifacts/；集群凭据需按组织既有流程获取，不在资料包内。
+这些是内部项目交接资料，不是Coder通用产品文档，也不应被当作适用所有Coder部署的默认配置。
+当前正本为仓库project-handoff/；原/root/coder-deploy/handoff/保留为当时备份，后续不双写维护。
+
+Coder Magik 项目交接入口
+记录日期：2026-10-11，Asia/Shanghai。
+资料来源：本会话可见的用户要求、已有部署文件、Git 历史、实际排障结果，以及本次交接时的只读线上核对。
+这不是全部历史聊天的逐字导出。未保留的历史日志、构建失败细节和没有验证的事项明确标为未知。
+
+阅读顺序
+1. 01-PROJECT-AND-DECISIONS.txt：目标、用户已确认的需求、能力和边界。
+2. 02-CURRENT-DEPLOYMENT.txt：当前资源、地址、凭据位置和真实线上状态。
+3. 03-CHANGE-HISTORY.txt：代码、发布、模板、SSO、代理和客户端变更。
+4. 04-OPERATIONS.txt：运维流程、验证和回退原则。
+5. 05-NETWORK-AND-DERP.txt：P2P 排障证据、推荐方案、尚未实施的部署包。
+6. 06-LICENSE-AND-REPORTING.txt：已存在代码的实现、线上 entitlement 核对、遥测边界。
+7. 07-OPEN-WORK.txt：下一位 agent 应继续处理的任务和未验证事项。
+8. state.json、live-snapshot.json、artifact-inventory.json：机器可读索引和证据。
+9. artifacts/：白名单复制的模板、RBAC、代理、SSO和DERP配置；见目录清单。
+
+最重要的当前结论
+- 生产入口 https://coder.magikcloud.cn，控制面 ali-prod/coder。
+- 线上镜像已经是 v1.0.3-amd64，服务报告 v2.38.0-devel+magik.1.0.3.47e1868。
+- kubernetes 模板当前激活 codex-vscode-preinstall-20261011，支持 beast01/yunqiao、0至8 GPU、自定义开发镜像和独立PVC。
+- 飞书登录已成功上线，依赖独立 Dex + Python adapter，未原生集成进 Coder 镜像。
+- 当前用户工作空间 yzhang/yunqiao-amaranth-pelican-21 在 hgx-096 运行，并且已更新到当前模板。
+- GPU没有直接公网出口，CPU代理支持SOCKS5 UDP，但Coder P2P UDP不会使用HTTP_PROXY。当前仍经ali-prod DERP。
+- yunqiao机房独立DERP经Envoy Gateway终止TLS的方案只准备了文件，未推镜像、未创建资源、未改生产Coder配置。
+
+不要把旧资料当成现状
+/root/coder-deploy/ali-prod/README.md、feishu-sso/README.md、values.yaml、rendered.yaml仍有v1.0.2或较早模板描述。
+release-v1.0.3.json的deployed=false记录的是当时agent未执行升级；之后用户已经升级，线上只读核对已证实。
+特别注意values.yaml不仅镜像版本旧，也未包含线上CODER_ENTERPRISE_HARDCODE_LICENSE=true。
+再次Helm升级前必须核对live配置和Helm values，不能原样应用旧文件，否则可能回退功能或登录配置。
+历史数据保留原样；本交接资料和最新线上核对优先用于判断当前状态。
+
+凭据规则
+包内不包含GitHub Token、数据库密码、飞书Secret、Coder会话、kubeconfig明文或Terraform state。
+这些值曾在会话或本机配置中出现，不应再次复制进文档、Issue、提交、日志或分享包。
+只记录Secret名称、凭据文件路径和认证方法。配置文件路径能定位凭据，不代表包内包含凭据。
+/root/coder-deploy-private/内的备份、state和Windows配置含敏感信息风险，只在授权环境按需读取，禁止整体打包。
+
+授权与执行边界
+用户希望agent持续执行已授权的工作，避免重复问许可。普通检查、准备文件、修复可逆配置可按任务上下文推进。
+这份交接记录本身不授予新的上线、开放网络、删除数据、发送外部消息或合并发布权限。
+不能挤占线上GPU、取消生产节点限制或绕过GPU调度来消除Pending。
+不要重启已有GPU工作空间仅为验证；必要时结合用户当前指令和线上状态判断。
+遵守 /root/coder/AGENTS.md、AGENTS.local.md 和范围适用的仓库指导。
+
+维护方法
+每次变更同步更新当前状态、已做/未做、证据和待办。不要只追加流水而留下冲突的“当前”描述。
+生产状态和agent代码目录会变化，执行操作前重新核对。机器可读快照是记录日的证据，不是实时状态。
+可分享资料包：原本机下载路径/mnt/d/Downloads/coder-project-handoff-20261011.zip。

@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coder-feishu-sso
+  namespace: coder
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: coder-feishu-sso
+  template:
+    metadata:
+      labels:
+        app: coder-feishu-sso
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: dex
+          image: harbor.magikcloud.cn/library/dex@sha256:fd4ab5d117005b927433133f1d7db7cc30fbb537c377912b75b349edff47df01
+          command: [dex, serve, /etc/dex/dex.json]
+          ports:
+            - name: http
+              containerPort: 5556
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: '1', memory: 512Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          readinessProbe:
+            httpGet: {path: /sso/.well-known/openid-configuration, port: http}
+          volumeMounts:
+            - {name: dex-config, mountPath: /etc/dex, readOnly: true}
+        - name: feishu-adapter
+          image: harbor.magikcloud.cn/library/python@sha256:2b4f19dae3a777dfc3b76730bda1e82e1f66ab2a2686fa93ca78edbfb4f04ffe
+          command: [python, -B, /app/adapter.py]
+          envFrom:
+            - secretRef: {name: coder-feishu}
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+            limits: {cpu: 500m, memory: 128Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          readinessProbe:
+            exec:
+              command: [python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8081/healthz', timeout=2)"]
+          volumeMounts:
+            - {name: adapter, mountPath: /app, readOnly: true}
+      volumes:
+        - name: dex-config
+          secret: {secretName: coder-sso-config}
+        - name: adapter
+          configMap: {name: coder-feishu-adapter}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: coder-feishu-sso
+  namespace: coder
+spec:
+  selector:
+    app: coder-feishu-sso
+  ports:
+    - {name: http, port: 5556, targetPort: http}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: coder-feishu-sso
+  namespace: coder
+spec:
+  parentRefs:
+    - name: magik-gw
+      namespace: envoy-gateway-system
+      sectionName: https
+  hostnames: [coder.magikcloud.cn]
+  rules:
+    - matches:
+        - path: {type: PathPrefix, value: /sso}
+      backendRefs:
+        - {name: coder-feishu-sso, port: 5556}

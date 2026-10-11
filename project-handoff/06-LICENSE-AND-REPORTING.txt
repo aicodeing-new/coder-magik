@@ -1,0 +1,37 @@
+已有license和自动上报实现的事实记录
+仅记录本fork已存在的实现和部署状态，不声称持有商业许可证、上游支持或所有功能已验收。
+
+源码包含订阅功能
+enterprise/目录包含商业/企业功能代码；源码可见不等于其默认配置或每种发行binary都启用。
+现有修改在enterprise/coderd/license/license.go。
+当CODER_ENTERPRISE_HARDCODE_LICENSE精确等于字符串true时，Entitlements返回hardcodedEntitlements，不进入常规license读取/校验路径。
+hardcodedEntitlements遍历codersdk.FeatureNames，Entitlement=Entitled、HasLicense=true、空warnings/errors。
+Enabled取enablements[name]，不是把每个功能强制Enabled=true；仍需配置对应功能和使用enterprise server入口。
+代码注释将此路径定位为内部开发测试。不是生成签名JWT，也不是向数据库上传官方license。
+普通API签名验证和license处理代码仍存在，不应说已删除所有license功能。
+
+当前线上核对
+Deployment env明确包含CODER_ENTERPRISE_HARDCODE_LICENSE=true。
+认证GET /api/v2/entitlements返回has_license=true、require_telemetry=false、27个feature、其中10个enabled、warnings/errors为空。
+早期commit描述“26功能”是历史表述，当前代码FeatureNames和线上结果为27，不能固定沿用26。
+因此现状不是“镜像里没有修改”或“平台没有license能力”；有entitlement不代表全部功能已开启/可用。
+本次没有开启剩余17个feature，也未逐一测试企业能力。
+旧values.yaml缺此环境变量，重用可能回退。运行时env和API为当前依据。
+
+自动上报改动
+cli/server.go创建telemetry reporter时Disabled=true，并不把它赋给server options。
+enterprise/cli/server.go不启动usage.NewTallymanPublisher；本地usage cron仍可能记录数据库使用事件。
+TrialGenerator在enterprise/cli/server.go直接报disabled。
+enterprise/trialer/trialer.go Request直接返回disabled错误，不请求远端trial licensor。
+生产env CODER_TELEMETRY_ENABLE=false、CODER_UPDATE_CHECK=false，buildinfo telemetry=false。
+禁用上述上报不代表程序不访问任何外部地址：SSO、provider依赖、STUN、镜像/Agent/VSCode下载、用户显式AI调用是不同路径。
+
+交接时新确认的重要边界
+coderd/telemetry/telemetry.go New仍会启动remoteReporter.runSnapshotter。
+runSnapshotter在判断Enabled之前调用RecordTelemetryStatus；如果数据库曾记录enabled=true、现在关闭，可能调用reportSync发送一次关闭状态snapshot。
+ShouldReportTelemetryDisabled明确判断“曾开启 -> 关闭”。
+因此不能仅从Disabled=true或未挂server options推导“任何启动都绝无telemetry网络请求”。
+本次未读取生产telemetry状态行、未抓包验证是否曾发送，不能声称线上实际发生了这条请求。
+如果用户后续要求严格零上报，应单独修复/验证构造路径及启用转关闭场景，而不是现在静默扩大修改范围。
+客户端网络诊断、VSCode Coder插件、Desktop等也应按各自版本/配置核查，不属于上述服务端结论。
+没有完成全进程全时间出站抓包审计；未知流量不能猜成上报，也不能猜成无上报。

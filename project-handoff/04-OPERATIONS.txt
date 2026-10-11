@@ -1,0 +1,92 @@
+常用运维操作和验证
+所有命令执行前重新核对目标、权限、活跃工作空间及当前版本，不将记录当作实时状态。
+
+快速只读检查
+kubectl --kubeconfig=/mnt/d/Downloads/ali-prod-kubeconfig-admin.yaml -n coder get pods,deployments,pvc,httproute
+kubectl --kubeconfig=/mnt/d/Downloads/yunqiao-ops-admin.yaml -n coder-workspaces get pods,pvc -o wide
+kubectl --kubeconfig=/mnt/d/Downloads/beast01-apiserver.yaml -n coder-workspaces get pods,pvc -o wide
+curl --fail https://coder.magikcloud.cn/healthz
+curl --fail https://coder.magikcloud.cn/api/v2/buildinfo
+coder --global-config /root/.config/coder-ali-prod --no-version-warning ping --num 5 yzhang/yunqiao-amaranth-pelican-21
+coder --global-config /root/.config/coder-ali-prod --no-version-warning netcheck
+Coder认证API使用session文件读入内存、Coder-Session-Token请求头；不打印token/headers或整个deployment/config。
+
+发布模板
+权威源/root/coder-deploy/ali-prod/gpu-template/：main.tf、modules.tf、.terraform.lock.hcl、scripts/。
+先备份当前激活模板及必要Terraform状态到私有目录，备份不能分享。
+在有Terraform/provider可用的环境执行fmt/init/validate及针对影响的计划检查。
+可复用Coder Pod内的Terraform验证，但不要修改正在使用的provider镜像或环境；临时目录验证后清理。
+发布示例：
+coder --global-config /root/.config/coder-ali-prod templates push kubernetes --org coder --directory /root/coder-deploy/ali-prod/gpu-template
+参数覆盖dev_image等admin var时保留原值。需要命名版本时先看当前CLI --help，不猜flag。
+确认模板active_version_id/build succeeded；旧工作空间要显式更新/重建，不能把模板发布当成所有空间都已升级。
+创建表单：https://coder.magikcloud.cn/templates/kubernetes/workspace。
+不要只patch运行Pod，Terraform后续会覆盖临时修改。
+
+新增GPU集群
+在目标集群应用namespace/ServiceAccount/Role/RoleBinding，范围仅coder-workspaces。
+使用专用SA获取token，控制面Secret添加kubeconfig context，校验证书和API网络。
+不要输出token，不把admin kubeconfig复制进平台。legacy SA token警告不代表连接失败。
+配置同名coder-workspace-proxy和ceph-fs开发PVC条件，增加模板cluster选项。
+参考bootstrap.py，但先确认其输入、现有context保留逻辑及凭据有效性，不无条件重复bootstrap覆盖。
+先只读API/临时无GPU网络测试，清理临时Pod，再由用户需要创建GPU空间验证。
+模板新增Service/headless Service时必须另扩RBAC；当前权限不包括这些资源。
+
+升级Coder和发版
+工作树先检查，遵守Git hooks；无用户发布请求时不要自行tag/push。
+工作流trigger tag v*或workflow_dispatch tag/ref；全历史checkout生成版本metadata。
+镜像发布号与服务协议版本分开；workflow CODER_SERVER_VERSION当前2.38.0-devel。
+运行时版本应形如2.38.0-devel+magik.<发行号>.<commit>，不要再直接用1.0.x导致Desktop拒绝。
+若升级上游，需要按实际代码同步基础服务版本，不随意只改数字伪装兼容。
+检查RUNNER_TEMP下GOCACHE/GOMODCACHE、mise和sqlc/protoc/drpc/zstd、磁盘空间，查看对应Actions失败步骤和日志。
+镜像推GHCR后按公司流程同步Harbor/SWR，确认digest，不把同tag镜像误当相同源码。
+升级前读取live Deployment和实际Helm配置，只保存到私有位置，核对license env、OIDC Secrets、providers挂载、DERP env和当前image。
+旧values.yaml含v1.0.2且缺license env，不能原样helm upgrade；先合并当前配置，保留db和SSO Secret引用。
+Helm chart源/root/coder-deploy/ali-prod/chart-source/helm/coder。
+验证rollout、health、buildinfo、旧管理员/飞书登录、Agent下载与WindowsCLI版本以及现有空间连接。
+回退应使用上一个已验证镜像和配置，涉及数据库迁移先确认向后兼容，不盲目rollout undo。
+
+持久化和资源故障
+Pending先读Pod events、GPU可分配量、节点taint、RuntimeClass、PVC绑定和image pull。
+不取消生产节点限制、不重叠占线上GPU、不创建额外8GPU测试空间来消除等待。
+停止空间保留PVC；删除空间会删PVC，底层Retain卷另行管理。
+移出/home/coder的代码/插件不保证重建保留；模型/venv/编译产物建议放/home/coder下。
+临时验证Pod不申请GPU，不挂主机数据，资源有限且设置activeDeadline，完成后删除。
+
+主机运行时
+开发空间docker ps读取主机Docker；ctr --address /run/containerd/containerd.sock --namespace k8s.io containers list读取Kubernetes containerd。
+模板hostPath /run/docker.sock -> /var/run/docker.sock；/run/containerd/containerd.sock -> 同路径。
+必须已有socket，hostPath类型Socket；不启动新dockerd。
+Pod换节点后管理的是新节点主机容器。stop/rm等直接影响线上，不作为例行诊断执行。
+
+飞书SSO维护
+文档及代码/root/coder-deploy/ali-prod/feishu-sso/，详见06以外的SSO状态JSON和02配置。
+AppID cli_a929453a72f8dcbb，Feishu redirect https://coder.magikcloud.cn/sso/callback。
+Dex回调到Coder https://coder.magikcloud.cn/api/v2/users/oidc/callback，不与Feishu后台地址混淆。
+Secrets coder-feishu、coder-sso-private、coder-sso-config；不在分享包写具体Secret值。
+部署coder-feishu-sso包含Dex5556与adapter127.0.0.1:8081，共享Pod网络。
+固定镜像digest，保持coder_sso持久化库，避免重建签名密钥。
+修改adapter.py要重新生成并应用adapter-configmap.yaml然后滚动SSO Deployment；Secret变更也需重启。
+单测：cd /root/coder-deploy/ali-prod/feishu-sso && python3 -B -m unittest discover -s . -p 'test_*.py'。
+configure.py按现有Secret读取凭据，当前工作机直连RDS不可用；必要时用Coder Pod内环境执行专用DB bootstrap。
+不自动把新OIDC账号绑定已有密码账号，不修改组织权限来掩盖身份绑定问题。
+验证discovery/JWKS、redirect/state、真实授权和管理员原会话，不能只看Pod Running。
+
+Codex预装
+脚本/root/coder-deploy/ali-prod/gpu-template/scripts/install-codex-vscode.sh。
+coder_script run_on_start=true、start_blocks_login=false。
+优先复用/home/coder/.vscode-server/cli/servers/Stable-*/server/bin/code-server等。
+若缺Server则下载update.code.visualstudio.com的Linux x64 stable安装器缓存/home/coder/.cache/coder/vscode-extension-installer。
+扩展目录/home/coder/.vscode-server/extensions；检查openai.chatgpt存在则跳过。
+失败查看Agent脚本日志/代理/CDN访问，下一次启动会重试；不要强制覆盖用户已有版本或共用API key。
+
+Windows CLI修复复查
+VSCode settings coder.binaryDestination指向新版单独exe，使用其真实--version。
+旧文件可能被SSH进程占用，不直接杀进程覆盖。
+Coder下载路径/bin/coder-windows-amd64.exe；用完整下载长度/hash/本机version核对。
+实际VSCode日志和telemetry在globalStorage/coder.coder-remote，筛选字段打印，避免暴露session或其他配置。
+用户重载VSCode后再看新连接记录；不要把旧时间的telemetry当成修复后结果。
+
+检查范围
+配置/文档变化只做有意义的验证，不为可逆低风险文件写镜像实现的测试。
+发布、网络、身份和GPU变更必须说明已验证与未验证的边界；health通过不是所有功能都通过。
