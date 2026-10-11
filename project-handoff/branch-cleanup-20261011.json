@@ -1,0 +1,342 @@
+{
+  "date": "2026-10-11",
+  "repo": "aicodeing-new/coder-magik",
+  "main_before": "80e3f5ddf56f9c57a0945b01639747d2ac323e31",
+  "main_after": "80e3f5ddf56f9c57a0945b01639747d2ac323e31",
+  "main_unchanged": true,
+  "tags_unchanged": true,
+  "deleted_branch_count": 29,
+  "deleted_merged_count": 1,
+  "deleted_dependabot_count": 28,
+  "remaining_remote_branches": [
+    "main"
+  ],
+  "remaining_local_branches": [
+    "main"
+  ],
+  "pull_requests": [
+    {
+      "headRefName": "fix/self-hosted-go-cache",
+      "number": 29,
+      "state": "MERGED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/29"
+    },
+    {
+      "headRefName": "dependabot/npm_and_yarn/site/storybook/addon-a11y-10.5.10",
+      "number": 28,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/28"
+    },
+    {
+      "headRefName": "dependabot/github_actions/github-actions-eced993bb3",
+      "number": 27,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/27"
+    },
+    {
+      "headRefName": "dependabot/npm_and_yarn/site/multi-a4011dfb69",
+      "number": 26,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/26"
+    },
+    {
+      "headRefName": "dependabot/npm_and_yarn/site/cn-0.4.0",
+      "number": 25,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/25"
+    },
+    {
+      "headRefName": "dependabot/npm_and_yarn/site/types/ssh2-1.15.6",
+      "number": 24,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/24"
+    },
+    {
+      "headRefName": "dependabot/npm_and_yarn/site/jszip-3.10.2",
+      "number": 23,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/23"
+    },
+    {
+      "headRefName": "dependabot/npm_and_yarn/site/sonner-2.0.8",
+      "number": 22,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/22"
+    },
+    {
+      "headRefName": "dependabot/npm_and_yarn/site/rolldown/plugin-babel-0.2.4",
+      "number": 21,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/21"
+    },
+    {
+      "headRefName": "dependabot/npm_and_yarn/site/storybook/addon-links-10.5.10",
+      "number": 20,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/20"
+    },
+    {
+      "headRefName": "dependabot/npm_and_yarn/site/knip-5.88.1",
+      "number": 19,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/19"
+    },
+    {
+      "headRefName": "dependabot/npm_and_yarn/site/vite-5b93057221",
+      "number": 18,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/18"
+    },
+    {
+      "headRefName": "dependabot/npm_and_yarn/site/react-c3539c2691",
+      "number": 17,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/17"
+    },
+    {
+      "headRefName": "dependabot/go_modules/storj.io/drpc-1.0.0",
+      "number": 16,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/16"
+    },
+    {
+      "headRefName": "dependabot/go_modules/go.opentelemetry.io/otel/exporters/otlp/otlptrace-1.47.0",
+      "number": 15,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/15"
+    },
+    {
+      "headRefName": "dependabot/go_modules/github.com/prometheus/common-0.72.0",
+      "number": 14,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/14"
+    },
+    {
+      "headRefName": "dependabot/go_modules/github.com/emersion/go-smtp-0.25.0",
+      "number": 13,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/13"
+    },
+    {
+      "headRefName": "dependabot/go_modules/github.com/valyala/fasthttp-1.75.0",
+      "number": 12,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/12"
+    },
+    {
+      "headRefName": "dependabot/go_modules/github.com/hashicorp/terraform-json-0.29.0",
+      "number": 11,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/11"
+    },
+    {
+      "headRefName": "dependabot/go_modules/github.com/u-root/u-root-0.16.0",
+      "number": 10,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/10"
+    },
+    {
+      "headRefName": "dependabot/go_modules/github.com/hashicorp/hc-install-0.10.0",
+      "number": 9,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/9"
+    },
+    {
+      "headRefName": "dependabot/go_modules/go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc-1.47.0",
+      "number": 8,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/8"
+    },
+    {
+      "headRefName": "dependabot/go_modules/github.com/tidwall/gjson-1.20.0",
+      "number": 7,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/7"
+    },
+    {
+      "headRefName": "dependabot/go_modules/github.com/chromedp/cdproto-0.157.9",
+      "number": 6,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/6"
+    },
+    {
+      "headRefName": "dependabot/go_modules/github.com/chromedp/chromedp-0.20.1",
+      "number": 5,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/5"
+    },
+    {
+      "headRefName": "dependabot/go_modules/github.com/shopspring/decimal-1.5.0",
+      "number": 4,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/4"
+    },
+    {
+      "headRefName": "dependabot/go_modules/github.com/open-policy-agent/opa-1.21.1",
+      "number": 3,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/3"
+    },
+    {
+      "headRefName": "dependabot/go_modules/x-562e83b17e",
+      "number": 2,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/2"
+    },
+    {
+      "headRefName": "dependabot/docker/scaletest/templates/scaletest-runner/codercom/enterprise-base-96f02cb",
+      "number": 1,
+      "state": "CLOSED",
+      "url": "https://github.com/aicodeing-new/coder-magik/pull/1"
+    }
+  ],
+  "backup_bundle": "/root/coder-deploy/branch-cleanup/20261011/branches-before-cleanup.bundle",
+  "backup_manifest": "/root/coder-deploy/branch-cleanup/20261011/before.json",
+  "deleted_branches": [
+    {
+      "branch": "dependabot/docker/scaletest/templates/scaletest-runner/codercom/enterprise-base-96f02cb",
+      "sha": "34cc1c50144711d2300a7b55bdcb4b1c7e67eaaa",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/github_actions/github-actions-eced993bb3",
+      "sha": "a6d7c9dc6268cd40110ce53bafe55153ecc9d38a",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/go_modules/github.com/chromedp/cdproto-0.157.9",
+      "sha": "216946f7b9f01d004f4817bacc99011e98c7c126",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/go_modules/github.com/chromedp/chromedp-0.20.1",
+      "sha": "647e96c3b5d09dbd5c424e61a2be62d55c20ad10",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/go_modules/github.com/emersion/go-smtp-0.25.0",
+      "sha": "576b6507448ff715ff7ae70f6b00ac67e97bb04a",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/go_modules/github.com/hashicorp/hc-install-0.10.0",
+      "sha": "b4f5197d9811f9ba885482c66e82e2d354855264",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/go_modules/github.com/hashicorp/terraform-json-0.29.0",
+      "sha": "41da972d2d7f21c3480ca2997557a946380968ab",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/go_modules/github.com/open-policy-agent/opa-1.21.1",
+      "sha": "75a8eaef03055091d7af26ccc54eb55ebda7c73c",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/go_modules/github.com/prometheus/common-0.72.0",
+      "sha": "00a0a879cb4f360c26bad1ccbaa3bf7a1878aca9",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/go_modules/github.com/shopspring/decimal-1.5.0",
+      "sha": "7f6cb50975873d193fa596019b7d9bc577c23fc1",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/go_modules/github.com/tidwall/gjson-1.20.0",
+      "sha": "5b7f1a19f882ab8cd6cc25759ae47b2e669c4d37",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/go_modules/github.com/u-root/u-root-0.16.0",
+      "sha": "298e66387ab44ff4d6ec5839c5c6031c9abe3250",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/go_modules/github.com/valyala/fasthttp-1.75.0",
+      "sha": "f9dbccc200a8a91b63df90df9d558fa4dc990a76",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/go_modules/go.opentelemetry.io/otel/exporters/otlp/otlptrace-1.47.0",
+      "sha": "4fd909b4b764cc8a02a6812ffb18887302e25760",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/go_modules/go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc-1.47.0",
+      "sha": "1785ab07f624318d1d2a38eb7c121970ef97b910",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/go_modules/storj.io/drpc-1.0.0",
+      "sha": "f4db855ad20eeb354f593a5e90d8db86e3e8552b",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/go_modules/x-562e83b17e",
+      "sha": "7c392f04dec4ed401dfca15f2e2a6c3fc4be296d",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/npm_and_yarn/site/cn-0.4.0",
+      "sha": "bf1a7102d291daf15043241f385eb3a65b2d7177",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/npm_and_yarn/site/jszip-3.10.2",
+      "sha": "4f003f6433f4dd504446e43d597b1c3b4264114e",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/npm_and_yarn/site/knip-5.88.1",
+      "sha": "c4b49ac446304fd345c5cb5bfc5fcf0de2d72711",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/npm_and_yarn/site/multi-a4011dfb69",
+      "sha": "c711929081919686dcde15b18a80e835364cd17e",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/npm_and_yarn/site/react-c3539c2691",
+      "sha": "3e2a6e31f2d8c629a0a9ab034008f40ace942c1b",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/npm_and_yarn/site/rolldown/plugin-babel-0.2.4",
+      "sha": "2671cb54b9ce17cd7f794a53d8127e39f44c21ce",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/npm_and_yarn/site/sonner-2.0.8",
+      "sha": "ba937fa2f3b173b326fac90d4fc46552a4ed1566",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/npm_and_yarn/site/storybook/addon-a11y-10.5.10",
+      "sha": "2c1a7a5a62ce6ef141b157ff247a5f8e2fe1f837",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/npm_and_yarn/site/storybook/addon-links-10.5.10",
+      "sha": "9b2b41c023061332dd9639bff80d07caf9d1fd04",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/npm_and_yarn/site/types/ssh2-1.15.6",
+      "sha": "d3d0cd2f119854d0efd61c00c1182b13a7038e9a",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "dependabot/npm_and_yarn/site/vite-5b93057221",
+      "sha": "34a9edcc1b37dd443baad9562bbf65c002de5438",
+      "classification": "unmerged-dependency-proposal"
+    },
+    {
+      "branch": "fix/self-hosted-go-cache",
+      "sha": "6c959e43ea9e2f87909eb3d56ccdcd1c8c7ba17c",
+      "classification": "merged"
+    }
+  ]
+}

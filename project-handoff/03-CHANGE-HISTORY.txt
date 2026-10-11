@@ -67,3 +67,14 @@ PR：https://github.com/aicodeing-new/coder-magik/pull/29
 成功run：https://github.com/aicodeing-new/coder-magik/actions/runs/38120234645
 CI配置：/root/coder/.github/workflows/build-tag-image.yaml
 部署资产：/root/coder-deploy/ali-prod/
+
+2026-10-11 用户授权清理main以外分支
+- 清理前main已更新为80e3f5ddf56f9c57a0945b01639747d2ac323e31。
+- 核对29个非main分支：1个已合并fix/self-hosted-go-cache，28个未合并Dependabot依赖提案。
+- 未将依赖更新合入main。创建并验证增量Git bundle及每个分支SHA/关联PR记录后，原子删除所有29个远端分支。
+- GitHub自动关闭相关28个提案PR，历史PR仍在；PR29保持MERGED。
+- 同时安全删除已合并本地fix分支，远端和本地都只保留main。
+- 操作前后main SHA和tag列表完全一致，没有发布新tag或触发镜像build。
+- 恢复包：/root/coder-deploy/branch-cleanup/20261011/branches-before-cleanup.bundle。
+- 清理记录：branch-cleanup-20261011.json；备份before.json含原始PR/分支，RESTORE.txt说明恢复方法。
+- Dependabot配置未禁用，之后定时更新仍可能新建分支。

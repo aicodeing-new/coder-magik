@@ -100,5 +100,21 @@
   "portable_handoff_directory": "project-handoff",
   "artifact_directory": "project-handoff/artifacts",
   "historical_handoff_root": "/root/coder-deploy/handoff",
-  "canonical_memory": "repository project-handoff/; external snapshot retained as historical backup"
+  "canonical_memory": "repository project-handoff/; external snapshot retained as historical backup",
+  "branch_cleanup": {
+    "date": "2026-10-11",
+    "remote_branches": [
+      "main"
+    ],
+    "local_branches": [
+      "main"
+    ],
+    "deleted_count": 29,
+    "deleted_dependabot_count": 28,
+    "deleted_merged_count": 1,
+    "main_unchanged": true,
+    "tags_unchanged": true,
+    "backup_directory": "/root/coder-deploy/branch-cleanup/20261011",
+    "dependabot_disabled": false
+  }
 }
