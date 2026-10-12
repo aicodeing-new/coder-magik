@@ -72,13 +72,16 @@ configure.py按现有Secret读取凭据，当前工作机直连RDS不可用；�
 不自动把新OIDC账号绑定已有密码账号，不修改组织权限来掩盖身份绑定问题。
 验证discovery/JWKS、redirect/state、真实授权和管理员原会话，不能只看Pod Running。
 
-Codex预装
-脚本/root/coder-deploy/ali-prod/gpu-template/scripts/install-codex-vscode.sh。
-coder_script run_on_start=true、start_blocks_login=false。
-优先复用/home/coder/.vscode-server/cli/servers/Stable-*/server/bin/code-server等。
-若缺Server则下载update.code.visualstudio.com的Linux x64 stable安装器缓存/home/coder/.cache/coder/vscode-extension-installer。
-扩展目录/home/coder/.vscode-server/extensions；检查openai.chatgpt存在则跳过。
-失败查看Agent脚本日志/代理/CDN访问，下一次启动会重试；不要强制覆盖用户已有版本或共用API key。
+Codex预装（2026-10-12起为OSS私有bucket方案）
+脚本/root/coder-deploy/ali-prod/gpu-template/scripts/install-codex-vscode.sh；coder_script run_on_start=true、start_blocks_login=false。
+扩展bundle：openai.chatgpt+openai.codex-audio+ms-ceintl中文语言包+extensions.json，tar.gz 361MB（sha256=6a4ec63b5fe4a1a627126f3de4656a5c3bc7c0a13af05ccd2c29e74a419f2f4a）。
+存放：私有OSS bucket magik-velero-backup 的 vscode-exp/ 前缀；工作区脚本用OSS V1 HMAC-SHA1签名curl直接GET（不需要ossutil），经集群代理实测下载约2秒。
+凭据：两集群coder-workspaces命名空间Secret coder-oss-pull（OSS_ACCESS_KEY_ID/SECRET/ENDPOINT=oss-accelerate.aliyuncs.com），Deployment经env_from注入。
+安装逻辑：marker文件~/.cache/coder/codex-vscode-extensions.version匹配版本则秒级跳过；无marker但已有openai.chatgpt目录视为旧版装过只补marker；全新则下载→sha256校验→同文件系统staging解压→原子改名到/home/coder/.vscode-server/extensions→最后写marker，中断自愈。
+升级扩展：重打tar上传OSS→更新脚本内codex_ext_version与tar_sha256→推新模板版本；老空间下次启动自动重装。
+实测（2026-10-12干净验证）：yunqiao全新安装全程30.4秒（CephFS，下载约2秒），二次启动10.6毫秒跳过；beast01全新安装约15.4分钟（NFS小文件写入为主，下载2秒）；安装中途被停止/重启可自愈（marker与目录状态决定重装或跳过）。
+重要：Secret中的AK当前为主AK（可写备份bucket）。工作区root用户可读env，应尽快换成仅magik-velero-backup/vscode-exp/*只读的RAM子账号AK，AK也曾在对话中明文出现过，建议轮换。
+失败查看Agent脚本日志/代理/OSS可达性，下一次启动会自动重试。
 
 Windows CLI修复复查
 VSCode settings coder.binaryDestination指向新版单独exe，使用其真实--version。

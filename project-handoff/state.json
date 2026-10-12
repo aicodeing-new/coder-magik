@@ -24,8 +24,8 @@
   "template": {
     "name": "kubernetes",
     "id": "dbf99fc1-e511-4958-9762-b4b7f8346919",
-    "active_version_id": "0e279722-bb4c-4704-807f-ced899132a59",
-    "active_version_name": "codex-install-robust-20261011",
+    "active_version_id": "6453df5e-ab5c-401b-a6c3-9c95c57481cb",
+    "active_version_name": "codex-oss-preload-20261012",
     "clusters": [
       "beast01",
       "yunqiao"
@@ -36,7 +36,7 @@
     ],
     "gpu_default": 8,
     "custom_image": true,
-    "codex_vscode_preinstall": true,
+    "codex_vscode_preinstall": "oss-bundle",
     "hostNetwork": true,
     "privileged": true,
     "persistent_home": "/home/coder",

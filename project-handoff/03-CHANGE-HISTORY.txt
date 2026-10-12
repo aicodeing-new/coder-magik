@@ -129,3 +129,11 @@ CI配置：/root/coder/.github/workflows/build-tag-image.yaml
 - 用户自行将线上Deployment镜像更新为swr...coder-magik:v1.0.4-amd64（Pod coder-69db84f7cc-s2p28），未走helm upgrade（release仍revision 4）。
 - 核验：buildinfo返回v2.38.0-devel+magik.1.0.4.0ba14b2；前端bundle（assets/index-CvPH0MzR.js）包含"Workspace UUID"与"切换为中文"字符串；HTTP 200。
 - 交接记录同步：02/state.json生产镜像与版本更新为v1.0.4；known_drift改为"helm release revision 4存储values过期，补跑helm upgrade零变更对齐"。
+
+2026-10-12 功能：Codex扩展预装改为私有OSS签名下载（codex-oss-preload-20261012，6453df5e，当前active）
+- 背景：原方案（下载VS Code Server 222MB+从marketplace装扩展+全量写慢速NAS）在beast01首次启动约22分钟且依赖代理与marketplace；用户决定改为私有OSS bucket分发，bucket不对外。
+- 产物：openai.chatgpt 26.1007.21434 + openai.codex-audio 26.1007.21434 + ms-ceintl中文语言包1.131.2026090407 + extensions.json，tar.gz 361MB，sha256=6a4ec63b5fe4a1a627126f3de4656a5c3bc7c0a13af05ccd2c29e74a419f2f4a。打包自0GPU诊断空间经正规code-server --install-extension安装，保证索引正确。
+- 存储：OSS bucket magik-velero-backup 的 vscode-exp/ 前缀（用户既有bucket）。上传用curl+OSS V1 HMAC-SHA1签名PUT（361MB/3.6秒，经代理至oss-accelerate端点）；ossutil在GPU网络下三个源均不可达（用户镜像403/阿里CDN路径404），全程未依赖ossutil。
+- 模板：脚本改为签名curl GET下载+sha256校验+同文件系统staging解压+原子改名+marker（~/.cache/coder/codex-vscode-extensions.version）；旧版空间检测到openai.chatgpt目录只补marker。main.tf Deployment新增env_from secretRef coder-oss-pull（两集群coder-workspaces已建，AK/SK/ENDPOINT=oss-accelerate.aliyuncs.com）。Secret必须先于模板版本存在于两集群，否则Pod CreateContainerConfigError。
+- 验证：beast01全新安装15m19s（exit 0，NFS小文件写入为主）；yunqiao干净验证（版本6453df5e）首次30.4秒、二次启动10.6毫秒、中断自愈；签名GET回读sha256一致。诊断空间与Retain PV均已清理。
+- 遗留：Secret中AK当前为可写主AK且曾明文出现在对话中，应换为仅magik-velero-backup/vscode-exp/*只读的RAM子账号并轮换现有AK；扩展升级流程见04。
