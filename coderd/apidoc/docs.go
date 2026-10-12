@@ -32563,6 +32563,11 @@ const docTemplate = `{
                     "type": "string",
                     "format": "uri"
                 },
+                "email": {
+                    "description": "Email is only applied for users whose login type is neither password\nnor none, since email is a recovery credential for those accounts. For\nother login types the identity provider remains the source of truth\nand will overwrite this value on the next login, unless it only\nreturns a placeholder address (reserved \".invalid\" TLD).",
+                    "type": "string",
+                    "format": "email"
+                },
                 "name": {
                     "type": "string"
                 },

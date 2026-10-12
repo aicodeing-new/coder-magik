@@ -6,11 +6,11 @@ const meta: Meta<typeof AccountForm> = {
 	title: "pages/UserSettingsPage/AccountForm",
 	component: AccountForm,
 	args: {
-		email: "test-user@org.com",
 		isLoading: false,
 		initialValues: {
 			username: "test-user",
 			name: "Test User",
+			email: "test-user@org.com",
 			avatar_url: "",
 		},
 		updateProfileError: undefined,
@@ -48,5 +48,18 @@ export const WithError: Story = {
 export const Editable: Story = {
 	args: {
 		editable: true,
+	},
+};
+
+export const EditableEmail: Story = {
+	args: {
+		editable: true,
+		emailEditable: true,
+		initialValues: {
+			username: "test-user",
+			name: "Test User",
+			email: "ou_test@feishu.invalid",
+			avatar_url: "",
+		},
 	},
 };

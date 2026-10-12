@@ -7,6 +7,7 @@ import AccountPage from "./AccountPage";
 const newData = {
 	username: "user",
 	name: "Mr User",
+	email: MockUserOwner.email,
 	avatar_url: MockUserOwner.avatar_url,
 };
 

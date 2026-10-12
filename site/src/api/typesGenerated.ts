@@ -11269,6 +11269,14 @@ export interface UpdateUserProfileRequest {
 	 * provider on login, so a submitted value is ignored.
 	 */
 	readonly avatar_url: string;
+	/**
+	 * Email is only applied for users whose login type is neither password
+	 * nor none, since email is a recovery credential for those accounts. For
+	 * other login types the identity provider remains the source of truth
+	 * and will overwrite this value on the next login, unless it only
+	 * returns a placeholder address (reserved ".invalid" TLD).
+	 */
+	readonly email?: string;
 }
 
 // From codersdk/users.go

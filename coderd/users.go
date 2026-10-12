@@ -1087,9 +1087,47 @@ func (api *API) putUserProfile(rw http.ResponseWriter, r *http.Request) {
 		avatarURL = params.AvatarURL
 	}
 
+	// Email self-service is limited to the account owner, and to login types
+	// that do not use the email as a recovery credential. Identity providers
+	// stay the source of truth: a real address returned by the provider
+	// overwrites this value on the next login.
+	email := user.Email
+	if params.Email != "" && !strings.EqualFold(params.Email, user.Email) {
+		if httpmw.APIKey(r).UserID != user.ID {
+			httpapi.Write(ctx, rw, http.StatusForbidden, codersdk.Response{
+				Message: "Email can only be updated on your own account.",
+			})
+			return
+		}
+		if user.LoginType == database.LoginTypePassword || user.LoginType == database.LoginTypeNone {
+			httpapi.Write(ctx, rw, http.StatusForbidden, codersdk.Response{
+				Message: "Email cannot be changed on accounts that use it as a recovery credential.",
+			})
+			return
+		}
+		existentEmailUser, err := api.Database.GetUserByEmailOrUsername(ctx, database.GetUserByEmailOrUsernameParams{
+			Email: params.Email,
+		})
+		if err == nil && existentEmailUser.ID != user.ID {
+			httpapi.Write(ctx, rw, http.StatusConflict, codersdk.Response{
+				Message:     "A user with this email address already exists.",
+				Validations: []codersdk.ValidationError{{Field: "email", Detail: "This email address is already in use."}},
+			})
+			return
+		}
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			httpapi.Write(ctx, rw, http.StatusInternalServerError, codersdk.Response{
+				Message: "Internal error fetching user.",
+				Detail:  err.Error(),
+			})
+			return
+		}
+		email = params.Email
+	}
+
 	updatedUserProfile, err := api.Database.UpdateUserProfile(ctx, database.UpdateUserProfileParams{
 		ID:        user.ID,
-		Email:     user.Email,
+		Email:     email,
 		Name:      params.Name,
 		AvatarURL: avatarURL,
 		Username:  params.Username,
@@ -1098,6 +1136,14 @@ func (api *API) putUserProfile(rw http.ResponseWriter, r *http.Request) {
 	aReq.New = updatedUserProfile
 
 	if err != nil {
+		if database.IsUniqueViolation(err, database.UniqueIndexUsersEmail) ||
+			database.IsUniqueViolation(err, database.UniqueUsersEmailLowerIndex) {
+			httpapi.Write(ctx, rw, http.StatusConflict, codersdk.Response{
+				Message:     "A user with this email address already exists.",
+				Validations: []codersdk.ValidationError{{Field: "email", Detail: "This email address is already in use."}},
+			})
+			return
+		}
 		httpapi.Write(ctx, rw, http.StatusInternalServerError, codersdk.Response{
 			Message: "Internal error updating user.",
 			Detail:  err.Error(),

@@ -12,14 +12,14 @@ import {
 	onChangeTrimmed,
 } from "#/utils/formUtils";
 
-const validationSchema = Yup.object({
-	username: nameValidator("Username"),
-	name: Yup.string(),
-});
+// The reserved ".invalid" TLD marks placeholder addresses minted by identity
+// providers that have no real mailbox for the user.
+const isPlaceholderEmail = (email: string) =>
+	email.trim().toLowerCase().endsWith(".invalid");
 
 type AccountFormProps = {
 	editable: boolean;
-	email: string;
+	emailEditable: boolean;
 	isLoading: boolean;
 	initialValues: UpdateUserProfileRequest;
 	onSubmit: (values: UpdateUserProfileRequest) => void;
@@ -30,13 +30,23 @@ type AccountFormProps = {
 
 export const AccountForm: React.FC<AccountFormProps> = ({
 	editable,
-	email,
+	emailEditable,
 	isLoading,
 	onSubmit,
 	initialValues,
 	updateProfileError,
 	initialTouched,
 }) => {
+	const validationSchema = Yup.object({
+		username: nameValidator("Username"),
+		name: Yup.string(),
+		email: emailEditable
+			? Yup.string()
+					.email("Email must be a valid email address.")
+					.required("Email is required.")
+			: Yup.string(),
+	});
+
 	const form = useFormik({
 		initialValues,
 		validationSchema,
@@ -44,6 +54,14 @@ export const AccountForm: React.FC<AccountFormProps> = ({
 		initialTouched,
 	});
 	const getFieldHelpers = getFormHelpers(form, updateProfileError);
+
+	// getFormHelpers carries validation errors in helperText, so the hint is
+	// only applied when there is nothing to display.
+	const emailHelpers = getFieldHelpers("email");
+	const emailHint =
+		emailEditable && isPlaceholderEmail(form.values.email ?? "")
+			? "Your account uses a placeholder email address. Enter your real email to receive notifications."
+			: undefined;
 
 	return (
 		<Form onSubmit={form.handleSubmit}>
@@ -53,10 +71,16 @@ export const AccountForm: React.FC<AccountFormProps> = ({
 				)}
 
 				<FormField
-					field={getFieldHelpers("email")}
+					field={{
+						...emailHelpers,
+						helperText: emailHelpers.helperText ?? emailHint,
+					}}
+					onChange={onChangeTrimmed(form)}
+					autoComplete="email"
+					aria-disabled={!emailEditable}
+					disabled={!emailEditable}
+					className="w-full"
 					label="Email"
-					value={email}
-					disabled
 				/>
 				<FormField
 					field={getFieldHelpers("username")}

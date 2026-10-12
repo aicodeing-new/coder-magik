@@ -23,6 +23,10 @@ const AccountPage: React.FC = () => {
 		enabled: hasGroupsFeature,
 	});
 
+	// Email is a recovery credential for password logins, so only identities
+	// managed by an external provider can be completed here.
+	const emailEditable = me.login_type === "oidc" || me.login_type === "github";
+
 	return (
 		<div className="flex flex-col gap-12">
 			<div>
@@ -34,12 +38,13 @@ const AccountPage: React.FC = () => {
 				</SettingsHeader>
 				<AccountForm
 					editable={permissions?.updateUsers ?? false}
-					email={me.email}
+					emailEditable={emailEditable}
 					updateProfileError={updateProfileError}
 					isLoading={isUpdatingProfile}
 					initialValues={{
 						username: me.username,
 						name: me.name ?? "",
+						email: me.email,
 						avatar_url: me.avatar_url ?? "",
 					}}
 					onSubmit={updateProfile}

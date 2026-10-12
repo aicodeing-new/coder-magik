@@ -1092,6 +1092,8 @@ export const zhCN: Readonly<Record<string, string>> = {
 	Effort: "投入程度",
 	"Elapsed time": "已用时间",
 	Email: "邮箱",
+	"Email is required.": "请填写邮箱。",
+	"Email must be a valid email address.": "邮箱格式不正确。",
 	Embed: "嵌入",
 	"Embedded Relay": "内置中继",
 	Enable: "启用",
@@ -3150,6 +3152,8 @@ export const zhCN: Readonly<Record<string, string>> = {
 	"Username or email": "用户名或邮箱",
 	Users: "用户",
 	"Uses / turn": "每轮使用次数",
+	"Your account uses a placeholder email address. Enter your real email to receive notifications.":
+		"你的账号当前使用的是占位邮箱。请填写真实邮箱，以便接收通知。",
 	VELOCITY: "速度",
 	"Valid From": "生效日期",
 	"Valid Until": "失效日期",

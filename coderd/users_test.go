@@ -1415,6 +1415,45 @@ func TestUpdateUserProfile(t *testing.T) {
 		require.Equal(t, http.StatusConflict, apiErr.StatusCode())
 	})
 
+	t.Run("EmailForbiddenForPasswordLoginType", func(t *testing.T) {
+		t.Parallel()
+		client := coderdtest.New(t, nil)
+		coderdtest.CreateFirstUser(t, client)
+
+		ctx, cancel := context.WithTimeout(context.Background(), testutil.WaitLong)
+		defer cancel()
+
+		me, err := client.User(ctx, codersdk.Me)
+		require.NoError(t, err)
+
+		_, err = client.UpdateUserProfile(ctx, codersdk.Me, codersdk.UpdateUserProfileRequest{
+			Username: me.Username,
+			Email:    "newemail@coder.com",
+		})
+		var apiErr *codersdk.Error
+		require.ErrorAs(t, err, &apiErr)
+		require.Equal(t, http.StatusForbidden, apiErr.StatusCode())
+	})
+
+	t.Run("EmailOnlyOnOwnAccount", func(t *testing.T) {
+		t.Parallel()
+		client := coderdtest.New(t, nil)
+		user := coderdtest.CreateFirstUser(t, client)
+
+		ctx, cancel := context.WithTimeout(context.Background(), testutil.WaitLong)
+		defer cancel()
+
+		_, memberUser := coderdtest.CreateAnotherUser(t, client, user.OrganizationID)
+
+		_, err := client.UpdateUserProfile(ctx, memberUser.ID.String(), codersdk.UpdateUserProfileRequest{
+			Username: memberUser.Username,
+			Email:    "newemail@coder.com",
+		})
+		var apiErr *codersdk.Error
+		require.ErrorAs(t, err, &apiErr)
+		require.Equal(t, http.StatusForbidden, apiErr.StatusCode())
+	})
+
 	t.Run("UpdateSelf", func(t *testing.T) {
 		t.Parallel()
 		auditor := audit.NewMock()

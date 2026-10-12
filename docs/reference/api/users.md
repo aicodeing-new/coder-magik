@@ -1412,6 +1412,7 @@ curl -X PUT http://coder-server:8080/api/v2/users/{user}/profile \
 ```json
 {
   "avatar_url": "http://example.com",
+  "email": "user@example.com",
   "name": "string",
   "username": "string"
 }

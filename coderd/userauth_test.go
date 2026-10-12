@@ -121,6 +121,86 @@ func TestOIDCOauthLoginWithExisting(t *testing.T) {
 	fake.Login(t, unauthenticated, claims)
 }
 
+// An IdP that only issues a placeholder email (reserved ".invalid" TLD) must
+// not overwrite an email the user completed in their account settings, while
+// a real address from the IdP stays authoritative.
+func TestOIDCProfileEmailCompletion(t *testing.T) {
+	t.Parallel()
+	ctx := testutil.Context(t, testutil.WaitShort)
+
+	fake := oidctest.NewFakeIDP(t,
+		oidctest.WithRefresh(func(_ string) error {
+			return xerrors.New("refreshing token should never occur")
+		}),
+		oidctest.WithServing(),
+	)
+	cfg := fake.OIDCConfig(t, nil, func(cfg *coderd.OIDCConfig) {
+		cfg.AllowSignups = true
+		cfg.IgnoreEmailVerified = true
+	})
+	client := coderdtest.New(t, &coderdtest.Options{OIDCConfig: cfg})
+
+	claims := jwt.MapClaims{
+		"email":              "ou_abc123@feishu.invalid",
+		"email_verified":     false,
+		"preferred_username": "zhangsan",
+		"sub":                uuid.NewString(),
+	}
+
+	login := func(idTokenClaims jwt.MapClaims) *codersdk.Client {
+		userClient, resp := fake.Login(t, client, idTokenClaims)
+		require.NoError(t, resp.Body.Close())
+		return userClient
+	}
+
+	userClient := login(claims)
+	me, err := userClient.User(ctx, codersdk.Me)
+	require.NoError(t, err)
+	require.Equal(t, "zhangsan", me.Username)
+	require.Equal(t, "ou_abc123@feishu.invalid", me.Email)
+
+	updated, err := userClient.UpdateUserProfile(ctx, codersdk.Me, codersdk.UpdateUserProfileRequest{
+		Username: me.Username,
+		Name:     me.Name,
+		Email:    "zhangsan@example.com",
+	})
+	require.NoError(t, err)
+	require.Equal(t, "zhangsan@example.com", updated.Email)
+
+	// Re-login with the placeholder email: the completed address survives.
+	userClient = login(claims)
+	me, err = userClient.User(ctx, codersdk.Me)
+	require.NoError(t, err)
+	require.Equal(t, "zhangsan@example.com", me.Email)
+
+	// A real address from the IdP remains authoritative.
+	claims["email"] = "zhangsan@newjob.com"
+	claims["email_verified"] = true
+	userClient = login(claims)
+	me, err = userClient.User(ctx, codersdk.Me)
+	require.NoError(t, err)
+	require.Equal(t, "zhangsan@newjob.com", me.Email)
+
+	// Another user's address cannot be claimed.
+	bobClient := login(jwt.MapClaims{
+		"email":              "bob@example.com",
+		"email_verified":     true,
+		"preferred_username": "bob",
+		"sub":                uuid.NewString(),
+	})
+	bob, err := bobClient.User(ctx, codersdk.Me)
+	require.NoError(t, err)
+	require.Equal(t, "bob@example.com", bob.Email)
+
+	_, err = userClient.UpdateUserProfile(ctx, codersdk.Me, codersdk.UpdateUserProfileRequest{
+		Username: me.Username,
+		Email:    "bob@example.com",
+	})
+	var apiErr *codersdk.Error
+	require.ErrorAs(t, err, &apiErr)
+	require.Equal(t, http.StatusConflict, apiErr.StatusCode())
+}
+
 func TestUserLogin(t *testing.T) {
 	t.Parallel()
 

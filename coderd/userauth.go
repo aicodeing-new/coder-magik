@@ -2014,8 +2014,12 @@ func (api *API) oauthLogin(r *http.Request, params *oauthLoginParams) ([]*http.C
 		// security auditing fields so they need to stay synced.
 		// NOTE: username updating has been halted since it can have infrastructure
 		// provisioning consequences (updates to usernames may delete persistent
-		// resources such as user home volumes).
-		if user.Email != params.Email {
+		// resources such as user home volume).
+		// A placeholder email never overwrites the account email: brokers that
+		// must synthesize an address to satisfy the required email claim use
+		// the reserved ".invalid" TLD (RFC 2606), so an email completed in the
+		// account settings survives such logins.
+		if user.Email != params.Email && !idpPlaceholderEmail(params.Email) {
 			user.Email = params.Email
 			needsUpdate = true
 		}
@@ -2341,4 +2345,13 @@ func coerceEmailVerified(v interface{}) (verified bool, ok bool) {
 	default:
 		return false, false
 	}
+}
+
+// idpPlaceholderEmail reports whether an identity provider email is a
+// synthesized placeholder rather than a real mailbox. Brokers without a user
+// email (e.g. accounts identified by a phone number or an opaque ID) mint one
+// from a stable identifier under the reserved ".invalid" TLD (RFC 2606), so
+// the account email completed in the settings is kept across such logins.
+func idpPlaceholderEmail(email string) bool {
+	return strings.HasSuffix(strings.ToLower(strings.TrimSpace(email)), ".invalid")
 }

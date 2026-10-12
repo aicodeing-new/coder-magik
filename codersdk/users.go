@@ -193,6 +193,12 @@ type UpdateUserProfileRequest struct {
 	// none. For other login types the avatar is synced from the identity
 	// provider on login, so a submitted value is ignored.
 	AvatarURL string `json:"avatar_url" format:"uri"`
+	// Email is only applied for users whose login type is neither password
+	// nor none, since email is a recovery credential for those accounts. For
+	// other login types the identity provider remains the source of truth
+	// and will overwrite this value on the next login, unless it only
+	// returns a placeholder address (reserved ".invalid" TLD).
+	Email string `json:"email,omitempty" validate:"omitempty,email" format:"email"`
 }
 
 // UpdateUserEmailRequest changes a user's email by matching their current
