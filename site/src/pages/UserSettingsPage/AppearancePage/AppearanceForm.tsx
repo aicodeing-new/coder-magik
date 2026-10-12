@@ -16,6 +16,8 @@ import {
 	SelectValue,
 } from "#/components/Select/Select";
 import { Spinner } from "#/components/Spinner/Spinner";
+import { useLanguage } from "#/contexts/LanguageProvider";
+import { isLanguage } from "#/i18n/language";
 import { Section } from "#/pages/UserSettingsPage/Section";
 import type { ConcreteThemeName } from "#/theme";
 import {
@@ -64,8 +66,10 @@ export const AppearanceForm: React.FC<AppearanceFormProps> = ({
 	activeScheme,
 }) => {
 	const [values, setValues] = useState(() => toFormValues(initialValues));
+	const { language, setLanguage } = useLanguage();
 	const themeModeId = useId();
 	const fontGroupId = useId();
+	const languageSelectId = useId();
 	const fontGroupLabelId = `${fontGroupId}-label`;
 	const fontGroupName = `${fontGroupId}-fonts`;
 	const singleThemeGroupName = `${themeModeId}-single`;
@@ -229,6 +233,7 @@ export const AppearanceForm: React.FC<AppearanceFormProps> = ({
 					</div>
 				}
 				layout="fluid"
+				className="mb-12"
 			>
 				<RadioGroup
 					aria-labelledby={fontGroupLabelId}
@@ -251,6 +256,36 @@ export const AppearanceForm: React.FC<AppearanceFormProps> = ({
 						</div>
 					))}
 				</RadioGroup>
+			</Section>
+
+			<Section title="Language" layout="fluid">
+				<div className="flex flex-col gap-2">
+					<Label htmlFor={languageSelectId} className="text-sm font-medium">
+						Display language
+					</Label>
+					<Select
+						value={language}
+						onValueChange={(value) => {
+							if (isLanguage(value)) {
+								setLanguage(value);
+							}
+						}}
+					>
+						<SelectTrigger
+							id={languageSelectId}
+							className="w-48 text-content-primary"
+						>
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="zh">中文</SelectItem>
+							<SelectItem value="en">English</SelectItem>
+						</SelectContent>
+					</Select>
+					<p className="text-sm text-content-secondary">
+						The language preference is stored in this browser.
+					</p>
+				</div>
 			</Section>
 		</form>
 	);

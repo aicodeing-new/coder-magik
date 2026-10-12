@@ -16,8 +16,8 @@
   "template": {
     "name": "kubernetes",
     "id": "dbf99fc1-e511-4958-9762-b4b7f8346919",
-    "active_version_id": "caa06bab-4918-42a6-8706-6d49a1c6190d",
-    "active_version_name": "codex-vscode-preinstall-20261011",
+    "active_version_id": "0e279722-bb4c-4704-807f-ced899132a59",
+    "active_version_name": "codex-install-robust-20261011",
     "clusters": [
       "beast01",
       "yunqiao"
@@ -31,7 +31,9 @@
     "codex_vscode_preinstall": true,
     "hostNetwork": true,
     "privileged": true,
-    "persistent_home": "/home/coder"
+    "persistent_home": "/home/coder",
+    "home_disk_mutable": true,
+    "home_disk_monotonic": "increasing"
   },
   "credentials": {
     "coder_cli_directory": "/root/.config/coder-ali-prod",

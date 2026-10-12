@@ -68,6 +68,22 @@ PR：https://github.com/aicodeing-new/coder-magik/pull/29
 CI配置：/root/coder/.github/workflows/build-tag-image.yaml
 部署资产：/root/coder-deploy/ali-prod/
 
+2026-10-11 晚间功能：home盘原地扩容
+- 模板home_disk_size从mutable=false改为mutable=true，validation加monotonic="increasing"（provider coder/coder 2.19.0支持，Pod内validate通过）。原因：K8s禁止缩小PVC，若允许调小会触发terraform回缩失败、卡死后续构建；只增不减则可安全原地扩容。
+- 两集群ceph-fs StorageClass均allowVolumeExpansion=true（beast01实际驱动nfs.csi.k8s.io，yunqiao为Rook CephFS CSI）。
+- 22:01推送home-disk-expandable-20261011（6360828b）并激活。WS预览确认validation_monotonic=increasing生效。
+- 端到端实测（临时0GPU空间diag-disk-expand，beast01，10Gi）：缩小10->5被API以monotonicity错误拒绝；扩容10->20构建成功，terraform日志Drift detected/Modifications complete，实际PV容量变为20Gi；随后删除空间并清理残留PV。beast01 NFS-CSI扩容路径实测可用。
+- 使用方法：workspace设置中调大Home disk size并重建；缩小在UI和API层均被拒绝。已有空间需先更新到该模板版本。手动kubectl扩容PVC仍禁止（会造成terraform漂移死锁）。
+- 源码/root/coder-deploy/ali-prod/gpu-template/已同步；备份gpu-template-backup-20261011-disk-mutable/。
+
+2026-10-11 晚间修复：UI无法从kubernetes模板创建工作空间
+- 现象：点击Create后页面跳回顶部，无任何错误提示，Network无请求发出；无痕模式相同；与参数值无关。
+- 根因：模板dev_image参数validation regex为"^[^[:space:]]+$"（POSIX写法）。服务端Go RE2按"非空白字符"解释并通过；网页创建表单用JS new RegExp校验，JS不支持POSIX类，且该写法在JS里要求以字面"]"结尾，任何真实镜像地址都校验失败。参数级formik错误在创建表单不渲染（DynamicParameter无error prop），任何校验失败又触发滚动聚焦到名称框，形成"跳顶无提示"表象。image-selectable-20261011加入该正则起，UI创建从未成功过（此前成功创建均发生在旧模板版本）。
+- 修复：main.tf改为regex="^\\S+$"（Go/JS语义一致），经Coder Pod内terraform fmt/init/validate通过后推送。21:43推送dev-image-regex-fix-20261011（2f35aa10），21:44 Codex推送等价版本fix-dev-image-regex-20261011（b82afbc5，当前active）。两者正则一致，无冲突。
+- 验证：active版本rich-parameters regex为^\S+$；JS对默认镜像校验true；WebSocket动态参数预览对beast01/0GPU/10G/默认镜像返回0条诊断；此前API直建探针已证明服务端创建/删除全链路正常（探针已清理）。
+- 源码目录/root/coder-deploy/ali-prod/gpu-template/已同步修复；备份gpu-template-backup-20261011-regex-fix/。
+- 遗留前端问题（上游代码，未修）：参数校验错误不显示在创建表单；校验失败滚动到名称框而非错误字段；前端不翻译POSIX正则类。若模板再使用POSIX类正则会重现同类故障。
+
 2026-10-11 用户授权清理main以外分支
 - 清理前main已更新为80e3f5ddf56f9c57a0945b01639747d2ac323e31。
 - 核对29个非main分支：1个已合并fix/self-hosted-go-cache，28个未合并Dependabot依赖提案。
@@ -78,3 +94,19 @@ CI配置：/root/coder/.github/workflows/build-tag-image.yaml
 - 恢复包：/root/coder-deploy/branch-cleanup/20261011/branches-before-cleanup.bundle。
 - 清理记录：branch-cleanup-20261011.json；备份before.json含原始PR/分支，RESTORE.txt说明恢复方法。
 - Dependabot配置未禁用，之后定时更新仍可能新建分支。
+
+2026-10-11 深夜修复：新工作区启动脚本报错 Cannot find module out/server-main.js
+- 现象：新创建的工作区（black-wasp-89及其后一个测试空间）启动脚本失败，日志为node报错Cannot find module '/home/coder/.cache/coder/vscode-extension-installer/out/server-main.js'（出现两次），工作区本身Running；用户随后删掉了这两个空间。
+- 根因（0GPU诊断空间diag-startup-01隔离实验证实，全程不连VS Code）：install-codex-vscode.sh在全新空间无现成Server时下载222MB tar.gz（经代理约5-10秒）解压到/tmp，再mv到/home/coder（NAS PVC）。mv是跨设备复制，实测约5MB/s，需4-5分钟；扩展安装（openai.chatgpt约600MB写NAS）再需约15分钟，首次启动全程约22分钟。期间任何中断（Pod重建、停止等）都会在installer_dir留下不完整目录；旧脚本只检查bin/code-server可执行就复用残骸，导致之后每次启动都报上述node错误且不会自愈。
+- 修复（22:24推送codex-install-robust-20261011，0e279722，当前active）：脚本只复用含out/server-main.js的完整安装；解压改到与目标同文件系统的staging目录，完成后rm -rf旧目录并改名（原子替换，中断不留残骸）。中断后下一次启动自动重装自愈。经Coder Pod内terraform fmt/init/validate后推送。
+- 验证：diag-startup-01无VS Code连接下完整跑通：Server装好（out/存在）+openai.chatgpt与openai.codex-audio两扩展安装成功+脚本exit 0；确认后已删除该空间并清理Retain PV及Coder Pod临时目录。
+- 影响：新空间首次启动Codex预装约20分钟属预期（后台运行，不阻塞登录使用，start_blocks_login=false）；后续启动秒级复用。若启动脚本再失败，重启一次工作区即可自愈。
+- 附带核实：vscode-desktop模块v1.2.1仅生成vscode://链接不安装文件；coder-labs/codex模块安装Codex CLI正常；beast01工作区PVC实际由nfs.csi.k8s.io供给（名字仍是ceph-fs StorageClass），exec偶发NotFound为API抖动。
+
+2026-10-11 前端新增：工作区UUID显示与界面中英双语（仅本地代码，未构建镜像）
+- 需求：1) 在工作区界面显示workspace UUID，便于对照k8s资源（gpu-template的PVC名coder-${workspace.id}-home和标签com.coder.workspace.id均使用该ID）；2) 前端大面积汉化并可切换中英文，技术术语（Kubernetes/SSH/Token/Agent等）保留英文。
+- UUID显示两处：工作区设置→General顶部新增只读Workspace UUID区块（CopyableValue点击复制）；工作区页顶栏面包屑弹层新增UUID行。均有测试与story覆盖。
+- 汉化架构：运行时词典翻译层。源码字符串保持英文不动，LanguageProvider（localStorage键coder:language，按浏览器语言默认，zh浏览器→中文）挂载MutationObserver翻译引擎（src/i18n/domTranslator.ts），按词典（src/i18n/zh-CN.ts，2975条）翻译文本节点与placeholder/title/aria-label属性；跳过code/pre/textarea/.xterm/.monaco-editor。切换入口：用户菜单语言项+设置→外观→语言，切换后整页刷新。dayjs zh-cn locale与humanize-duration zh_CN负责相对时间/时长。插值字符串（如模板"X"更新成功。）由dictionary.ts中约150条锚定英文原文的正则规则处理。
+- 词典由scripts/extract-i18n-strings.mjs从src/提取3174条字符串（排除测试/story/生成词典自身），分10批并行翻译后合并；术语规则见src/i18n/README.md（术语表+排版规则+更新流程）。单测/Storybook固定英文（MODE=test与STORYBOOK判断），现有英文断言与Pixel基线不受影响；e2e英文locale浏览器默认英文。
+- 验证：site全量pnpm lint通过（biome/oxlint/tsc/循环依赖/compiler+knip）；vitest 298/299文件通过（唯一失败timeGroups.test.ts 2例为预先存在的UTC时区依赖测试，本机UTC+8必失败，与本次无关）；4个受影响组件65个story测试通过；pnpm build成功。
+- 状态：代码全部在/root/coder工作区未提交未构建；线上镜像v1.0.3-amd64不含这些改动，需下次镜像构建+Helm升级才会生效。

@@ -6,6 +6,7 @@ import { hasFirstUserKey, meKey } from "#/api/queries/users";
 import type { Entitlements } from "#/api/typesGenerated";
 import { Toaster } from "#/components/Toaster/Toaster";
 import { AuthProvider } from "#/contexts/auth/AuthProvider";
+import { LanguageProvider } from "#/contexts/LanguageProvider";
 import {
 	getPreferredProxy,
 	ProxyContext,
@@ -191,6 +192,12 @@ export const withToaster = (Story: React.FC) => (
 		<Story />
 		<Toaster />
 	</>
+);
+
+export const withLanguageProvider = (Story: React.FC) => (
+	<LanguageProvider>
+		<Story />
+	</LanguageProvider>
 );
 
 export const withOrganizationSettingsProvider = (Story: React.FC) => {

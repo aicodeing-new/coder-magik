@@ -38,6 +38,25 @@ test("Submit the workspace settings page successfully", async () => {
 	});
 });
 
+test("Copies the workspace UUID to the clipboard", async () => {
+	// Mock the API calls that loads data
+	vi.spyOn(API, "getWorkspaceByOwnerAndName").mockResolvedValueOnce({
+		...MockWorkspace,
+	});
+	const writeText = vi
+		.spyOn(navigator.clipboard, "writeText")
+		.mockResolvedValue(undefined);
+	const user = userEvent.setup();
+	renderWithWorkspaceSettingsLayout(<WorkspaceSettingsPage />, {
+		route: "/@test-user/test-workspace/settings",
+		path: "/:username/:workspace/settings",
+	});
+	await waitForLoaderToBeRemoved();
+	const form = screen.getByTestId("form");
+	await user.click(within(form).getByText(MockWorkspace.id));
+	expect(writeText).toHaveBeenCalledWith(MockWorkspace.id);
+});
+
 test("Name field is disabled if renames are disabled", async () => {
 	// Mock the API calls that loads data
 	vi.spyOn(API, "getWorkspaceByOwnerAndName").mockResolvedValueOnce({

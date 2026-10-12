@@ -60,7 +60,7 @@ ALL_PROXY未设置。需更新大小写两份并重建Pod，ConfigMap更新不�
 组织coder：3734883b-7a6e-4edd-84e2-604c9ca2555e。
 admin yzhang：2e9bb987-3ca9-47cd-923e-e20b1a0a6fa9。
 kubernetes模板：dbf99fc1-e511-4958-9762-b4b7f8346919。
-当前active version：caa06bab-4918-42a6-8706-6d49a1c6190d，codex-vscode-preinstall-20261011。
+当前active version：0e279722-bb4c-4704-807f-ced899132a59，codex-install-robust-20261011（2026-10-11 22:24发布）。当日版本序列：dev-image-regex-fix-20261011（2f35aa10，21:43）→fix-dev-image-regex-20261011（b82afbc5，21:44，两者同为dev_image正则POSIX/JS兼容修复^\S+$）→home-disk-expandable-20261011（6360828b，22:01，home_disk_size改为mutable+只增不减，支持原地扩容PVC）→codex-install-robust-20261011（22:24，加固install-codex-vscode.sh，见03）。
 当前测试空间：yzhang/yunqiao-amaranth-pelican-21。
 UUID315cec12-fd72-468f-babb-ae06b774f3dd；Running；outdated=false；同active version。
 所在hgx-096，10.0.1.48；Pod coder-315cec12-fd72-468f-babb-ae06b774f3dd-79dc9c78d-btgtg。

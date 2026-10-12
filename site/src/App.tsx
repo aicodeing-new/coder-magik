@@ -10,6 +10,7 @@ import {
 import { Toaster } from "./components/Toaster/Toaster";
 import { AuthProvider } from "./contexts/auth/AuthProvider";
 import { DiffsWorkerPoolProvider } from "./contexts/DiffsWorkerPoolProvider";
+import { LanguageProvider } from "./contexts/LanguageProvider";
 import { ThemeProvider } from "./contexts/ThemeProvider";
 import { router } from "./router";
 
@@ -50,17 +51,19 @@ export const AppProviders: React.FC<AppProvidersProps> = ({
 
 	return (
 		<QueryClientProvider client={queryClient}>
-			<DiffsWorkerPoolProvider>
-				<AuthProvider>
-					<ThemeProvider>
-						<TooltipProvider delayDuration={TOOLTIP_DELAY_DURATION}>
-							{children}
-							<Toaster />
-						</TooltipProvider>
-					</ThemeProvider>
-				</AuthProvider>
-			</DiffsWorkerPoolProvider>
-			{showDevtools && <ReactQueryDevtools initialIsOpen={showDevtools} />}
+			<LanguageProvider>
+				<DiffsWorkerPoolProvider>
+					<AuthProvider>
+						<ThemeProvider>
+							<TooltipProvider delayDuration={TOOLTIP_DELAY_DURATION}>
+								{children}
+								<Toaster />
+							</TooltipProvider>
+						</ThemeProvider>
+					</AuthProvider>
+				</DiffsWorkerPoolProvider>
+				{showDevtools && <ReactQueryDevtools initialIsOpen={showDevtools} />}
+			</LanguageProvider>
 		</QueryClientProvider>
 	);
 };

@@ -4,6 +4,7 @@ import {
 	DropdownMenuContent,
 	DropdownMenuTrigger,
 } from "#/components/DropdownMenu/DropdownMenu";
+import { LANGUAGE_STORAGE_KEY } from "#/i18n/language";
 import { MockUserOwner } from "#/testHelpers/entities";
 import { render, waitForLoaderToBeRemoved } from "#/testHelpers/renderHelpers";
 import { UserDropdownContent } from "./UserDropdownContent";
@@ -58,5 +59,15 @@ describe("UserDropdownContent", () => {
 		expect(
 			screen.getByText("AI spend - $819 / $1,200 USD"),
 		).toBeInTheDocument();
+	});
+
+	it("stores the language preference when the language item is clicked", async () => {
+		window.localStorage.removeItem(LANGUAGE_STORAGE_KEY);
+		renderUserDropdownContent({ onSignOut: vi.fn() });
+		await waitForLoaderToBeRemoved();
+
+		// English is the default in tests, so the item offers Chinese.
+		screen.getByText("切换为中文").click();
+		expect(window.localStorage.getItem(LANGUAGE_STORAGE_KEY)).toBe("zh");
 	});
 });

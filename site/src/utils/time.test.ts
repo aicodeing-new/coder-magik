@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { shortRelativeTime } from "./time";
+import { humanDuration, setHumanizeLanguage, shortRelativeTime } from "./time";
 
 describe("shortRelativeTime", () => {
 	// Pin "now" so tests are deterministic.
@@ -100,5 +100,20 @@ describe("shortRelativeTime", () => {
 	it("accepts numeric timestamp input", () => {
 		const timestamp = NOW.getTime() - 10 * 60 * 1000;
 		expect(shortRelativeTime(timestamp)).toBe("10m");
+	});
+});
+
+describe("humanDuration language", () => {
+	afterEach(() => {
+		setHumanizeLanguage("en");
+	});
+
+	it("formats durations in English by default", () => {
+		expect(humanDuration(2 * 60 * 60 * 1000)).toBe("2 hours");
+	});
+
+	it("formats durations in Chinese when the language is set", () => {
+		setHumanizeLanguage("zh");
+		expect(humanDuration(2 * 60 * 60 * 1000)).toBe("2 小时");
 	});
 });

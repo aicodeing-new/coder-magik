@@ -6,6 +6,7 @@ import { workspaceQuota } from "#/api/queries/workspaceQuota";
 import type * as TypesGen from "#/api/typesGenerated";
 import { Avatar } from "#/components/Avatar/Avatar";
 import { AvatarData } from "#/components/Avatar/AvatarData";
+import { CopyableValue } from "#/components/CopyableValue/CopyableValue";
 import { CopyButton } from "#/components/CopyButton/CopyButton";
 import {
 	Topbar,
@@ -150,6 +151,7 @@ export const WorkspaceTopbar: React.FC<WorkspaceTopbarProps> = ({
 
 					<WorkspaceBreadcrumb
 						workspaceName={workspace.name}
+						workspaceId={workspace.id}
 						templateIconUrl={workspace.template_icon}
 						rootTemplateUrl={templateLink}
 						templateVersionName={workspace.latest_build.template_version_name}
@@ -335,6 +337,7 @@ const OrganizationBreadcrumb: React.FC<OrganizationBreadcrumbProps> = ({
 
 type WorkspaceBreadcrumbProps = Readonly<{
 	workspaceName: string;
+	workspaceId: string;
 	templateIconUrl: string;
 	rootTemplateUrl: string;
 	templateVersionName: string;
@@ -344,6 +347,7 @@ type WorkspaceBreadcrumbProps = Readonly<{
 
 const WorkspaceBreadcrumb: React.FC<WorkspaceBreadcrumbProps> = ({
 	workspaceName,
+	workspaceId,
 	templateIconUrl,
 	rootTemplateUrl,
 	templateVersionName,
@@ -367,33 +371,47 @@ const WorkspaceBreadcrumb: React.FC<WorkspaceBreadcrumbProps> = ({
 				</HelpPopoverTrigger>
 
 				<HelpPopoverContent align="center">
-					<AvatarData
-						title={
-							<Link asChild showExternalIcon={false} className="text-inherit">
-								<RouterLink to={rootTemplateUrl}>
-									{templateDisplayName}
-								</RouterLink>
-							</Link>
-						}
-						subtitle={
-							<Link asChild showExternalIcon={false} className="text-inherit">
-								<RouterLink
-									to={`${rootTemplateUrl}/versions/${encodeURIComponent(templateVersionName)}`}
-								>
-									Version: {latestBuildVersionName}
-								</RouterLink>
-							</Link>
-						}
-						avatar={
-							<Avatar
-								variant="icon"
-								src={templateIconUrl}
-								fallback={templateDisplayName}
-								size="md"
-							/>
-						}
-						imgFallbackText={templateDisplayName}
-					/>
+					<div className="flex flex-col gap-4">
+						<AvatarData
+							title={
+								<Link asChild showExternalIcon={false} className="text-inherit">
+									<RouterLink to={rootTemplateUrl}>
+										{templateDisplayName}
+									</RouterLink>
+								</Link>
+							}
+							subtitle={
+								<Link asChild showExternalIcon={false} className="text-inherit">
+									<RouterLink
+										to={`${rootTemplateUrl}/versions/${encodeURIComponent(templateVersionName)}`}
+									>
+										Version: {latestBuildVersionName}
+									</RouterLink>
+								</Link>
+							}
+							avatar={
+								<Avatar
+									variant="icon"
+									src={templateIconUrl}
+									fallback={templateDisplayName}
+									size="md"
+								/>
+							}
+							imgFallbackText={templateDisplayName}
+						/>
+
+						<div className="flex flex-col gap-1">
+							<span className="text-xs font-medium text-content-secondary">
+								Workspace UUID
+							</span>
+							<CopyableValue
+								value={workspaceId}
+								className="text-xs text-content-secondary break-all"
+							>
+								{workspaceId}
+							</CopyableValue>
+						</div>
+					</div>
 				</HelpPopoverContent>
 			</HelpPopover>
 			<CopyButton text={workspaceName} label="Copy workspace name" />

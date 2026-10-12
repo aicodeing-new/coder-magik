@@ -70,9 +70,18 @@ export function formatDate(
 }
 
 // Duration functions
+// Set by the LanguageProvider so durations follow the UI language.
+let humanizeLanguage: "en" | "zh" = "en";
+
+export function setHumanizeLanguage(language: "en" | "zh") {
+	humanizeLanguage = language;
+}
+
 export function humanDuration(durationInMs: number) {
+	const isChinese = humanizeLanguage === "zh";
 	return humanizeDuration(durationInMs, {
-		conjunction: " and ",
+		language: isChinese ? "zh_CN" : "en",
+		conjunction: isChinese ? undefined : " and ",
 		serialComma: false,
 		round: true,
 		units: ["y", "mo", "w", "d", "h", "m", "s", "ms"],

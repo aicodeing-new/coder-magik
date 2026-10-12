@@ -1,6 +1,7 @@
 import {
 	CircleUserIcon,
 	CopyIcon,
+	LanguagesIcon,
 	LogOutIcon,
 	MonitorIcon,
 	SquareArrowOutUpRightIcon,
@@ -18,6 +19,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "#/components/Tooltip/Tooltip";
+import { useLanguage } from "#/contexts/LanguageProvider";
 import { useClipboard } from "#/hooks/useClipboard";
 import { supportsCoderDesktop } from "#/utils/platform";
 import { SupportIcon } from "../SupportIcon";
@@ -67,6 +69,7 @@ export const UserDropdownContent: React.FC<UserDropdownContentProps> = ({
 	trialCta,
 }) => {
 	const { showCopiedSuccess, copyToClipboard } = useClipboard();
+	const { language, setLanguage } = useLanguage();
 
 	return (
 		<>
@@ -99,6 +102,12 @@ export const UserDropdownContent: React.FC<UserDropdownContentProps> = ({
 					<CircleUserIcon />
 					<span>Account</span>
 				</Link>
+			</DropdownMenuItem>
+			<DropdownMenuItem
+				onClick={() => setLanguage(language === "zh" ? "en" : "zh")}
+			>
+				<LanguagesIcon />
+				<span>{language === "zh" ? "Switch to English" : "切换为中文"}</span>
 			</DropdownMenuItem>
 			<DropdownMenuItem onClick={onSignOut}>
 				<LogOutIcon />

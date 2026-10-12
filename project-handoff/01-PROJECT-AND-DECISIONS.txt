@@ -34,6 +34,7 @@ workspace名字、owner、UUID等保存在Kubernetes标签，可关联平台对�
 确认删除后的数据管理必须重新检查实际PV策略，不能仅凭历史记录作决定。
 持久化范围/home/coder；rootfs中的apt包、/tmp、默认/root目录、未放入PVC的依赖不随Pod重建保留。
 新空间默认100Gi；zy-test-1保留历史10Gi；当前yunqiao测试空间实际50Gi。
+home_disk_size自2026-10-11起为可变参数且只允许增大（monotonic=increasing）：在workspace设置中调大并重建即可原地扩容PVC，数据不动；K8s不能缩小PVC，因此禁止调小，手动kubectl扩容同样禁止（会导致terraform漂移并卡死后续构建）。
 两个GPU集群使用ceph-fs，开发/home按RWO申请，不主动共享工作目录。
 
 自定义开发镜像

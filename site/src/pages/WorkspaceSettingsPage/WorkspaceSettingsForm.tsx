@@ -8,6 +8,7 @@ import {
 	type Workspace,
 } from "#/api/typesGenerated";
 import { Button } from "#/components/Button/Button";
+import { CopyableValue } from "#/components/CopyableValue/CopyableValue";
 import {
 	FormFields,
 	FormFooter,
@@ -75,6 +76,16 @@ export const WorkspaceSettingsForm: React.FC<WorkspaceSettingsFormProps> = ({
 
 	return (
 		<HorizontalForm onSubmit={form.handleSubmit} data-testid="form">
+			<FormSection
+				title="Workspace UUID"
+				description="The Kubernetes resources created for this workspace carry this ID in their names and labels."
+			>
+				<FormFields>
+					<CopyableValue value={workspace.id} className="text-sm break-all">
+						{workspace.id}
+					</CopyableValue>
+				</FormFields>
+			</FormSection>
 			<FormSection
 				title="Workspace Name"
 				description="Update the name of your workspace."

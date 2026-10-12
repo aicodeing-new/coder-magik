@@ -6,6 +6,7 @@ import type {
 	UpdateUserAppearanceSettingsRequest,
 	UserAppearanceSettings,
 } from "#/api/typesGenerated";
+import { withLanguageProvider } from "#/testHelpers/storybook";
 import { CONCRETE_THEMES } from "#/theme";
 import { AppearanceForm } from "./AppearanceForm";
 
@@ -100,6 +101,7 @@ const PendingUpdateHarness: React.FC<PendingUpdateHarnessProps> = ({
 const meta: Meta<typeof AppearanceForm> = {
 	title: "pages/UserSettingsPage/AppearanceForm",
 	component: AppearanceForm,
+	decorators: [withLanguageProvider],
 	args: {
 		activeScheme: "dark",
 		onSubmit: (update) => Promise.resolve(onUpdateTheme(update)),
