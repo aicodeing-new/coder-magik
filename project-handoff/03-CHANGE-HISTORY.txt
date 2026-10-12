@@ -124,3 +124,8 @@ CI配置：/root/coder/.github/workflows/build-tag-image.yaml
 - 变更：/root/coder-deploy/ali-prod/values.yaml并入CODER_ENTERPRISE_HARDCODE_LICENSE=true并将image.tag指向用户提供的v1.0.4-amd64，其余与线上逐字一致（无Secret明文）；rendered.yaml按新values重渲染；values.yaml副本与校验值纳入artifacts并更新artifact-inventory.json。
 - 验证：helm template+新values与线上Deployment diff，唯一差异为目标镜像（v1.0.4-amd64 vs 线上v1.0.3-amd64），env 24项/volumes/mounts/resources/nodeSelector/serviceAccount/securityContext/replicas全部一致；helm upgrade --dry-run=server通过；dry-run后复核线上镜像与revision未变。
 - 状态：升级未执行。下次升级命令即helm upgrade coder chart-source/helm/coder -n coder -f values.yaml（需kubeconfig与SWR中已存在v1.0.4-amd64镜像）；升级前按04做回退预案。ali-prod/README.md历史描述仍未更新，保持历史文档不动。
+
+2026-10-12 v1.0.4上线（用户kubectl直改镜像）
+- 用户自行将线上Deployment镜像更新为swr...coder-magik:v1.0.4-amd64（Pod coder-69db84f7cc-s2p28），未走helm upgrade（release仍revision 4）。
+- 核验：buildinfo返回v2.38.0-devel+magik.1.0.4.0ba14b2；前端bundle（assets/index-CvPH0MzR.js）包含"Workspace UUID"与"切换为中文"字符串；HTTP 200。
+- 交接记录同步：02/state.json生产镜像与版本更新为v1.0.4；known_drift改为"helm release revision 4存储values过期，补跑helm upgrade零变更对齐"。

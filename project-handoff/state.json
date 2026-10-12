@@ -8,16 +8,17 @@
     "url": "https://coder.magikcloud.cn",
     "cluster": "ali-prod",
     "namespace": "coder",
-    "image": "swr.cn-north-4.myhuaweicloud.com/pixiu-public/admins/coder-magik:v1.0.3-amd64",
-    "version": "v2.38.0-devel+magik.1.0.3.47e1868",
-    "release_commit": "47e18689dfe0ebac46eafe037f17a81aefd011a3",
-    "release_tag": "v1.0.3",
+    "image": "swr.cn-north-4.myhuaweicloud.com/pixiu-public/admins/coder-magik:v1.0.4-amd64",
+    "version": "v2.38.0-devel+magik.1.0.4.0ba14b2",
+    "release_commit": "0ba14b23de2274b554b673e0e5e1a392b90950d8",
+    "release_tag": "v1.0.4",
     "values_sync": {
       "date": "2026-10-12",
       "method": "live deployment + helm get values diffed against chart render; only image tag and CODER_ENTERPRISE_HARDCODE_LICENSE were real drift",
       "next_image": "swr.cn-north-4.myhuaweicloud.com/pixiu-public/admins/coder-magik:v1.0.4-amd64",
       "validated": "helm template diff (only image differs) and helm upgrade --dry-run=server",
-      "deployed": false
+      "deployed": true,
+      "deploy_method": "image updated on live via kubectl (helm release revision still 4); verified buildinfo v2.38.0-devel+magik.1.0.4.0ba14b2"
     }
   },
   "template": {
@@ -101,7 +102,7 @@
     "disabled_transition_snapshot_possible": true
   },
   "known_drift": [
-    "values.yaml synced to live 2026-10-12 and targets v1.0.4-amd64; live deployment still v1.0.3 until helm upgrade runs",
+    "live runs v1.0.4-amd64 but helm release is still revision 4 with stale stored values; running helm upgrade with the synced values.yaml is a no-change alignment",
     "ali-prod README.md and release-v1.0.3.json are historical records kept as-is"
   ],
   "scope": "all available conversation knowledge and inspected evidence; not a verbatim full historical transcript",
