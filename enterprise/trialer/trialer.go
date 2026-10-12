@@ -3,7 +3,6 @@ package trialer
 import (
 	"context"
 	"crypto/ed25519"
-	"encoding/json"
 	"net/http"
 	"time"
 
@@ -19,13 +18,8 @@ import (
 // LicenseRequestURL is the Coder licensor endpoint that issues trial licenses.
 const LicenseRequestURL = "https://v2-licensor.coder.com/trial"
 
-const (
-	// defaultLicenseRequestSource tells the licensor where a trial request
-	// originated when the caller does not specify a source.
-	defaultLicenseRequestSource = codersdk.LicensorTrialSourceProduct
-	// licenseRequestTimeout bounds a single request to the licensor.
-	licenseRequestTimeout = 30 * time.Second
-)
+// licenseRequestTimeout bounds a single request to the licensor.
+const licenseRequestTimeout = 30 * time.Second
 
 type LicensorError struct {
 	Message string
@@ -56,7 +50,7 @@ func New(db database.Store, url string, keys map[string]ed25519.PublicKey) *Tria
 //
 // Hardcoded: this build never contacts the remote licensor. Sending user PII
 // (email, name, phone, company) to v2-licensor.coder.com is disabled.
-func (t *Trialer) Request(_ context.Context, _ codersdk.LicensorTrialRequest) (string, error) {
+func (*Trialer) Request(_ context.Context, _ codersdk.LicensorTrialRequest) (string, error) {
 	return "", &LicensorError{Message: "trial license requests are disabled in this build"}
 }
 
@@ -100,16 +94,4 @@ func (t *Trialer) Generate(ctx context.Context, body codersdk.LicensorTrialReque
 		return xerrors.Errorf("insert license: %w", err)
 	}
 	return nil
-}
-
-// licenseRequestErrorMessage reads the licensor's error message, falling back to
-// the HTTP status when the body is not in the expected shape.
-func licenseRequestErrorMessage(body []byte, status string) string {
-	var msg struct {
-		Error string `json:"error"`
-	}
-	if err := json.Unmarshal(body, &msg); err == nil && msg.Error != "" {
-		return msg.Error
-	}
-	return status
 }

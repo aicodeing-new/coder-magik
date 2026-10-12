@@ -83,7 +83,7 @@ func (r *RootCmd) Server(_ func()) *serpent.Command {
 		// Hardcoded: disable the remote trial license generator. Calling the
 		// licensor service would leak user PII (email, name, phone, company)
 		// to v2-licensor.coder.com. Return an explanatory error instead.
-		options.TrialGenerator = func(ctx context.Context, _ codersdk.LicensorTrialRequest) error {
+		options.TrialGenerator = func(_ context.Context, _ codersdk.LicensorTrialRequest) error {
 			return xerrors.New("trial license generation is disabled in this build")
 		}
 		_ = trialer.LicenseRequestURL // keep the import referenced

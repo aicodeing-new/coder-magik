@@ -913,9 +913,14 @@ lint/mise-versions:
 .PHONY: lint/mise-versions
 
 # Fails when the docs-gen filter in .github/workflows/ci.yaml misses a docs
-# file make gen writes.
+# file make gen writes. Skipped when the workflow is absent: this fork removed
+# the upstream CI workflows, so there is no docs-gen filter to keep in sync.
 lint/docs-gen-filter:
-	go run ./scripts/docsgenfiltercheck $(GEN_FILES)
+	@if [[ -f .github/workflows/ci.yaml ]]; then \
+		go run ./scripts/docsgenfiltercheck $(GEN_FILES); \
+	else \
+		echo "lint/docs-gen-filter: skipped (no ci.yaml in this fork)"; \
+	fi
 .PHONY: lint/docs-gen-filter
 
 # Verify api_key_scope enum contains all RBAC <resource>:<action> values.
