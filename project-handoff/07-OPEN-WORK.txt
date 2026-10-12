@@ -1,5 +1,12 @@
 待办和下一位agent的推进顺序
 
+v1.0.5发布（OIDC邮箱自助补全上线）
+1. 代码已就绪：main分支commit 3461c22（账户页邮箱编辑+.invalid防覆盖），完整make pre-commit通过；历史上tag推送均按用户指令执行，等用户确认后：git tag -a v1.0.5 -m ... && git push origin v1.0.5（先push main）。
+2. 等GH Actions（office-ubuntu runner）构建约25分钟，产物ghcr.io/aicodeing-new/coder-magik:v1.0.5-amd64。
+3. 用户同步镜像到SWR（pixiu-public/admins/coder-magik）后：改values.yaml image.tag为v1.0.5-amd64并helm upgrade（或kubectl set image），回退即改回v1.0.4-amd64。
+4. 上线验证：飞书用户登录→设置→账户，Email可编辑且显示占位邮箱引导；填真实邮箱保存后重新登录邮箱保持；重名邮箱返回409提示。
+5. 新用户名拼音化无需此发布（adapter已上线，见03）。
+
 最接近当前用户目标：机房DERP落地
 1. 确认用户希望实际部署，沿用已有DERP讨论与新指令，不重复请求已明确授权的步骤。
 2. 公网域名和Gateway入口未确认，不能用出站代理可用推断入站可用。
@@ -14,7 +21,8 @@
 仍待做：ali-prod/README.md与release-v1.0.3.json的历史描述保持原样未改（历史文档不双写）；下次Helm升级后核对release revision/镜像实际生效。
 
 未实现/未全面验证
-- 前端UUID显示与中英双语（2026-10-11实现，见03变更史）：镜像v1.0.4-amd64已于2026-10-12构建成功（GHCR），SWR路径由用户提供（本会话未核验镜像可拉取）；values.yaml已指向v1.0.4并通过dry-run校验，但Helm升级未执行，线上仍是v1.0.3。汉化词典覆盖静态字符串2975条+插值规则约150条；后端API返回的错误消息、未被提取的动态拼接串仍显示英文；后续上游合并带来的新界面字符串需按site/src/i18n/README.md流程补译。e2e(playwright)套件本地未跑（需coder二进制），英文locale浏览器默认英文、理论上不受影响。
+- v1.0.5未发布（邮箱自助补全待上线，见顶部发布步骤）；拼音用户名已随adapter上线，但真实飞书新用户登录的拼音效果未实测（仅单测+readiness验证）。
+- 前端UUID显示与中英双语（2026-10-11实现，见03变更史）：v1.0.4-amd64已于2026-10-12上线（用户kubectl直改镜像，helm revision仍为4，见02）。汉化词典覆盖静态字符串2975条+插值规则约150条；后端API返回的错误消息、未被提取的动态拼接串仍显示英文；后续上游合并带来的新界面字符串需按site/src/i18n/README.md流程补译。e2e(playwright)套件本地未跑（需coder二进制），英文locale浏览器默认英文、理论上不受影响。
 - 逐项人工验收汉化效果未做（词典为批量翻译+程序化审校）：上线后建议过一遍主要页面（工作区列表/创建/设置/模板管理），发现漏译或错译按README流程补词典。
 - timeGroups.test.ts两例UTC时区依赖测试在本机(UTC+8)预先存在失败，与汉化改动无关，未修复。
 - 创建表单前端缺陷（上游代码）：参数校验错误不渲染、校验失败滚动聚焦名称框而非出错字段、JS不兼容POSIX正则类。模板侧已用^\S+$规避（2026-10-11）；若要根治需改site/并重新构建镜像，或向上游反馈。

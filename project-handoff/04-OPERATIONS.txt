@@ -60,14 +60,16 @@ Pending先读Pod events、GPU可分配量、节点taint、RuntimeClass、PVC绑�
 Pod换节点后管理的是新节点主机容器。stop/rm等直接影响线上，不作为例行诊断执行。
 
 飞书SSO维护
-文档及代码/root/coder-deploy/ali-prod/feishu-sso/，详见06以外的SSO状态JSON和02配置。
+文档及代码正本project-handoff/artifacts/ali-prod/feishu-sso/（历史机路径/root/coder-deploy/ali-prod/feishu-sso/不再维护）。
 AppID cli_a929453a72f8dcbb，Feishu redirect https://coder.magikcloud.cn/sso/callback。
 Dex回调到Coder https://coder.magikcloud.cn/api/v2/users/oidc/callback，不与Feishu后台地址混淆。
 Secrets coder-feishu、coder-sso-private、coder-sso-config；不在分享包写具体Secret值。
 部署coder-feishu-sso包含Dex5556与adapter127.0.0.1:8081，共享Pod网络。
 固定镜像digest，保持coder_sso持久化库，避免重建签名密钥。
-修改adapter.py要重新生成并应用adapter-configmap.yaml然后滚动SSO Deployment；Secret变更也需重启。
-单测：cd /root/coder-deploy/ali-prod/feishu-sso && python3 -B -m unittest discover -s . -p 'test_*.py'。
+ConfigMap coder-feishu-adapter含adapter.py与pinyin_table.py两个key（2026-10-12起）；更新用kubectl create configmap --from-file=adapter.py --from-file=pinyin_table.py --dry-run=client -o yaml | kubectl replace -f -（不能apply，last-applied注解会超262144字节），然后rollout restart。
+修改拼音表只改pinyin_table.py（勿手改，用gen_pinyin_table.py从mozillazg/pinyin-data重新生成）；修改adapter.py或拼音表都要更新ConfigMap并滚动Deployment；Secret变更也需重启。
+用户名规则（2026-10-12起）：新登录用户名为中文名拼音（多音字姓氏读音见adapter.py SURNAMES，转换失败回退open_id）；存量用户名不变，改名走管理员。
+单测：cd project-handoff/artifacts/ali-prod/feishu-sso && python3 -B -m unittest test_adapter。
 configure.py按现有Secret读取凭据，当前工作机直连RDS不可用；必要时用Coder Pod内环境执行专用DB bootstrap。
 不自动把新OIDC账号绑定已有密码账号，不修改组织权限来掩盖身份绑定问题。
 验证discovery/JWKS、redirect/state、真实授权和管理员原会话，不能只看Pod Running。

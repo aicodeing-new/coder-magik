@@ -98,17 +98,17 @@
     "included_path": "artifacts/ali-prod/derp-yunqiao/go.sum"
   },
   {
-    "source_path": "/root/coder-deploy/ali-prod/feishu-sso/adapter-configmap.yaml",
+    "source_path": "/root/coder/artifacts/ali-prod/feishu-sso/adapter-configmap.yaml",
     "included": true,
-    "size_bytes": 5529,
-    "sha256": "91280a547314359a0eff79313ac2a58c471737f505a18b662f544aa75b1cf9ca",
+    "size_bytes": 469527,
+    "sha256": "a363a324a41f226baac315471c9d9ee725e5f343ac3ce9bd0c4ad899c6db072b",
     "included_path": "artifacts/ali-prod/feishu-sso/adapter-configmap.yaml"
   },
   {
-    "source_path": "/root/coder-deploy/ali-prod/feishu-sso/adapter.py",
+    "source_path": "/root/coder/artifacts/ali-prod/feishu-sso/adapter.py",
     "included": true,
-    "size_bytes": 5002,
-    "sha256": "c9ef10b4f7124cbcfff84ecb6a5e5268406bea618195129448150601532d2ac5",
+    "size_bytes": 6384,
+    "sha256": "25d505f6ae773140811d9aa3b9be35d2ce4f92176ba0044337f21efd371ad1f7",
     "included_path": "artifacts/ali-prod/feishu-sso/adapter.py"
   },
   {
@@ -119,10 +119,10 @@
     "included_path": "artifacts/ali-prod/feishu-sso/configure.py"
   },
   {
-    "source_path": "/root/coder-deploy/ali-prod/feishu-sso/db-bootstrap.go",
+    "source_path": "/root/coder/artifacts/ali-prod/feishu-sso/db-bootstrap.go",
     "included": true,
-    "size_bytes": 1375,
-    "sha256": "b5386fcc562b993b3e116a7e7ba0f5de7c0210d13d12acf59965fe1d4ac95f50",
+    "size_bytes": 1431,
+    "sha256": "417542c69bade5202e743ded47ac7741028cb81c380b8f67e2e3c1892a56d24a",
     "included_path": "artifacts/ali-prod/feishu-sso/db-bootstrap.go"
   },
   {
@@ -133,11 +133,25 @@
     "included_path": "artifacts/ali-prod/feishu-sso/deployment.yaml"
   },
   {
-    "source_path": "/root/coder-deploy/ali-prod/feishu-sso/test_adapter.py",
+    "source_path": "/root/coder/artifacts/ali-prod/feishu-sso/test_adapter.py",
     "included": true,
-    "size_bytes": 3180,
-    "sha256": "a593de149afb3d618bf0c2c8a39edffb4df259fa67e2aa60e2a5ef93768d502b",
+    "size_bytes": 4435,
+    "sha256": "8a5a6025ba118ba260437dba329a5bd1e5505425bb89d5592419602de747252b",
     "included_path": "artifacts/ali-prod/feishu-sso/test_adapter.py"
+  },
+  {
+    "source_path": "/root/coder/artifacts/ali-prod/feishu-sso/gen_pinyin_table.py",
+    "included": true,
+    "size_bytes": 1966,
+    "sha256": "6c417ac321a3ecfd4fad55043fea34fa2b3c414d4fbf066e0329e4cf5411de9f",
+    "included_path": "artifacts/ali-prod/feishu-sso/gen_pinyin_table.py"
+  },
+  {
+    "source_path": "/root/coder/artifacts/ali-prod/feishu-sso/pinyin_table.py",
+    "included": true,
+    "size_bytes": 378759,
+    "sha256": "412aef770664461cde5ba40982dc3ed491cf2bbc8f835805a05d4933c140dd71",
+    "included_path": "artifacts/ali-prod/feishu-sso/pinyin_table.py"
   },
   {
     "source_path": "/root/coder-deploy/ali-prod/gpu-template/.terraform.lock.hcl",

@@ -19,6 +19,12 @@
       "validated": "helm template diff (only image differs) and helm upgrade --dry-run=server",
       "deployed": true,
       "deploy_method": "image updated on live via kubectl (helm release revision still 4); verified buildinfo v2.38.0-devel+magik.1.0.4.0ba14b2"
+    },
+    "pending_release": {
+      "tag": "v1.0.5",
+      "feature": "OIDC account-settings email self-completion with .invalid placeholder sync guard",
+      "status": "implemented and verified (full make pre-commit) on main; awaiting user instruction to push tag, GHCR build, SWR sync, then rollout",
+      "rollback": "set image back to v1.0.4-amd64"
     }
   },
   "template": {
@@ -66,7 +72,10 @@
     "issuer": "https://coder.magikcloud.cn/sso",
     "identity": "open_id@feishu.invalid",
     "database": "coder_sso",
-    "user_login_verified": true
+    "user_login_verified": true,
+    "username_style": "pinyin of Feishu display name for new signups since 2026-10-12 (adapter deployed); existing users keep ou_ names",
+    "email": "placeholder ou_xxx@feishu.invalid; self-service completion in account settings implemented (commit 3461c22), pending v1.0.5 image",
+    "adapter_configmap": "coder-feishu-adapter with adapter.py + pinyin_table.py keys, replaced and rolled out 2026-10-12"
   },
   "derp": {
     "current": "ali-prod embedded relay region999",

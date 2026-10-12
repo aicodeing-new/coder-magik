@@ -137,3 +137,13 @@ CI配置：/root/coder/.github/workflows/build-tag-image.yaml
 - 模板：脚本改为签名curl GET下载+sha256校验+同文件系统staging解压+原子改名+marker（~/.cache/coder/codex-vscode-extensions.version）；旧版空间检测到openai.chatgpt目录只补marker。main.tf Deployment新增env_from secretRef coder-oss-pull（两集群coder-workspaces已建，AK/SK/ENDPOINT=oss-accelerate.aliyuncs.com）。Secret必须先于模板版本存在于两集群，否则Pod CreateContainerConfigError。
 - 验证：beast01全新安装15m19s（exit 0，NFS小文件写入为主）；yunqiao干净验证（版本6453df5e）首次30.4秒、二次启动10.6毫秒、中断自愈；签名GET回读sha256一致。诊断空间与Retain PV均已清理。
 - 遗留：Secret中AK当前为可写主AK且曾明文出现在对话中，应换为仅magik-velero-backup/vscode-exp/*只读的RAM子账号并轮换现有AK；扩展升级流程见04。
+
+2026-10-12 功能：飞书登录用户名拼音化（已上线）+ OIDC用户自助补全邮箱（待v1.0.5）
+- 需求：飞书登录用户名此前为open_id（ou_开头），改为飞书返回中文名的拼音；飞书用户无真实邮箱（ou_xxx@feishu.invalid占位），需要用户能自行补全。
+- adapter（project-handoff/artifacts/ali-prod/feishu-sso/，commit e8cf70a）：preferred_username由open_id改为显示名拼音转换。CJK转无声调小写拼音（新增pinyin_table.py，20925字表，由mozillazg/pinyin-data经gen_pinyin_table.py生成，ü→v）；姓氏多音字16个按姓氏读音且仅首字生效（单shan/曾zeng/查zha/仇qiu/解xie等）；ASCII字母数字保留小写，其余字符丢弃，超32字符截断；转换结果为空回退open_id；重名由Coder自动追加随机后缀。存量用户不受影响（Coder登录从不重命名已有用户）。
+- adapter部署：ConfigMap coder-feishu-adapter经kubectl create --dry-run|replace更新（含adapter.py与pinyin_table.py两key，直接apply会因last-applied注解超262144字节限制失败），rollout restart后2/2就绪、Dex发现端点正常。adapter-configmap.yaml正本已按线上重建（427637字节）。
+- Coder本体（commit 3461c22）：PUT /users/{user}/profile新增可选email字段，仅限本人且非密码登录类型（密码用户邮箱仍是找回凭据，走管理员实验API），占用他人邮箱返回409；OIDC登录同步守卫：IdP返回.invalid保留域（RFC 2606）占位邮箱不再覆盖用户已补全的邮箱，IdP提供真实邮箱时仍以其为准；账户设置页Email字段对OIDC/GitHub用户开放编辑，占位邮箱显示引导文案；zh-CN词典新增3条。
+- 验证：TestOIDCProfileEmailCompletion（补全/占位防覆盖/IdP真实邮箱覆盖/409）、users_test门禁用例（密码类型403/他人账号403）、AccountForm前端用例（提交负载/非法邮箱校验/占位提示）全过；adapter单测扩至9项全过；完整make pre-commit（gen+fmt+lint+build）通过。前端全套单测与干净树一致（仅timeGroups两例已知UTC失败）。
+- 附带修复存量问题（commit 3ff7ff7、eb4b4f3）：install-codex-vscode.sh shfmt格式；build-tag-image.yaml SC2012（ls改find -printf）；恢复typos.toml（此前随上游workflow误删）并排除project-handoff/**、忽略上游存量文件名marketplace-parm.png；enterprise/cli/server.go与trialer.go revive/unused清理；db-bootstrap.go xerrors化+打印返回值处理；Makefile lint/docs-gen-filter在无ci.yaml时跳过（fork已删上游CI，该检查无意义）。
+- 本机开发工具链补齐（pre-commit hook从此可完整跑）：sqlc（coder fork 337309b，CGO）、protoc 23.4、protoc-gen-go/protoc-gen-go-drpc/mockgen、shfmt v3.12.0（须锁定版本，v3.14行为不同）、shellcheck 0.10.0、typos 1.29.4、mise 2026.5.12（actionlint）、golangci-lint v2.0.2、paralleltestctx、whichtests、terraform 1.16.2；均已链接/usr/local/bin。git config coder.pre-commit已置true。
+- 状态：拼音用户名新登录即生效；邮箱补全需v1.0.5镜像上线（发布步骤见07），未发布前线上无该功能。
