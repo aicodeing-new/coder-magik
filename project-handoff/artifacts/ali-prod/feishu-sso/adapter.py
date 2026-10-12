@@ -9,9 +9,40 @@ import urllib.parse
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+from pinyin_table import PINYIN
+
 CLIENT_ID = os.environ.get("FEISHU_CLIENT_ID", "")
 CLIENT_SECRET = os.environ.get("FEISHU_CLIENT_SECRET", "")
 CALLBACK = "https://coder.magikcloud.cn/sso/callback"
+
+# Surname readings for characters whose surname reading differs from their
+# most common reading. Applied only to the first character of a name, so
+# 单(shan)伟 gets "shanwei" while 明单 keeps the common reading "dan".
+SURNAMES = {
+    "曾": "zeng", "单": "shan", "查": "zha", "仇": "qiu", "重": "chong",
+    "都": "du", "繁": "po", "句": "gou", "乐": "yue", "缪": "miao",
+    "朴": "piao", "区": "ou", "覃": "qin", "折": "she", "解": "xie",
+    "员": "yun",
+}
+
+
+def pinyin_username(name, fallback):
+    """Best-effort ASCII username from a display name.
+
+    CJK characters become toneless pinyin, ASCII alphanumerics pass through
+    lowercased, and everything else (spaces, dots, unknown characters) is
+    dropped. Caller usernames come from the stable open_id when this yields
+    nothing.
+    """
+    parts = []
+    for index, char in enumerate(name):
+        if index == 0 and char in SURNAMES:
+            parts.append(SURNAMES[char])
+        elif char in PINYIN:
+            parts.append(PINYIN[char])
+        elif char.isascii() and char.isalnum():
+            parts.append(char.lower())
+    return "".join(parts)[:32] or fallback
 
 
 def upstream(path, token=None, payload=None):
@@ -36,10 +67,12 @@ def identity(result):
     if not re.fullmatch(r"ou_[A-Za-z0-9_-]+", subject):
         raise ValueError("Missing Feishu identity")
     # Stable account identifier, not a deliverable or verified mailbox.
+    # preferred_username becomes the Coder username for new signups; existing
+    # accounts are matched by id and never renamed by later logins.
     return {
         "id": subject,
         "user_name": data.get("name") or subject,
-        "preferred_username": subject,
+        "preferred_username": pinyin_username(data.get("name") or "", subject),
         "email": subject + "@feishu.invalid",
         "email_verified": False,
     }

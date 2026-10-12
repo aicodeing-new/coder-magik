@@ -29,6 +29,22 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual(result['email'], 'ou_123@feishu.invalid')
         self.assertFalse(result['email_verified'])
         self.assertNotIn('mobile', result)
+    def test_username_is_pinyin_of_name(self):
+        result = adapter.identity({'data': {'open_id':'ou_123', 'name':'张三'}})
+        self.assertEqual(result['preferred_username'], 'zhangsan')
+        self.assertEqual(result['user_name'], '张三')
+        self.assertEqual(adapter.identity({'data': {'open_id':'ou_123', 'name':'李小明'}})['preferred_username'], 'lixiaoming')
+        self.assertEqual(adapter.identity({'data': {'open_id':'ou_123', 'name':'吕雉'}})['preferred_username'], 'lvzhi')
+    def test_surname_readings_apply_to_first_char_only(self):
+        self.assertEqual(adapter.pinyin_username('单伟', 'ou_x'), 'shanwei')
+        self.assertEqual(adapter.pinyin_username('曾青', 'ou_x'), 'zengqing')
+        self.assertEqual(adapter.pinyin_username('乐磊', 'ou_x'), 'yuelei')
+        self.assertEqual(adapter.pinyin_username('明单', 'ou_x'), 'mingdan')
+    def test_ascii_and_untranslatable_names(self):
+        self.assertEqual(adapter.pinyin_username('Dev Wang', 'ou_x'), 'devwang')
+        self.assertEqual(adapter.pinyin_username('买买提·艾力', 'ou_x'), 'maimaitiaili')
+        self.assertEqual(adapter.pinyin_username('!!!', 'ou_x'), 'ou_x')
+        self.assertEqual(adapter.pinyin_username('', 'ou_x'), 'ou_x')
     def test_missing_identity_rejected(self):
         with self.assertRaises(ValueError): adapter.identity({'data': {'name':'Dev'}})
     def test_token_translation_and_client_auth(self):
