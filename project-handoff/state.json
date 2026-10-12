@@ -1,5 +1,5 @@
 {
-  "record_date": "2026-10-11",
+  "record_date": "2026-10-12",
   "timezone": "Asia/Shanghai",
   "project": "aicodeing-new/coder-magik",
   "source_root": "/root/coder",
@@ -11,7 +11,14 @@
     "image": "swr.cn-north-4.myhuaweicloud.com/pixiu-public/admins/coder-magik:v1.0.3-amd64",
     "version": "v2.38.0-devel+magik.1.0.3.47e1868",
     "release_commit": "47e18689dfe0ebac46eafe037f17a81aefd011a3",
-    "release_tag": "v1.0.3"
+    "release_tag": "v1.0.3",
+    "values_sync": {
+      "date": "2026-10-12",
+      "method": "live deployment + helm get values diffed against chart render; only image tag and CODER_ENTERPRISE_HARDCODE_LICENSE were real drift",
+      "next_image": "swr.cn-north-4.myhuaweicloud.com/pixiu-public/admins/coder-magik:v1.0.4-amd64",
+      "validated": "helm template diff (only image differs) and helm upgrade --dry-run=server",
+      "deployed": false
+    }
   },
   "template": {
     "name": "kubernetes",
@@ -94,9 +101,8 @@
     "disabled_transition_snapshot_possible": true
   },
   "known_drift": [
-    "values.yaml image v1.0.2; missing current license env",
-    "rendered.yaml and old README history stale",
-    "release-v1.0.3.json deployed=false is historical"
+    "values.yaml synced to live 2026-10-12 and targets v1.0.4-amd64; live deployment still v1.0.3 until helm upgrade runs",
+    "ali-prod README.md and release-v1.0.3.json are historical records kept as-is"
   ],
   "scope": "all available conversation knowledge and inspected evidence; not a verbatim full historical transcript",
   "portable_handoff_directory": "project-handoff",

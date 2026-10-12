@@ -117,3 +117,10 @@ CI配置：/root/coder/.github/workflows/build-tag-image.yaml
 - 产物ghcr.io/aicodeing-new/coder-magik:v1.0.4-amd64，digest sha256:f769c6a127866e63249bbec82a1207161086bed0b11d137ca7b384fe48476301；同时推送:latest。server版本2.38.0-devel+magik.1.0.4.0ba14b2。
 - 尚未同步SWR、尚未Helm升级：线上仍是v1.0.3-amd64。升级前需核对live Helm配置与旧values漂移（见02和07）。
 - CI注释提示actions/checkout@v4与docker/login-action@v3的Node 20弃用警告，非阻塞，可后续升级action版本。
+
+2026-10-12 Helm values以线上为准同步（配置漂移整理）
+- 背景：v1.0.3当时用kubectl直改镜像+直加CODER_ENTERPRISE_HARDCODE_LICENSE=true，未走Helm；线上release revision 4的values仍记v1.0.2，交接文档已把此列为配置漂移。
+- 方法：导出线上Deployment完整规格与helm get values，用本地chart（coder-0.1.0）helm template渲染后逐项diff。确认有效漂移仅两处（镜像tag、license env）；KUBE_POD_IP/CODER_CLUSTER_HOST的apiVersion与secret/configMap volume的defaultMode:420为API服务端默认值，语义相同非漂移。
+- 变更：/root/coder-deploy/ali-prod/values.yaml并入CODER_ENTERPRISE_HARDCODE_LICENSE=true并将image.tag指向用户提供的v1.0.4-amd64，其余与线上逐字一致（无Secret明文）；rendered.yaml按新values重渲染；values.yaml副本与校验值纳入artifacts并更新artifact-inventory.json。
+- 验证：helm template+新values与线上Deployment diff，唯一差异为目标镜像（v1.0.4-amd64 vs 线上v1.0.3-amd64），env 24项/volumes/mounts/resources/nodeSelector/serviceAccount/securityContext/replicas全部一致；helm upgrade --dry-run=server通过；dry-run后复核线上镜像与revision未变。
+- 状态：升级未执行。下次升级命令即helm upgrade coder chart-source/helm/coder -n coder -f values.yaml（需kubeconfig与SWR中已存在v1.0.4-amd64镜像）；升级前按04做回退预案。ali-prod/README.md历史描述仍未更新，保持历史文档不动。

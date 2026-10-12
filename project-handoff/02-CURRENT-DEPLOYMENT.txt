@@ -1,5 +1,5 @@
 当前部署和访问资料
-核对日期2026-10-11；实时状态另见live-snapshot.json。
+核对日期2026-10-12；实时状态另见live-snapshot.json。
 
 控制面
 入口：https://coder.magikcloud.cn
@@ -7,6 +7,9 @@ Kubernetes namespace：coder
 Deployment：coder，1副本，两个内置provisioner。
 实际生产镜像：swr.cn-north-4.myhuaweicloud.com/pixiu-public/admins/coder-magik:v1.0.3-amd64。
 服务/内置CLI版本：v2.38.0-devel+magik.1.0.3.47e1868。
+Helm release coder revision 4（2026-10-11），chart coder-0.1.0（本地源chart-source/helm/coder）。
+values.yaml已于2026-10-12以线上为准同步：并入历史kubectl直改项（镜像tag、CODER_ENTERPRISE_HARDCODE_LICENSE=true）后指向v1.0.4-amd64，并通过helm template与线上Deployment逐项diff验证（唯一差异即目标镜像）及helm upgrade --dry-run=server校验；同日rendered.yaml按新values重渲染。v1.0.4-amd64镜像已由CI构建（见03），升级未执行。
+此前v1.0.3当时用kubectl直改镜像未走Helm，revision 3→4的Helm values仍为v1.0.2；该漂移已随本次同步消除。
 CODER_ADDRESS=0.0.0.0:8080；Dockerfile默认3000需Helm环境覆盖为8080。
 资源原配置requests CPU500m/memory2Gi，limits CPU2/memory4Gi。
 平台只挂受限GPU集群kubeconfig，不使用GPU集群admin权限处理工作空间。

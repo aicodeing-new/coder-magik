@@ -224,14 +224,17 @@
   {
     "source_path": "/root/coder-deploy/ali-prod/values.yaml",
     "exists": true,
-    "included": false,
-    "reason": "historical drift, credential/private content, or large/reconstructable dependency; use operational guidance before accessing"
+    "included": true,
+    "size_bytes": 2420,
+    "sha256": "82124436bffc23fca8617497ffb876add415b5699d5533f1b8947525f8e8d5e2",
+    "included_path": "artifacts/ali-prod/values.yaml",
+    "category": "helm values synced from live 2026-10-12; image v1.0.4-amd64; no secret plaintext, only Secret name references"
   },
   {
     "source_path": "/root/coder-deploy/ali-prod/rendered.yaml",
     "exists": true,
     "included": false,
-    "reason": "historical drift, credential/private content, or large/reconstructable dependency; use operational guidance before accessing"
+    "reason": "derived from chart-source + values.yaml via helm template coder chart-source/helm/coder -n coder -f values.yaml; regenerate instead of copying"
   },
   {
     "source_path": "/root/coder-deploy-private",
