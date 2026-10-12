@@ -110,3 +110,10 @@ CI配置：/root/coder/.github/workflows/build-tag-image.yaml
 - 词典由scripts/extract-i18n-strings.mjs从src/提取3174条字符串（排除测试/story/生成词典自身），分10批并行翻译后合并；术语规则见src/i18n/README.md（术语表+排版规则+更新流程）。单测/Storybook固定英文（MODE=test与STORYBOOK判断），现有英文断言与Pixel基线不受影响；e2e英文locale浏览器默认英文。
 - 验证：site全量pnpm lint通过（biome/oxlint/tsc/循环依赖/compiler+knip）；vitest 298/299文件通过（唯一失败timeGroups.test.ts 2例为预先存在的UTC时区依赖测试，本机UTC+8必失败，与本次无关）；4个受影响组件65个story测试通过；pnpm build成功。
 - 状态：代码全部在/root/coder工作区未提交未构建；线上镜像v1.0.3-amd64不含这些改动，需下次镜像构建+Helm升级才会生效。
+
+2026-10-12 发布v1.0.4（前端UUID显示与中英双语）
+- 前端改动（工作区UUID两处显示、运行时词典翻译层中英双语）经用户侧commit 0ba14b2推送到origin/main。
+- 按用户指令创建annotated v1.0.4并push，触发run 38195867950，约27分钟构建成功。
+- 产物ghcr.io/aicodeing-new/coder-magik:v1.0.4-amd64，digest sha256:f769c6a127866e63249bbec82a1207161086bed0b11d137ca7b384fe48476301；同时推送:latest。server版本2.38.0-devel+magik.1.0.4.0ba14b2。
+- 尚未同步SWR、尚未Helm升级：线上仍是v1.0.3-amd64。升级前需核对live Helm配置与旧values漂移（见02和07）。
+- CI注释提示actions/checkout@v4与docker/login-action@v3的Node 20弃用警告，非阻塞，可后续升级action版本。
