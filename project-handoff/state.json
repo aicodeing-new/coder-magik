@@ -61,7 +61,8 @@
       "coder-sso-private",
       "coder-sso-config"
     ],
-    "secret_values_included": false
+    "secret_values_included": false,
+    "mars2_kubeconfig": "/mnt/d/Downloads/mars2-apiserver-admin.yaml"
   },
   "sso": {
     "provider": "Feishu via Dex and Python adapter",
@@ -134,5 +135,81 @@
     "tags_unchanged": true,
     "backup_directory": "/root/coder-deploy/branch-cleanup/20261011",
     "dependabot_disabled": false
+  },
+  "additional_templates": {
+    "mars2-k8s": {
+      "date": "2026-10-21",
+      "timezone": "Asia/Shanghai",
+      "template_name": "mars2-k8s",
+      "template_id": "5a5f58b6-f312-476e-af75-5f8281593bfa",
+      "active_version_id": "c3401c5d-79d8-46f1-8582-9d97e1b35a6a",
+      "version_name": "mars2-cursor-20261021",
+      "source_template": "kubernetes",
+      "source_template_version": "6453df5e-ab5c-401b-a6c3-9c95c57481cb",
+      "gpu_product": "MetaX MXC500",
+      "gpu_resource": "metax-tech.com/gpu",
+      "gpu_count_options": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "gpu_default": 8,
+      "runtime_class": "metax",
+      "gpu_node_label": {
+        "metax-tech.com/gpu.installed": "true"
+      },
+      "namespace": "coder-workspaces",
+      "storage_class": "ceph-fs",
+      "actual_storage_driver": "nfs.csi.k8s.io",
+      "proxy": "http://10.55.17.137:10809",
+      "rbac_scope": "namespaced deployments/PVC CRUD, Pods/log/events read",
+      "restricted_context_added": true,
+      "existing_contexts_preserved": [
+        "beast01",
+        "yunqiao"
+      ],
+      "oss_pull_configuration_copied_without_logging": true,
+      "lifecycle_and_acl_match_source": true,
+      "sensitive_openai_api_key": "left at declared empty default; source API redacts sensitive variables",
+      "terraform_validate": "passed",
+      "control_plane_to_mars2_api_http": 200,
+      "mars2_to_coder_health_http": 200,
+      "mars2_to_agent_binary_range_http": 206,
+      "dry_runs": [
+        {
+          "gpu_count": 0,
+          "job_id": "d7efd8a9-dac9-4a56-96ff-9aaa705c827e",
+          "status": "succeeded"
+        },
+        {
+          "gpu_count": 1,
+          "job_id": "29959674-0b4f-4273-9587-22b0d9856266",
+          "status": "succeeded"
+        },
+        {
+          "gpu_count": 8,
+          "job_id": "a350607c-30f2-4aa7-be37-71724b67202e",
+          "status": "succeeded"
+        }
+      ],
+      "actual_workspace_created": false,
+      "gpu_runtime_tested": false,
+      "secrets_exported": false,
+      "initial_import_retry": "Secret projection had not refreshed; after mars2 appeared in mounted kubeconfig, retry succeeded",
+      "new_artifact_checksums_verified": 7,
+      "preexisting_inventory_drift_paths": [
+        "artifacts/ali-prod/gpu-template/scripts/install-codex-vscode.sh"
+      ],
+      "initial_active_version_id": "1d6e213a-9e05-4552-8a3f-e692693ecf04",
+      "startup_fix_record": "mars2-startup-fix-20261021.json",
+      "git_proxy": "http://10.55.17.137:10809",
+      "cursor_enabled": true
+    }
   }
 }

@@ -1,0 +1,85 @@
+{
+  "active_version_id": "c3401c5d-79d8-46f1-8582-9d97e1b35a6a",
+  "active_version_name": "mars2-cursor-20261021",
+  "dry_run_job_id": "1b74c60c-7f1b-43a0-a403-bb2cd5176519",
+  "dry_run_status": "succeeded",
+  "preview_apps": [],
+  "workspace_build_id": "6f457fbc-4efe-444f-a2b7-a37eb669cac9",
+  "workspace_id": "ca901415-6e34-4719-ba30-f3def74fa1a2",
+  "pods_before": [
+    {
+      "name": "coder-ca901415-6e34-4719-ba30-f3def74fa1a2-7d47c7f9df-wqjkm",
+      "uid": "81142350-e0d1-4be5-92b5-0d039667ea3c",
+      "restarts": 0
+    }
+  ],
+  "workspace_build_status": "succeeded",
+  "workspace_apps": [
+    {
+      "slug": "cursor",
+      "name": "Cursor Desktop",
+      "protocol": "cursor"
+    },
+    {
+      "slug": "vscode",
+      "name": "VS Code Desktop",
+      "protocol": "vscode"
+    }
+  ],
+  "pods_after": [
+    {
+      "name": "coder-ca901415-6e34-4719-ba30-f3def74fa1a2-6f58d58f8d-w6vcz",
+      "uid": "b54d7f34-e5c1-46c3-894e-79245a554efa",
+      "restarts": 0
+    }
+  ],
+  "pod_unchanged": false,
+  "client_cursor_launch_tested": false,
+  "workspace_outdated": false,
+  "workspace_agents": [
+    {
+      "name": "main",
+      "status": "connecting",
+      "lifecycle_state": "created",
+      "healthy": false,
+      "apps": [
+        "Cursor Desktop",
+        "VS Code Desktop"
+      ]
+    }
+  ],
+  "date": "2026-10-21",
+  "template_name": "mars2-k8s",
+  "reference_template_name": "kubernetes-dev",
+  "reference_template_version": "ssh-root-home-fix-20261012",
+  "cursor_module": "registry.coder.com/coder/cursor/coder",
+  "cursor_module_version": "1.4.1",
+  "folder": "",
+  "open_recent": false,
+  "mcp": "",
+  "template_change_scope": "Cursor module only; all other template files unchanged",
+  "workspace_pod_recreated": true,
+  "pod_change_reason": "Terraform reconciled CODER_AGENT_TOKEN drift; template-only comparison did not predict restart",
+  "pvc_remained_bound": true,
+  "persistent_files_verified": [
+    ".gitconfig",
+    ".local/bin/codex",
+    ".cache/coder/codex-vscode-extensions.version"
+  ],
+  "workspace_agents_after": [
+    {
+      "name": "main",
+      "status": "connected",
+      "lifecycle_state": "ready",
+      "health": {
+        "healthy": true
+      },
+      "apps": [
+        "Cursor Desktop",
+        "VS Code Desktop"
+      ]
+    }
+  ],
+  "workspace_restored": true,
+  "final_verification_note": "Agent connected and healthy after bootstrap; Cursor Desktop and VS Code Desktop apps registered. Local Cursor launch has not been tested."
+}

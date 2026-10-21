@@ -147,3 +147,42 @@ CI配置：/root/coder/.github/workflows/build-tag-image.yaml
 - 附带修复存量问题（commit 3ff7ff7、eb4b4f3）：install-codex-vscode.sh shfmt格式；build-tag-image.yaml SC2012（ls改find -printf）；恢复typos.toml（此前随上游workflow误删）并排除project-handoff/**、忽略上游存量文件名marketplace-parm.png；enterprise/cli/server.go与trialer.go revive/unused清理；db-bootstrap.go xerrors化+打印返回值处理；Makefile lint/docs-gen-filter在无ci.yaml时跳过（fork已删上游CI，该检查无意义）。
 - 本机开发工具链补齐（pre-commit hook从此可完整跑）：sqlc（coder fork 337309b，CGO）、protoc 23.4、protoc-gen-go/protoc-gen-go-drpc/mockgen、shfmt v3.12.0（须锁定版本，v3.14行为不同）、shellcheck 0.10.0、typos 1.29.4、mise 2026.5.12（actionlint）、golangci-lint v2.0.2、paralleltestctx、whichtests、terraform 1.16.2；均已链接/usr/local/bin。git config coder.pre-commit已置true。
 - 状态：拼音用户名新登录即生效；邮箱补全需v1.0.5镜像上线（发布步骤见07），未发布前线上无该功能。
+
+2026-10-21 mars2接入与独立模板
+- 用户提供/mnt/d/Downloads/mars2-apiserver-admin.yaml，要求新建mars2-k8s，其余沿用kubernetes。
+- 从线上codex-oss-preload-20261012拉取模板，与本地源逐文件核对一致。
+- GPU改为metax-tech.com/gpu、metax RuntimeClass和metax-tech.com/gpu.installed标签，移除NVIDIA env/topologyd挂载。
+- 保留0至8GPU/default8、privileged/hostNetwork、Docker/containerd socket、20Gi shm、独立PVC、自定义镜像和Codex预装。
+- mars2创建coder-workspaces及同等受限RBAC，新增SA context并保留旧context；不把admin kubeconfig传给Coder。
+- 复制现有coder-oss-pull配置时凭据只在内存传递，不落地或打印。mars2直连Coder正常，代理ConfigMap配置为空代理。
+- ceph-fs在mars2实际为NFS CSI，支持扩容、Retain；名称相同不等于Ceph后端。
+- 模板已上线，ID/版本和0/1/8干跑证据见mars2-integration-20261021.json；权限及生命周期设置匹配原模板。
+- 没有创建正式空间、PVC或占用GPU，没有执行mx-smi/推理运行测试。开发者需选MACA兼容镜像使用沐曦计算栈。
+- 两个bootstrap.py集群清单已增加mars2，防止未来重配丢失context；未执行数据库bootstrap。
+
+2026-10-21 mars2缺curl及代理修复
+- 用户实际MACA镜像缺curl，导致Codex CLI与扩展下载失败；Agent本体借wget启动不代表所有模块依赖齐全。
+- 用户补充mars2代理http://10.55.17.137:10809。已按yunqiao同步大小写HTTP/HTTPS_PROXY和NO_PROXY配置，不再沿用早先“无需代理”的判断。
+- 当前容器安装curl及必要依赖，未升级其他包、未重启空间；通过新代理重跑CLI/扩展安装。实测CLI0.163.0、VSCode扩展/音频26.1007.21434成功，扩展包SHA256及重复执行跳过验证通过。
+- 新模板加入scripts/ensure-dev-tools.sh，在独立shell完成工具准备后才启动Agent；失败退出，避免shell选项污染Agent。APT缓存过期404时先更新索引重试。
+- Codex模块增加post_install_script，检查可执行文件并执行--version；扩展安装显式检查curl。
+- 最新版本mars2-startup-ready-20261021已发布，持久/临时资源计划及Terraform校验通过。
+- 仅当前修复安装命令显式使用代理，已有进程环境不自动刷新。当前空间需更新最新模板并重建以全面加载代理及启动依赖修复，尚未自动重启。
+- 代理验证通过后保留原GitHub CLI安装方式，没有上线新的CLI OSS缓存；原VSCode扩展OSS方案保持不变。
+- 详见mars2-startup-fix-20261021.json。
+
+2026-10-21 Git专项代理对齐
+- 实测yunqiao除了Pod代理变量，还有/home/coder/.gitconfig的http.proxy=http://10.0.4.22:10809，GitHub HTTPS访问成功。
+- mars2新Pod已载入代理变量，但MACA镜像不含Git。已补装Git2.34.1并设置global http.proxy=http://10.55.17.137:10809。
+- 去掉测试进程的HTTP/HTTPS/ALL_PROXY变量后，git ls-remote仍成功；连接trace确认使用10.55.17.137:10809。
+- 启动依赖脚本加入Git安装及代理同步，幂等验证和模板计划通过，发布mars2-git-proxy-20261021。
+- .gitconfig在/home/coder PVC持久化；Git程序在容器根目录，后续空间须使用新模板以便重建时补装。未重启当前空间。
+
+2026-10-21 Cursor入口补齐
+- 用户指出参考对象为平台templates/kubernetes-dev。原mars2源自另一个kubernetes模板，因此缺Cursor模块。
+- 拉取kubernetes-dev的ssh-root-home-fix-20261012，复制官方coder/cursor模块1.4.1配置，folder/mcp为空、open_recent=false。
+- 仅新增Cursor模块，保留mars2现有Codex CLI和硬件/存储/代理设置。未复制参考模板中的宿主机数据挂载等其他功能。
+- Terraform校验、导入和dry-run通过；模板预览API未显示应用，所以继续实际应用到zyz并验证真实应用列表有Cursor Desktop和VS Code Desktop。
+- 此次更新原判断不会重建Pod，但Terraform同步了CODER_AGENT_TOKEN漂移，导致Deployment更新和Pod重建。已向用户说明判断失误。
+- PVC仍Bound，原Git配置、Codex二进制和扩展marker均已验证保留。恢复过程和最终Agent状态见mars2-cursor-20261021.json。
+- 后续不能仅凭模板文件差异推断更新无中断，必须考虑provider refresh/drift与认证状态变化。

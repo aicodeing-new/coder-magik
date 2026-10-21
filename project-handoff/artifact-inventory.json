@@ -30,8 +30,8 @@
   {
     "source_path": "/root/coder-deploy/ali-prod/bootstrap.py",
     "included": true,
-    "size_bytes": 3208,
-    "sha256": "e5e423f99b5f69fe4557a27f922ddefe7be3777936cea828eb5e46153c3d34cd",
+    "size_bytes": 3268,
+    "sha256": "fabea2e2eb62435d41367c9783dabe03bcf271745f22b80cd865f4b7762496ae",
     "included_path": "artifacts/ali-prod/bootstrap.py"
   },
   {
@@ -420,5 +420,53 @@
     "source_path": "/root/.codex/attachments/00b89c3d-12ad-4c8c-bb59-dedd4d3b768e/已粘贴的文本.txt",
     "included": false,
     "reason": "original user Terraform error attachment; may contain sensitive logs; exact content not re-exported"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/mars2-template/main.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/mars2-template/main.tf",
+    "sha256": "9dcb74289d481b599eafc581765a0defe5b5a322c84b2610eff5da00f5647527",
+    "size_bytes": 12428
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/mars2-template/modules.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/mars2-template/modules.tf",
+    "sha256": "4bcdf0cdef13be283d8de6f228b2943e5cb36eef0499f7cefe055a0eca3e942c",
+    "size_bytes": 1776
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/mars2-template/.terraform.lock.hcl",
+    "included": true,
+    "included_path": "artifacts/ali-prod/mars2-template/.terraform.lock.hcl",
+    "sha256": "d630e304f1ac8229f364306f077b3ce641afe33bc141bbfc547b639736bae858"
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/mars2-template/scripts/install-codex-vscode.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/mars2-template/scripts/install-codex-vscode.sh",
+    "sha256": "d1aa8e74cbd09024b4b192214d681a8349a67ddda0834f627e98b15ed3910ce6",
+    "size_bytes": 3323
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/mars2-rbac.yaml",
+    "included": true,
+    "included_path": "artifacts/ali-prod/mars2-rbac.yaml",
+    "sha256": "0d8d0f282d6190506aa25b451900df5cbd57ddda6ef082970ebeb6de98fff103",
+    "size_bytes": 1235
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/mars2-proxy.yaml",
+    "included": true,
+    "included_path": "artifacts/ali-prod/mars2-proxy.yaml",
+    "sha256": "46876293a22b76937656fc3c0270f65dd70d35a9aba2b4ce03932fca4dac18ae",
+    "size_bytes": 491
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/mars2-template/scripts/ensure-dev-tools.sh",
+    "included_path": "artifacts/ali-prod/mars2-template/scripts/ensure-dev-tools.sh",
+    "included": true,
+    "sha256": "9d91470b2c6bbddf01a0ec37e39a55898dd1b693a15c7ea62b0956076d3b40a2",
+    "size_bytes": 1509
   }
 ]

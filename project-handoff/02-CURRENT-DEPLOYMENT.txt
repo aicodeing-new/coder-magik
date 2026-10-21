@@ -84,3 +84,16 @@ coder.binaryDestination指向新文件；该文件已验证报告2.38.0-devel+ma
 原CLI文件被旧SSH进程占用，未杀会话或覆盖它。已留原CLI备份。
 Windowsinterop：/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe。
 诊断需使用上述Windows实际CLI与config，不要只用WSL ping替代客户端结论。
+
+2026-10-21补充：独立mars2模板已上线
+模板mars2-k8s，访问https://coder.magikcloud.cn/templates/mars2-k8s/workspace。
+版本mars2-metax-ready-20261021，template ID 5a5f58b6-f312-476e-af75-5f8281593bfa，active version 1d6e213a-9e05-4552-8a3f-e692693ecf04。
+管理配置/mnt/d/Downloads/mars2-apiserver-admin.yaml；平台受限context mars2；namespace coder-workspaces。
+MXC500，资源metax-tech.com/gpu，RuntimeClass metax，0至8卡可选、默认8。
+原kubernetes模板集群选项及激活版本不变；新模板固定mars2，不加入原模板选项。
+开发PVC沿用ceph-fs名称，mars2实际NFS CSI，默认100Gi只增不减。
+GPU网络直连Coder已测200、Agent下载range206，无需沿用其他机房代理。
+所有生命周期、端口策略及显式ACL匹配现有kubernetes；目前显式ACL无用户/组授权，组织管理员/模板管理员权限仍适用。
+工作空间启动后才会真实申请GPU/PVC，本次仅完成模板计划验证。详见mars2-integration-20261021.json。
+
+2026-10-21 mars2最新修正：代理为http://10.55.17.137:10809；最新模板版本mars2-startup-ready-20261021，ID 537612e4-2a0d-4dc6-8cb7-69e52864d0ad。此前“mars2无需代理”已被用户新信息取代。当前空间工具已手工修复，全面应用代理/新启动流程需更新模板重建；细节见mars2-startup-fix-20261021.json。

@@ -16,6 +16,7 @@ ALI = "/mnt/d/Downloads/ali-prod-kubeconfig-admin.yaml"
 GPU_CLUSTERS = {
     "beast01": "/mnt/d/Downloads/beast01-apiserver.yaml",
     "yunqiao": "/mnt/d/Downloads/yunqiao-ops-admin.yaml",
+    "mars2": "/mnt/d/Downloads/mars2-apiserver-admin.yaml",
 }
 
 

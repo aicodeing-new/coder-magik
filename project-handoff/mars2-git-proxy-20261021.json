@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-21",
+  "template_name": "mars2-k8s",
+  "active_version_name": "mars2-git-proxy-20261021",
+  "active_version_id": "99252535-1bfe-48b2-9a57-e772f26f34e3",
+  "yunqiao_git_global_http_proxy": "http://10.0.4.22:10809",
+  "yunqiao_config_origin": "/home/coder/.gitconfig",
+  "yunqiao_https_git_test": "passed",
+  "mars2_git_before": "not installed in selected MACA image",
+  "mars2_git_after": "2.34.1",
+  "mars2_git_global_http_proxy": "http://10.55.17.137:10809",
+  "mars2_config_origin": "/home/coder/.gitconfig",
+  "mars2_github_ls_remote": "passed",
+  "test_http_proxy_env_removed": true,
+  "test_trace_connected_to_proxy": true,
+  "git_bootstrap_idempotence": "passed",
+  "workspace_restarted_by_agent": false,
+  "template_plan_and_validate": "passed",
+  "startup_behavior": "install missing Git then sync global http.proxy from proxy environment; preserve other Git settings"
+}

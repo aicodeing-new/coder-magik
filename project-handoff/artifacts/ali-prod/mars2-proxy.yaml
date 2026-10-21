@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coder-workspace-proxy
+  namespace: coder-workspaces
+data:
+  HTTP_PROXY: http://10.55.17.137:10809
+  HTTPS_PROXY: http://10.55.17.137:10809
+  http_proxy: http://10.55.17.137:10809
+  https_proxy: http://10.55.17.137:10809
+  NO_PROXY: localhost,127.0.0.1,::1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,169.254.0.0/16,.svc,.cluster.local
+  no_proxy: localhost,127.0.0.1,::1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,169.254.0.0/16,.svc,.cluster.local

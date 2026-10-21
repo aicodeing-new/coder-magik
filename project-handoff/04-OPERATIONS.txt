@@ -95,3 +95,8 @@ Coder下载路径/bin/coder-windows-amd64.exe；用完整下载长度/hash/本�
 检查范围
 配置/文档变化只做有意义的验证，不为可逆低风险文件写镜像实现的测试。
 发布、网络、身份和GPU变更必须说明已验证与未验证的边界；health通过不是所有功能都通过。
+
+运行中空间更新注意（2026-10-21实际教训）
+即使模板仅新增应用入口，refresh时也可能发现coder_agent token或Deployment漂移并重建Pod。
+不能仅比较模板文件就承诺无重启；必须预先评估实际资源计划和用户运行任务。
+本次Cursor更新的实际变更是CODER_AGENT_TOKEN同步，PVC数据保留。
