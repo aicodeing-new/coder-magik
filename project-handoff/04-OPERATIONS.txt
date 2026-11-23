@@ -100,3 +100,25 @@ Coder下载路径/bin/coder-windows-amd64.exe；用完整下载长度/hash/本�
 即使模板仅新增应用入口，refresh时也可能发现coder_agent token或Deployment漂移并重建Pod。
 不能仅比较模板文件就承诺无重启；必须预先评估实际资源计划和用户运行任务。
 本次Cursor更新的实际变更是CODER_AGENT_TOKEN同步，PVC数据保留。
+
+Terraform Unexpected Identity Change 排障（2026-10-23）
+先查看首次失败而非只看最后一次重试；网络中断后的部分资源状态可能含全 null identity。
+修复前私有备份 state、确认工作空间无构建运行、核对资源 apiVersion/kind/namespace/name；仅针对已证实异常的 identity 修正，不能删除 PVC 或整体恢复陈旧 state 来绕过错误。
+本次使用 GET/PUT /api/v2/workspacebuilds/{id}/state，PUT JSON 的 state 为完整状态字节的 base64；必须有模板管理员权限，且操作前再次核对 latest build 未变化。state 含凭据，禁止放入仓库。
+操作结果见 mars2-recovery-20261023.json；再次发生时重新检查，不得盲目套用旧资源名。
+
+默认coder账户运维（2026-11-19）
+Coder Agent应在runuser切换后以coder运行；不要仅看Pod runAsUser=0就判定用户会话为root。验证whoami、id、getent passwd coder、HOME、sudo -n id；默认ssh-keygen目录须为/home/coder/.ssh。
+首次迁移root写入的HOME文件需扫描PVC，大量小文件可能增加启动时间。已有coder保留UID，新账户使用GID1000，root所有权文件迁移给实际UID/GID。
+更新旧Pod前检查/root中的密钥与用户文件；Pod重建后无法从新镜像恢复旧/root。本次仅迁移确认存在的zy-test1 SSH密钥对，未复制整个/root。不要输出私钥。
+正常用户目录持久化；sudo -i后的/root仍不持久化，需保留的代码和密钥应在/home/coder。免密sudo保留完整提权能力，不能宣称禁止用户自行安装Docker。
+
+sudo代理验证（2026-11-19）
+普通用户环境有代理不代表sudo后仍存在；检查sudo -n printenv https_proxy及大小写变量。默认coder使用Defaults:coder env_keep白名单保留代理，不能只依赖每次sudo -E。
+软件源DNS返回IPv6和IPv4正常；应先核对实际连接是否经过代理，不将IPv6不可达提示误诊成DNS问题。当前Podsudoers修复对已启动apt进程无效，需由用户结束旧进程再重试。
+
+beast03运维（2026-11-23）
+GPU代理为http://192.168.200.3:10809，非其他集群代理；从现有vllm Pod确认并做GPU节点实测。修改代理需同步大小写六变量，sudo env_keep已在模板保留。
+新集群context追加到现有Secret前需私有备份并保留原contexts；等待挂载投影更新后，再从控制面验证受限API连接。不要运行全量bootstrap覆盖整个Secret或数据库配置来添加单个集群。
+模板cluster创建后不可变，既有空间不能迁移PVC到beast03。beast03使用nvidia.com/gpu与nvidia RuntimeClass，存储类ceph-fs实际为Baidu CFS NFS。
+模板基础镜像仍可自定义，beast03本地验证镜像见集成记录；跨机房镜像拉取受节点containerd网络/仓库认证影响，Pod内HTTP_PROXY不负责kubelet拉镜像。

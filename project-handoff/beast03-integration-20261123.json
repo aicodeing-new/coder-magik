@@ -1,0 +1,78 @@
+{
+  "template_id": "5620ff55-82d4-4830-81ee-ab411208916e",
+  "version_id": "87634b6d-2466-4b45-91d0-489fef85d4e3",
+  "version_name": "beast03-cluster-20261123",
+  "dry_run_job_id": "a480e643-f3da-4e1e-8037-96423f331642",
+  "control_plane_api_http": 200,
+  "projected_context_verified": true,
+  "workspaces_not_restarted": [
+    "songxiaobing/sxb1",
+    "songxiaobing/sxb2",
+    "yzhang/zy-test1",
+    "zhengke/test-zk",
+    "zhangyizhen/zyz"
+  ],
+  "dry_run_status": "succeeded",
+  "gpu_dry_runs": [
+    {
+      "gpu_count": 0,
+      "id": "aaafc63f-7c9c-49de-8bf7-71bbd23faae6",
+      "status": "succeeded"
+    },
+    {
+      "gpu_count": 8,
+      "id": "4b184d0d-95ba-4834-8a4f-d471e325e514",
+      "status": "succeeded"
+    }
+  ],
+  "date": "2026-11-23",
+  "template": "kubernetes-dev",
+  "reference_version": "coder-sudo-proxy-20261119",
+  "active_source_readback_verified": true,
+  "cluster": "beast03",
+  "gpu_product": "NVIDIA-B30Z",
+  "gpu_nodes": 16,
+  "gpus_per_node": 8,
+  "gpu_resource": "nvidia.com/gpu",
+  "runtime_class": "nvidia",
+  "proxy": "http://192.168.200.3:10809",
+  "proxy_source": "Existing model-serving vllm containers on multiple beast03 GPU nodes",
+  "proxy_configmap": "coder-workspaces/coder-workspace-proxy",
+  "rbac": "namespaced deployment/PVC CRUD and Pods/log/events read; secrets and nodes denied",
+  "existing_contexts_preserved": [
+    "beast01",
+    "yunqiao",
+    "mars2"
+  ],
+  "admin_kubeconfig_copied_to_control_plane": false,
+  "oss_credential_copied_in_memory": true,
+  "validation": {
+    "control_plane_to_api_http": 200,
+    "gpu_node_proxy_coder_health_http": 200,
+    "gpu_node_proxy_github_http": 200,
+    "gpu_node_proxy_other_cluster_registry_http": 401,
+    "agent_download_range_bytes": 4096,
+    "data_store_directory_exists": true,
+    "nvidia_topology_directory_exists": true,
+    "storage_class": "ceph-fs",
+    "storage_driver": "nfs.csi.k8s.io",
+    "storage_backend": "Baidu CFS NFS4",
+    "temporary_pvc_status": "Bound",
+    "temporary_pvc_size": "1Gi",
+    "temporary_pv": "pvc-fe44ec18-2384-419b-8415-2e0de912621c",
+    "actual_image": "harbor-beast03.magikcloud.cn/library/vllm-openai:vllm-v31-dc22e741af-hy4",
+    "actual_image_bootstrap_and_user_setup": "passed",
+    "actual_image_coder_uid": 2001,
+    "sudo_root_uid": 0,
+    "sudo_proxy_preserved": true,
+    "pvc_writable_by_coder": true,
+    "ssh_key_on_pvc": "generated and checked",
+    "pod_exit_code": 0,
+    "gpu_allocated": 0,
+    "gpu_compute_tested": false
+  },
+  "production_workspaces_restarted": false,
+  "cluster_parameter_mutable": false,
+  "note": "Existing workspaces keep their original cluster. New workspaces may select beast03. GPU compute and default cross-cluster image pull were not exercised; validated using beast03 existing inference image.",
+  "temporary_validation_resources_cleaned": true
+}

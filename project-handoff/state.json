@@ -210,6 +210,25 @@
       "startup_fix_record": "mars2-startup-fix-20261021.json",
       "git_proxy": "http://10.55.17.137:10809",
       "cursor_enabled": true
+    },
+    "kubernetes-dev": {
+      "date": "2026-11-23",
+      "template_id": "5620ff55-82d4-4830-81ee-ab411208916e",
+      "active_version_id": "87634b6d-2466-4b45-91d0-489fef85d4e3",
+      "version_name": "beast03-cluster-20261123",
+      "clusters": [
+        "beast01",
+        "yunqiao",
+        "beast03"
+      ],
+      "cluster_mutable": false,
+      "default_user": "coder",
+      "home": "/home/coder",
+      "passwordless_sudo": true,
+      "sudo_proxy_preserved": true,
+      "host_docker_containerd_sockets": false,
+      "beast03_proxy": "http://192.168.200.3:10809",
+      "evidence": "beast03-integration-20261123.json"
     }
   }
 }

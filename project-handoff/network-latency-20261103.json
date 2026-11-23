@@ -1,0 +1,96 @@
+{
+  "date": "2026-11-03",
+  "scope": "Read-only cross-cluster latency investigation; affected workspace not yet specified",
+  "control_plane": {
+    "pod": "coder-7b58478f4-d7tww",
+    "restarts": 0,
+    "cpu_millicores": 2,
+    "memory_Mi": 421,
+    "version": "v2.38.0-devel+magik.1.0.5.63b57fb",
+    "healthz_from_operator_ms": 58
+  },
+  "yunqiao": {
+    "workspace_id": "5c9908e6-57bd-44c4-96e0-798dadeafaf8",
+    "node": "hgx-098",
+    "proxy": "http://10.0.4.22:10809",
+    "https_probe_total_ms": [
+      361.897,
+      306.713,
+      275.387,
+      304.265,
+      304.455
+    ],
+    "probe_status": 200,
+    "direct_probe": "Two attempts timed out connecting to Coder HTTPS",
+    "cpu_idle_percent_recent": [
+      96,
+      96
+    ],
+    "logical_cpus": 192,
+    "home_filesystem": "Ceph",
+    "workspace": "yzhang/zy-test1",
+    "coder_ping": {
+      "sent": 8,
+      "received": 8,
+      "min_ms": 90.628999,
+      "avg_ms": 99.239691,
+      "max_ms": 140.993599,
+      "path": "DERP region 999 Coder Embedded Relay",
+      "agent_stun_udp": "unreachable"
+    }
+  },
+  "mars2": {
+    "workspace_id": "ca901415-6e34-4719-ba30-f3def74fa1a2",
+    "node": "gpu-worker-7",
+    "proxy": "http://10.55.17.137:10809",
+    "https_probe_total_ms": [
+      112.31,
+      87.659,
+      93.823,
+      90.49,
+      100.541
+    ],
+    "direct_probe_total_ms": [
+      95.43,
+      88.276
+    ],
+    "probe_status": 200,
+    "home_filesystem": "NFS4",
+    "workspace": "zhangyizhen/zyz",
+    "coder_ping": {
+      "sent": 8,
+      "received": 8,
+      "min_ms": 20.9779,
+      "avg_ms": 23.25746,
+      "max_ms": 26.998992,
+      "path": "DERP region 999 Coder Embedded Relay",
+      "client_stun_udp": "unreachable reported for this test"
+    }
+  },
+  "limitations": [
+    "Probe timings include TCP/TLS setup and HTTP response; not measured editor or established tunnel RTT",
+    "Windows executable interoperability failed with Exec format error; actual Windows client path not measured",
+    "Agent container stdout had no lines in last 30 minutes; this does not rule out network errors in other log sinks",
+    "No confirmed packet loss, bandwidth, disk latency, or underlying Xray routing measurements",
+    "Available Windows VS Code telemetry ends on 2026-10-27; not evidence of current user connection"
+  ],
+  "inference": "Yunqiao has substantially higher measured tunnel latency and jitter than Mars2. Both probes relay through ali-prod; Yunqiao agent STUN UDP unreachable. User-specific workspace/symptom and actual client RTT still needed to establish cause of experienced slowness.",
+  "mutations": "None; no workspace restart or production config changes",
+  "next_steps": [
+    "Identify which workspace/symptom user experiences",
+    "Run coder ping from actual user client for the same spaces",
+    "For Yunqiao verify CPU22 proxy routing and bandwidth to Coder; local DERP remains prepared but undeployed, requiring verified ingress before implementation"
+  ],
+  "coder_login_restored": true,
+  "tunnel_probe_origin": "Current Linux operator environment; not a fresh Windows client test",
+  "disable_direct_connections": false,
+  "derp_force_websockets": false,
+  "derp_region_ids": [
+    "1000",
+    "1001",
+    "1002",
+    "1003",
+    "1004",
+    "999"
+  ]
+}

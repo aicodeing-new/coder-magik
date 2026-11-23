@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coder-workspace-proxy
+  namespace: coder-workspaces
+data:
+  HTTP_PROXY: http://192.168.200.3:10809
+  HTTPS_PROXY: http://192.168.200.3:10809
+  NO_PROXY: localhost,127.0.0.1,::1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,169.254.0.0/16,.svc,.cluster.local,k8s-apiserver.vip.domain,.etcd.etcd-serving.svc.cluster.local
+  http_proxy: http://192.168.200.3:10809
+  https_proxy: http://192.168.200.3:10809
+  no_proxy: localhost,127.0.0.1,::1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,169.254.0.0/16,.svc,.cluster.local,k8s-apiserver.vip.domain,.etcd.etcd-serving.svc.cluster.local

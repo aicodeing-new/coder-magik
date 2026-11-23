@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-19",
+  "template": "kubernetes-dev",
+  "active_version_name": "coder-sudo-proxy-20261119",
+  "active_version_id": "cd36462c-4c9c-4879-b151-c09f45a82852",
+  "root_cause": "sudo env_reset removed cluster proxy variables; apt attempted direct IPv6 and IPv4, both unreachable",
+  "fix": "Defaults:coder env_keep preserves HTTP_PROXY HTTPS_PROXY NO_PROXY and lowercase equivalents",
+  "live_workspace_fixed": "yzhang/zy-test1",
+  "live_pod": "coder-5c9908e6-57bd-44c4-96e0-798dadeafaf8-56f67c9f5c-4xkld",
+  "live_pod_restarted": false,
+  "verification": [
+    "Before: sudo env contained no proxy variables",
+    "After: sudo printenv https_proxy matches user environment",
+    "sudo curl TUNA jammy InRelease HTTP200",
+    "sudo apt-helper downloaded 270kB InRelease in about 1 second",
+    "Local bootstrap verifies all six proxy values survive sudo",
+    "Template import succeeded; activated source readback equals local"
+  ],
+  "ipv6_disabled": false,
+  "other_running_workspaces_updated": false
+}

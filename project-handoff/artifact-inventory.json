@@ -30,8 +30,8 @@
   {
     "source_path": "/root/coder-deploy/ali-prod/bootstrap.py",
     "included": true,
-    "size_bytes": 3268,
-    "sha256": "fabea2e2eb62435d41367c9783dabe03bcf271745f22b80cd865f4b7762496ae",
+    "size_bytes": 3326,
+    "sha256": "fc6c12593986d7028f65198f430b447293ec0073f3f87be04a7ddb62aa728e63",
     "included_path": "artifacts/ali-prod/bootstrap.py"
   },
   {
@@ -468,5 +468,180 @@
     "included": true,
     "sha256": "9d91470b2c6bbddf01a0ec37e39a55898dd1b693a15c7ea62b0956076d3b40a2",
     "size_bytes": 1509
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-no-docker-20261119/main.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-no-docker-template/main.tf",
+    "sha256": "de5e8ff65405899680c1dfd9b87723d7f9dc6a01e7499502a4ca18ca4d9f14bf",
+    "size_bytes": 13066
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-no-docker-20261119/modules.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-no-docker-template/modules.tf",
+    "sha256": "48212218c41c09d140389dbda9be610c7146721753c383a086636a4535fa7baa",
+    "size_bytes": 1528
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-no-docker-20261119/README.md",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-no-docker-template/README.md",
+    "sha256": "d528e80bcf935c67eb1c84f1c6801b4b022aa6e36fb9265c2ff040744fed9d40",
+    "size_bytes": 8242
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-no-docker-20261119/scripts/ssh-http-proxy.py",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-no-docker-template/scripts/ssh-http-proxy.py",
+    "sha256": "2e4a417815c667845ad6a46d554ca3a8bd0789b00b054cf4fc1ac5c2e1843243",
+    "size_bytes": 3344
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-no-docker-20261119/scripts/bootstrap-tools.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-no-docker-template/scripts/bootstrap-tools.sh",
+    "sha256": "995f5c27ac3233db62dadb1c7fdb75b5e30c61016879388a774e938e24f33fa8",
+    "size_bytes": 1212
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-no-docker-20261119/scripts/configure-git-proxy.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-no-docker-template/scripts/configure-git-proxy.sh",
+    "sha256": "75e013beb6e6834d1b079eda5b9aea3906983d224e10476e8e55751cbfb0f98b",
+    "size_bytes": 2989
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-no-docker-20261119/scripts/install-codex-vscode.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-no-docker-template/scripts/install-codex-vscode.sh",
+    "sha256": "2ee6fd683f923b422f0577a11d4ae24e88d9cdd1ea9584dcb502c08bfacc4cdd",
+    "size_bytes": 3181
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-sudo-proxy-20261119/main.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-coder-user-template/main.tf",
+    "sha256": "921e32c9b073ef1c7b15427c4e3ae1b11ed5f7c13833bd7f295d181b51521982",
+    "size_bytes": 13267
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-sudo-proxy-20261119/modules.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-coder-user-template/modules.tf",
+    "sha256": "48212218c41c09d140389dbda9be610c7146721753c383a086636a4535fa7baa",
+    "size_bytes": 1528
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-sudo-proxy-20261119/README.md",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-coder-user-template/README.md",
+    "sha256": "78c33d1e1408ac3f6d94b045c6df6eb54f99923bf1303eaabd0749fe160cddec",
+    "size_bytes": 9033
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-sudo-proxy-20261119/scripts/ssh-http-proxy.py",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-coder-user-template/scripts/ssh-http-proxy.py",
+    "sha256": "2e4a417815c667845ad6a46d554ca3a8bd0789b00b054cf4fc1ac5c2e1843243",
+    "size_bytes": 3344
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-sudo-proxy-20261119/scripts/setup-coder-user.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-coder-user-template/scripts/setup-coder-user.sh",
+    "sha256": "7cbc94be354f3d952241b993993f71b9161bcc08618637a9b2d62573000273dd",
+    "size_bytes": 2152
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-sudo-proxy-20261119/scripts/bootstrap-tools.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-coder-user-template/scripts/bootstrap-tools.sh",
+    "sha256": "9e142d16ab275d3aa475e450c03a1b1df40090ed8b331e5408184491d8e84bde",
+    "size_bytes": 1324
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-sudo-proxy-20261119/scripts/configure-git-proxy.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-coder-user-template/scripts/configure-git-proxy.sh",
+    "sha256": "75e013beb6e6834d1b079eda5b9aea3906983d224e10476e8e55751cbfb0f98b",
+    "size_bytes": 2989
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-sudo-proxy-20261119/scripts/install-codex-vscode.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-coder-user-template/scripts/install-codex-vscode.sh",
+    "sha256": "2ee6fd683f923b422f0577a11d4ae24e88d9cdd1ea9584dcb502c08bfacc4cdd",
+    "size_bytes": 3181
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-beast03-20261123/main.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-beast03-template/main.tf",
+    "sha256": "d7f351afda06ed888a9c51a018d95a31a6167280620af5439e71a236241147bd",
+    "size_bytes": 13340
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-beast03-20261123/modules.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-beast03-template/modules.tf",
+    "sha256": "48212218c41c09d140389dbda9be610c7146721753c383a086636a4535fa7baa",
+    "size_bytes": 1528
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-beast03-20261123/README.md",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-beast03-template/README.md",
+    "sha256": "78c33d1e1408ac3f6d94b045c6df6eb54f99923bf1303eaabd0749fe160cddec",
+    "size_bytes": 9033
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-beast03-20261123/scripts/ssh-http-proxy.py",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-beast03-template/scripts/ssh-http-proxy.py",
+    "sha256": "2e4a417815c667845ad6a46d554ca3a8bd0789b00b054cf4fc1ac5c2e1843243",
+    "size_bytes": 3344
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-beast03-20261123/scripts/setup-coder-user.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-beast03-template/scripts/setup-coder-user.sh",
+    "sha256": "7cbc94be354f3d952241b993993f71b9161bcc08618637a9b2d62573000273dd",
+    "size_bytes": 2152
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-beast03-20261123/scripts/bootstrap-tools.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-beast03-template/scripts/bootstrap-tools.sh",
+    "sha256": "9e142d16ab275d3aa475e450c03a1b1df40090ed8b331e5408184491d8e84bde",
+    "size_bytes": 1324
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-beast03-20261123/scripts/configure-git-proxy.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-beast03-template/scripts/configure-git-proxy.sh",
+    "sha256": "75e013beb6e6834d1b079eda5b9aea3906983d224e10476e8e55751cbfb0f98b",
+    "size_bytes": 2989
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-beast03-20261123/scripts/install-codex-vscode.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-beast03-template/scripts/install-codex-vscode.sh",
+    "sha256": "2ee6fd683f923b422f0577a11d4ae24e88d9cdd1ea9584dcb502c08bfacc4cdd",
+    "size_bytes": 3181
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/beast03-rbac.yaml",
+    "included": true,
+    "included_path": "artifacts/ali-prod/beast03-rbac.yaml",
+    "sha256": "0d8d0f282d6190506aa25b451900df5cbd57ddda6ef082970ebeb6de98fff103",
+    "size_bytes": 1235
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/beast03-proxy.yaml",
+    "included": true,
+    "included_path": "artifacts/ali-prod/beast03-proxy.yaml",
+    "sha256": "946d341ac914e72fc2e1d812a7b5fa5aff22a84c9cccdfdb55f539d9f69d5998",
+    "size_bytes": 619
   }
 ]

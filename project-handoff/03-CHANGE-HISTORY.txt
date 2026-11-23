@@ -186,3 +186,42 @@ CI配置：/root/coder/.github/workflows/build-tag-image.yaml
 - 此次更新原判断不会重建Pod，但Terraform同步了CODER_AGENT_TOKEN漂移，导致Deployment更新和Pod重建。已向用户说明判断失误。
 - PVC仍Bound，原Git配置、Codex二进制和扩展marker均已验证保留。恢复过程和最终Agent状态见mars2-cursor-20261021.json。
 - 后续不能仅凭模板文件差异推断更新无中断，必须考虑provider refresh/drift与认证状态变化。
+
+2026-10-23：zhangyizhen/zyz 启停失败状态恢复
+- build 12 在创建 Mars2 Deployment 时出现 HTTP/2 client connection lost，Terraform 保留了 identity 四字段均为 null 的部分状态；build 13 至 22 的启动/停止均因 Unexpected Identity Change 失败。
+- 先将 build 22 完整 state 备份至私有目录，核对 Kubernetes 实际资源后，仅补全 Deployment identity 的 api_version/kind/name/namespace，并增加 serial；通过现有 Coder 管理员 state API 写回。
+- 重试 build 23 已通过 Terraform apply，Pod 重新创建；模板未修改，PVC 未重建。Agent 最终验证结果以 mars2-recovery-20261023.json 为准。
+- 首次 HTTP/2 断连的底层原因未确定，未据此修改全局网络、Provider 版本或禁用 HTTP/2。
+- 恢复验证：Agent connected/healthy，coder ping 成功（经既有DERP约24ms），Coder SSH执行git/curl版本命令成功。curl/git已通过Mars2代理安装，原持久化文件保留；最终采样确认Agent lifecycle已为ready，健康检查正常，后台启动脚本已完成。
+
+2026-11-19 kubernetes-dev 取消主机容器运行时入口
+用户要求取消Docker映射。拉取并备份线上ssh-root-home-fix-20261012，仅移除Docker/containerd的volume与volume_mount、bootstrap-tools.sh的Docker CLI下载安装段，并同步模板README。
+发布并激活no-host-docker-20261119；导入与工作空间dry-run均succeeded，重新拉取激活源码与本地逐文件一致，确认两种socket映射及CLI安装均不存在。
+已有运行空间未被更新/重启，未做实际新Pod验证；GPU/PVC/主机数据/网络/privileged均保持原配置，mars2-k8s未修改。
+配置副本与校验值已存入项目交接目录；若需要强制禁止Docker，须另行设计权限收紧，不能仅凭socket移除宣称完成安全隔离。
+
+2026-11-19 kubernetes-dev 默认coder用户与免密sudo
+- 用户要求普通账户默认登录、保留完整sudo权限，并修复OpenSSH使用passwd里的/root而非HOME的问题。
+- bootstrap补齐sudo/visudo/runuser/账户工具；setup-coder-user.sh复用或创建普通coder账户、设置passwd home=/home/coder、NOPASSWD: ALL，并将HOME中root文件迁移给coder；不跟随符号链接、不跨独立挂载。
+- 入口分阶段运行bootstrap与账户准备，失败立即停止；最后exec runuser -u coder启动Agent，HOME/USER/LOGNAME统一设置。root/privileged仅用于初始化及后续sudo；已有GPU/PVC/网络配置保留，Docker/containerd socket仍无映射。
+- 本地有coder/无coder两种镜像场景通过；同实际开发镜像临时Pod验证UID1000、免密sudo UID0、旧文件权限修复、重复执行、ssh-keygen默认路径，退出0；临时Pod不申请GPU、不挂生产HOME，已清理。
+- 导入、dry-run、fmt、ShellCheck通过；激活coder-user-sudo-20261119，重新拉取源码逐文件一致；未重启已有空间，未执行GPU计算测试。
+- zy-test1旧SSH密钥位于/root/.ssh，已复制到同空间PVC的/home/coder/.ssh，内容比对一致且未覆盖目标；密钥内容未输出或入库。
+
+2026-11-19 sudo apt出网失败修复
+切换默认coder后，sudo默认env_reset清除了代理变量，apt尝试直连软件源；DNS同时返回A/AAAA是正常现象，IPv6路由不可达及IPv4超时均为直连受限结果，未禁用IPv6或强制IPv4。
+setup-coder-user.sh为coder增加sudo env_keep白名单，保留六个大小写代理变量，并在启动验证sudo后的值与原环境一致；没有保留所有环境变量或修改全局DNS。
+zy-test1现有Pod原地更新sudoers并校验，普通sudo curl清华源200，sudo apt-helper下载同源270kB索引约1秒；不操作用户仍在运行的apt进程，不争抢其APT锁。
+发布并激活coder-sudo-proxy-20261119，平台导入、ShellCheck、本地账户验证、激活源码回读均通过。配置副本沿用artifacts/ali-prod/kubernetes-dev-coder-user-template/，最新证据见kubernetes-dev-sudo-proxy-20261119.json。
+
+2026-11-23 beast03接入kubernetes-dev
+用户提供beast03管理员kubeconfig并要求确认代理。检查线上vllm环境找到192.168.200.3:10809，节点GPU型号B30Z，存储ceph-fs实为Baidu CFS NFS；沿用现有NVIDIA资源与RuntimeClass。
+新增coder-workspaces命名空间及受限SA/Role/Binding/Token、代理ConfigMap，扩展下载Secret在内存中复制。合并coder-gpu-kubeconfig仅追加beast03，保留beast01/yunqiao/mars2，并私有备份修改前Secret。
+受限权限验证：允许Deployment/PVC创建与Pod日志读取，拒绝读取Secret、删除Node。ali-prod Pod使用受限凭据访问beast03 Deployment API返回200，挂载kubeconfig已可见新context。
+模板仅增加beast03选项；导入及0/8 GPU dry-run通过，激活beast03-cluster-20261123，发布后拉取逐文件一致。未重启其他空间，未改变默认集群或GPU数量。
+临时Pod使用beast03缓存的线上镜像，在GPU节点不申请GPU，验证代理访问Coder/GitHub/Agent下载、主机目录存在；临时1Gi PVC验证NFS及普通coder、免密sudo、sudo代理继承、SSH-key生成成功。
+仅临时测试PV改为Delete以清理测试卷，生产StorageClass及其他PV的Retain策略未变。部署配置、模板和证据已入交接目录，bootstrap映射补充beast03但未运行涉及数据库的全量bootstrap。
+
+2026-11-23 Git归档校验
+本次新入库的kubernetes-dev模板副本按仓库格式化规则规范化；扩展安装脚本的语言包目录通配符检查改为逐目录判断，固定APT包列表的有意拆分增加ShellCheck说明，校验清单随之更新。
+这些提交检查修正只作用于仓库配置副本，本次Git提交未重新发布线上模板。线上激活版本仍为beast03-cluster-20261123；历史记录中的发布后逐文件回读验证针对当时发布源文件。

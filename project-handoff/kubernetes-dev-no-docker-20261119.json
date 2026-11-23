@@ -1,0 +1,31 @@
+{
+  "template_id": "5620ff55-82d4-4830-81ee-ab411208916e",
+  "version_id": "50b37080-4718-4145-900e-d585dcd31759",
+  "version_name": "no-host-docker-20261119",
+  "dry_run_job_id": "e478be68-aa99-46eb-8237-579d97c4ea1a",
+  "workspaces_not_restarted": [
+    "yzhang/zy-test1",
+    "zhengke/test-zk"
+  ],
+  "date": "2026-11-19",
+  "reference_version": "ssh-root-home-fix-20261012",
+  "reference_version_id": "846b75fc-23a7-4fbc-b5f3-543e9c57ff18",
+  "dry_run_status": "succeeded",
+  "active_source_readback_verified": true,
+  "removed": [
+    "Docker socket mount and volume",
+    "containerd socket mount and volume",
+    "Docker CLI download and installation"
+  ],
+  "unchanged": [
+    "root/privileged",
+    "hostNetwork",
+    "GPU allocation",
+    "PVC",
+    "host data mount",
+    "proxy",
+    "Cursor/VS Code/Git"
+  ],
+  "runtime_pod_verification": false,
+  "limitation": "Existing workspaces need template update and Pod recreation; privileged root does not enforce a ban on user-installed Docker."
+}

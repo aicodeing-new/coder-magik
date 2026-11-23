@@ -97,3 +97,31 @@ GPU网络直连Coder已测200、Agent下载range206，无需沿用其他机房�
 工作空间启动后才会真实申请GPU/PVC，本次仅完成模板计划验证。详见mars2-integration-20261021.json。
 
 2026-10-21 mars2最新修正：代理为http://10.55.17.137:10809；最新模板版本mars2-startup-ready-20261021，ID 537612e4-2a0d-4dc6-8cb7-69e52864d0ad。此前“mars2无需代理”已被用户新信息取代。当前空间工具已手工修复，全面应用代理/新启动流程需更新模板重建；细节见mars2-startup-fix-20261021.json。
+
+2026-10-23 核对：mars2-k8s 激活版本为 mars2-cursor-20261021（c3401c5d-79d8-46f1-8582-9d97e1b35a6a），已包含 Git/代理/启动依赖修复及 Cursor Desktop。
+zhangyizhen/zyz 于今日因创建 Deployment 时 HTTP/2 连接中断遗留不完整 Terraform identity，后续启停失败；已备份并定点修复状态，build 23 apply 成功。最终运行验证见 mars2-recovery-20261023.json。PVC 仍为原100Gi卷，本次未修改模板。
+
+2026-11-19 kubernetes-dev 最新模板
+模板5620ff55-82d4-4830-81ee-ab411208916e，激活no-host-docker-20261119（50b37080-4718-4145-900e-d585dcd31759）。
+取消Docker/containerd socket映射与Docker CLI自动安装；root/privileged、hostNetwork、GPU/PVC/数据挂载及开发工具保持原设置。
+yzhang/zy-test1与zhengke/test-zk仍运行旧版本，本次未重建；需更新模板重建Pod才会移除旧映射。
+这不是强制禁止用户安装Docker的安全边界。详见kubernetes-dev-no-docker-20261119.json及artifacts/ali-prod/kubernetes-dev-no-docker-template/。
+
+2026-11-19 kubernetes-dev 默认用户更新（取代同日no-host-docker版本）
+激活coder-user-sudo-20261119（01fbedd5-0515-46fe-b22e-08e32a64dd38）。入口仍以root准备工具和账户，随后runuser切到coder启动Agent；Coder终端/SSH/VS Code/Cursor默认用户coder，passwd目录和HOME均为/home/coder，NOPASSWD: ALL。
+privileged和hostNetwork保留；Docker/containerd映射继续移除。直接kubectl exec仍按容器配置UID0执行，不能据此判断Coder会话用户。
+已有空间未重建。zy-test1原/root/.ssh/id_rsa及公钥已在原Pod内复制到PVC的/home/coder/.ssh，同内容校验通过，无覆盖。
+详见kubernetes-dev-coder-user-20261119.json和artifacts/ali-prod/kubernetes-dev-coder-user-template/。
+
+2026-11-19 sudo代理修正（最新激活版本取代coder-user-sudo-20261119）
+当前kubernetes-dev激活coder-sudo-proxy-20261119，保留默认coder/免密sudo，新增sudo保留集群HTTP_PROXY/HTTPS_PROXY/NO_PROXY及小写变量。无需禁用IPv6。
+zy-test1在hgx-104的现有Pod已原地修复sudoers，不需要重启；sudo apt-helper下载清华源InRelease成功。其他空间需更新模板后获得同配置，详情见kubernetes-dev-sudo-proxy-20261119.json。
+
+2026-11-23 kubernetes-dev 新增 beast03（最新激活版本）
+激活 beast03-cluster-20261123（87634b6d-2466-4b45-91d0-489fef85d4e3），集群可选 beast01/yunqiao/beast03。mars2仍使用独立模板。
+beast03 kubeconfig原位置 /mnt/d/Downloads/beast03-apiserver.yaml；控制面仅保存命名空间受限SA context beast03，未放入管理员凭据。
+16台NVIDIA B30Z节点，每节点8卡；nvidia.com/gpu、RuntimeClass nvidia；ceph-fs为Baidu CFS的NFS4后端、可扩容。
+代理 http://192.168.200.3:10809，来自多台线上vllm Pod配置并已从GPU节点实测；ConfigMap coder-workspace-proxy包含大小写HTTP/HTTPS/NO_PROXY。
+已创建RBAC与扩展下载Secret，保留所有旧context。默认coder、免密sudo及代理继承、Docker/containerd不映射等行为沿用。
+创建计划0/8卡通过；临时Pod在0GPU条件下验证代理、Agent下载、PVC写入、coder/sudo/SSH-key，未做GPU计算和跨集群默认镜像实际拉取测试。可选用beast03本地镜像 harbor-beast03.magikcloud.cn/library/vllm-openai:vllm-v31-dc22e741af-hy4（验证用镜像）。
+现有空间不重启，原cluster不可变；新空间选beast03即可。细节见beast03-integration-20261123.json，配置副本位于artifacts/ali-prod/kubernetes-dev-beast03-template/及beast03-rbac.yaml、beast03-proxy.yaml。

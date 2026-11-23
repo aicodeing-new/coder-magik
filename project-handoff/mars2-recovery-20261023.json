@@ -1,0 +1,48 @@
+{
+  "date": "2026-10-23",
+  "workspace": "zhangyizhen/zyz",
+  "workspace_id": "ca901415-6e34-4719-ba30-f3def74fa1a2",
+  "template_name": "mars2-k8s",
+  "template_version_id": "c3401c5d-79d8-46f1-8582-9d97e1b35a6a",
+  "first_failure_build_number": 12,
+  "first_failure_build_id": "b35e8933-b1fc-47db-b45f-bae41275c8e1",
+  "first_failure": "Deployment creation request lost HTTP/2 connection after 55s; partial state retained with null identity fields",
+  "subsequent_failure": "Unexpected Identity Change during Terraform refresh; repeated start/stop attempts failed",
+  "last_failed_build_id": "63ef6f6f-415b-4a60-bc16-695b7242332d",
+  "repair": "Backed up full state privately; changed only Deployment identity to the four values verified against live Kubernetes metadata and incremented serial; uploaded using authenticated Coder state API",
+  "private_backup_path": "/root/coder-deploy-private/mars2-recovery-20261023/build22-before.tfstate",
+  "recovery_build_id": "1cb4309d-6e50-4665-9013-ae6f12e788cd",
+  "recovery_build_number": 23,
+  "recovery_build_status": "running",
+  "pvc_name": "coder-ca901415-6e34-4719-ba30-f3def74fa1a2-home",
+  "pvc_recreated": false,
+  "template_modified": false,
+  "upstream_network_interruption_root_cause": "Not determined; no evidence justifies changing global provider or HTTP/2 settings",
+  "agent_verified_ready": true,
+  "agents_after": [
+    {
+      "name": "main",
+      "status": "connected",
+      "lifecycle_state": "ready",
+      "health": {
+        "healthy": true
+      }
+    }
+  ],
+  "coder_ping_success": true,
+  "coder_ping_latency_ms": 24.459912,
+  "connection_path": "DERP Coder Embedded Relay",
+  "apt_proxy_verified": "http://10.55.17.137:10809",
+  "apt_recovery": "Stale package indexes produced initial 404; existing bootstrap refreshed indexes and installed curl/git successfully",
+  "persistent_files_verified": [
+    ".gitconfig",
+    ".local/bin/codex",
+    ".cache/coder/codex-vscode-extensions.version"
+  ],
+  "agent_verified_connected": true,
+  "ssh_command_verified": true,
+  "ssh_command_exit_code": 0,
+  "curl_version": "7.81.0",
+  "git_version": "2.34.1",
+  "background_startup_note": "Final sample: Agent connected/ready/healthy; background startup scripts completed."
+}

@@ -1,0 +1,55 @@
+{
+  "template_id": "5620ff55-82d4-4830-81ee-ab411208916e",
+  "version_id": "01fbedd5-0515-46fe-b22e-08e32a64dd38",
+  "version_name": "coder-user-sudo-20261119",
+  "dry_run_job_id": "7e385722-546e-46cb-9892-32a8a07821b8",
+  "workspaces_not_restarted": [
+    "yzhang/zy-test1",
+    "zhengke/test-zk"
+  ],
+  "dry_run_status": "succeeded",
+  "date": "2026-11-19",
+  "template": "kubernetes-dev",
+  "reference_version": "no-host-docker-20261119",
+  "active_source_readback_verified": true,
+  "default_agent_user": "coder",
+  "account_home": "/home/coder",
+  "home_environment": "/home/coder",
+  "sudoers": "coder ALL=(ALL:ALL) NOPASSWD: ALL",
+  "bootstrap_runs_as_root": true,
+  "agent_runs_as_root": false,
+  "privileged_retained": true,
+  "host_runtime_sockets_mounted": false,
+  "verification": {
+    "shellcheck": "passed",
+    "terraform_fmt": "passed",
+    "container_entry_failure_propagation": "passed",
+    "local_existing_coder_image": "passed",
+    "local_missing_coder_image": "passed",
+    "actual_development_image_pod_exit_code": 0,
+    "actual_image": "harbor-yunqiao.magikcloud.cn/vllm-magik/vllm-release:2026-09-01-13-28-feature-hy4-preview-support-11067008eb-ihc-concat-02206bce0f",
+    "actual_image_coder_uid": 1000,
+    "actual_image_sudo_root_uid": 0,
+    "actual_image_ssh_key_default_path": "/home/coder/.ssh/id_ed25519",
+    "root_owned_home_file_migration": "passed",
+    "idempotent_account_setup": "passed",
+    "validation_pod_allocated_gpu": false,
+    "validation_pod_used_production_home_pvc": false
+  },
+  "ssh_keys_preserved": {
+    "workspace": "yzhang/zy-test1",
+    "from": "/root/.ssh/id_rsa{,.pub}",
+    "to": "/home/coder/.ssh/id_rsa{,.pub}",
+    "contents_verified_equal": true,
+    "existing_destination_overwritten": false,
+    "key_contents_recorded": false
+  },
+  "existing_workspaces_updated": false,
+  "gpu_compute_tested": false,
+  "caveats": [
+    "kubectl exec still follows container runtime UID 0; Coder Agent and Coder remote sessions run as coder after bootstrap",
+    "sudo -i uses nonpersistent /root; normal coder sessions use persistent /home/coder",
+    "Privilege is available through sudo; commands requiring root must use sudo",
+    "First migration scans HOME and changes only root-owned files without following symlinks or crossing filesystems"
+  ]
+}
