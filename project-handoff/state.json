@@ -218,9 +218,9 @@
     },
     "kubernetes-cpu": {
       "date": "2026-11-24",
-      "active_version_id": "042d172e-b171-48f5-970f-467f4256c69f",
+      "active_version_id": "9f68421d-947f-4256-aca8-32e291ff9fa2",
       "template_id": "bfe57756-37c3-4c2c-bcb1-e020d8f7895a",
-      "version_name": "unified-dns-20261124",
+      "version_name": "headless-dns-only-20261124",
       "current_template_source": "artifacts/ali-prod/kubernetes-cpu-unified",
       "connectivity_record": "02-CURRENT-DEPLOYMENT.txt",
       "memory_request": "128Gi",
@@ -230,7 +230,6 @@
         "yunqiao",
         "beast03"
       ],
-      "dns_parameter": "workspace_service_port controls additional legacy ClusterIP only",
       "machine_count_range": [
         1,
         4
@@ -256,13 +255,20 @@
       "host_docker_containerd_sockets": false,
       "beast03_proxy": "http://192.168.200.3:10809",
       "evidence": "beast03-integration-20261123.json",
-      "current_template_source": "artifacts/ali-prod/kubernetes-gpu-unified",
       "connectivity_record": "02-CURRENT-DEPLOYMENT.txt",
       "machine_count_range": [
         1,
         4
       ],
-      "dns": "per-node headless Service, workspace and owner name, same cluster"
+      "dns": "per-node headless Service, workspace and owner name, same cluster",
+      "candidate_version": {
+        "name": "independent-workspaces-20261124",
+        "id": "e06585ee-04da-4616-b498-23a5f4af81a5",
+        "source": "artifacts/ali-prod/kubernetes-gpu-unified",
+        "required_web_release": "v1.0.7",
+        "status": "tested, pending operator promotion"
+      },
+      "active_source_git_ref": "v1.0.6:project-handoff/artifacts/ali-prod/kubernetes-gpu-unified"
     }
   }
 }

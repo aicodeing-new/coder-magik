@@ -135,3 +135,7 @@ ivory-spider-96 已通过单次 start 构建显式提交 dev_image=harbor-beast0
 CPU 的工作空间互联端口默认 0，开启后为集群内 Service，应用需认证。多机节点地址列表位于每台的 /home/coder/hosts.txt。跨集群互联和 GPU/RDMA 未测试。
 
 统一模板 unified-dns-20261124：同集群可按 ws-<空间>--<用户>.coder-workspaces.svc 访问运行中的主节点，附加节点用 wn1、wn2、wn3 前缀。超过长度限制的名称会缩短并附哈希。用 echo "$WORKSPACE_SERVICE_HOST" 查看实际地址，echo "$WORKSPACE_PEERS" 列出本空间所有节点。解析由 Kubernetes headless Service 和 CoreDNS 提供，CPU 旧 workspace_service_port 仅用于附加的兼容 ClusterIP。GPU 单机保留 hostNetwork，目标为节点 IP，应用需协调监听端口。GPU 多机和全部 CPU 使用 Pod 网络。已有空间需更新模板后才创建这些 Service。旧 Mars2 空间仍关联弃用模板。
+
+从 CPU 模板 headless-dns-only-20261124 起，表单无需配置端口。用 WORKSPACE_SERVICE_HOST 和应用实际监听的端口访问；旧模板版本的参数页随工作空间更新而切换。
+
+GPU 批量创建发布：先升级控制面至 v1.0.7，再执行 coder --global-config /root/.config/coder-ali-prod templates versions promote --template kubernetes-gpu --template-version independent-workspaces-20261124。刷新网页后输入基础名（多台最多 30 字符）和 1 至 4 台。2 台示例产生 aitest-1、aitest-2，每个空间单独启停。已有多 Agent 空间不能自动拆分 PVC。CLI 单次 create 保留原语义。批量创建逐条提交；部分成功时在同一表单以相同参数重试，已创建的本批成员会被识别。关闭页面后，请先检查工作空间列表。

@@ -42,6 +42,7 @@ describe("CreateWorkspacePage", () => {
 			route,
 			path: "/templates/:template/workspace",
 			extraRoutes: [
+				{ path: "/workspaces", element: <div>Workspaces</div> },
 				{
 					path: "/:username/:workspace",
 					element: <div>Workspace Page</div>,
@@ -987,6 +988,42 @@ describe("CreateWorkspacePage", () => {
 	});
 
 	describe("Navigation", () => {
+		it("creates two independently named workspaces with the same batch ID", async () => {
+			vi.spyOn(API, "getWorkspaceByOwnerAndName").mockRejectedValue({
+				isAxiosError: true,
+				response: { status: 404 },
+			});
+			const { mockPublisher, router } = await renderPageWithSocket();
+			await expectSocketHandshake({
+				mockPublisher,
+				parameters: [
+					{ ...MockSliderParameter, name: "machine_count" },
+					{ ...MockPreviewParameter1, name: "workspace_batch_id" },
+				],
+			});
+			const name = screen.getByRole("textbox", { name: /workspace name/i });
+			await userEvent.clear(name);
+			await userEvent.type(name, "aitest");
+			await userEvent.click(
+				screen.getByRole("button", { name: /create workspace/i }),
+			);
+			await waitFor(() =>
+				expect(router.state.location.pathname).toBe("/workspaces"),
+			);
+			const requests = vi
+				.mocked(API.createWorkspace)
+				.mock.calls.map(([, req]) => req);
+			expect(requests.map((req) => req.name)).toEqual(["aitest-1", "aitest-2"]);
+			const ids = requests.map(
+				(req) =>
+					req.rich_parameter_values?.find(
+						(p) => p.name === "workspace_batch_id",
+					)?.value,
+			);
+			expect(ids[0]).toBeTruthy();
+			expect(ids[0]).toBe(ids[1]);
+		});
+
 		it("navigates to workspace after successful creation", async () => {
 			const { mockPublisher, router } = await renderPageWithSocket();
 			await expectSocketHandshake({ mockPublisher, parameters: [] });

@@ -135,3 +135,7 @@ kubernetes-dev/kubernetes-cpu/mars2-k8s 已激活 recreate-parameters-20261124�
 2026-11-24 模板合并（取代上节）
 新建目录只有 kubernetes-gpu（原 kubernetes-dev 的相同 ID）和 kubernetes-cpu。均已激活 unified-dns-20261124；源码与 ID 见 state.json。支持同集群 1 至 4 台独立节点，数量在创建时固定。GPU 另支持 mars2。空模板 kubernetes 和 kubernetes-gpu-multi 已删除。mars2-k8s 已弃用，保留已停止的 zhangyizhen/zyz。未变更用户空间或 PVC。
 Beast03 新建 CPU 单机与 GPU 模板双机（0 卡），三个 Agent 全连接，Service EndpointSlice 均只对应目标 Pod，六个方向的 HTTP 全部通过。Mars2 四台每台 1 卡仅验证创建计划。验证完成后删除临时空间。
+
+2026-11-24 CPU 模板已激活 headless-dns-only-20261124，移除 workspace_service_port 和旧 ClusterIP 别名。每台机器继续使用 Headless Service。发布前核对三个集群均无旧别名，现有 CPU 空间没有设置该参数。发布后已核对线上参数列表，未重启已有空间。
+
+GPU 独立批量创建候选版 independent-workspaces-20261124（e06585ee-04da-4616-b498-23a5f4af81a5），源文件 kubernetes-gpu-unified。由 v1.0.7 网页识别批次参数，选择多台时创建带顺序后缀的独立 Coder 记录。既有多 Agent 工作空间沿用旧布局。Beast03 以 0 卡实测独立 PVC、跨节点调度、双向 DNS，停止一台时另一台仍 connected。生产升级由用户执行，候选模板需与新版网页配套激活。

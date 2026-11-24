@@ -153,7 +153,7 @@ resource "coder_agent" "main" {
   os   = "linux"
   arch = "amd64"
   env = {
-    WORKSPACE_SERVICE_HOST                             = local.peer_hosts[0]
+    WORKSPACE_SERVICE_HOST                             = "${local.node_names[0]}.coder-workspaces.svc"
     WORKSPACE_PEERS                                    = join(" ", local.peer_hosts)
     WORKSPACE_NODE_NAME                                = "main"
     HOME                                               = "/home/coder"
@@ -298,7 +298,7 @@ resource "kubernetes_deployment_v1" "main" {
 
     template {
       metadata {
-        labels = {
+        labels = merge({
           "app.kubernetes.io/name"     = "coder-workspace"
           "app.kubernetes.io/instance" = "coder-workspace-${data.coder_workspace.me.id}"
           "app.kubernetes.io/part-of"  = "coder"
@@ -307,12 +307,12 @@ resource "kubernetes_deployment_v1" "main" {
           "com.coder.workspace.name"   = data.coder_workspace.me.name
           "com.coder.user.id"          = data.coder_workspace_owner.me.id
           "com.coder.user.username"    = data.coder_workspace_owner.me.name
-        }
+        }, local.batch_id == "" ? {} : { "com.coder.workspace.batch" = local.batch_id })
       }
       spec {
         automount_service_account_token = false
-        host_network                    = local.machine_count == 1
-        dns_policy                      = local.machine_count == 1 ? "ClusterFirstWithHostNet" : "ClusterFirst"
+        host_network                    = local.requested_count == 1
+        dns_policy                      = local.requested_count == 1 ? "ClusterFirstWithHostNet" : "ClusterFirst"
         runtime_class_name              = local.gpu_count > 0 ? (local.metax ? "metax" : "nvidia") : null
         node_selector = merge(
           { "kubernetes.io/arch" = "amd64" },
@@ -386,7 +386,7 @@ resource "kubernetes_deployment_v1" "main" {
             limits   = local.gpu_resources
           }
           dynamic "volume_mount" {
-            for_each = !local.metax && local.machine_count == 1 ? [1] : []
+            for_each = !local.metax && local.requested_count == 1 ? [1] : []
             content {
               name       = "host-data-store"
               mount_path = "/data-store"
@@ -413,7 +413,7 @@ resource "kubernetes_deployment_v1" "main" {
         }
 
         dynamic "volume" {
-          for_each = !local.metax && local.machine_count == 1 ? [1] : []
+          for_each = !local.metax && local.requested_count == 1 ? [1] : []
           content {
             name = "host-data-store"
             host_path {
@@ -452,11 +452,11 @@ resource "kubernetes_deployment_v1" "main" {
           // nodes.
           pod_anti_affinity {
             dynamic "required_during_scheduling_ignored_during_execution" {
-              for_each = local.machine_count > 1 ? [1] : []
+              for_each = local.requested_count > 1 ? [1] : []
               content {
                 topology_key = "kubernetes.io/hostname"
                 label_selector {
-                  match_labels = { "com.coder.workspace.id" = data.coder_workspace.me.id }
+                  match_labels = local.batch_id == "" ? { "com.coder.workspace.id" = data.coder_workspace.me.id } : { "com.coder.workspace.batch" = local.batch_id, "com.coder.user.id" = data.coder_workspace_owner.me.id }
                 }
               }
             }

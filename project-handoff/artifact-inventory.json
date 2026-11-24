@@ -955,9 +955,9 @@
   {
     "included": true,
     "included_path": "artifacts/ali-prod/kubernetes-cpu-unified/main.tf",
-    "size_bytes": 13046,
-    "sha256": "7fe826311c2cf22348f625721805fb0a0dbc9bead2a076f0bd9d6bc8e1fb6604",
-    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/main.tf"
+    "size_bytes": 11721,
+    "sha256": "22aaaf859d1e02b0a579e02b396706198108000b8160ed70322cc37ac6c8ee67",
+    "source_path": "Coder active template headless-dns-only-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/main.tf"
   },
   {
     "included": true,
@@ -1032,16 +1032,16 @@
   {
     "included": true,
     "included_path": "artifacts/ali-prod/kubernetes-gpu-unified/README.md",
-    "size_bytes": 1023,
-    "sha256": "aeb6a71d7afc8ed36dc7614d54e49babf8d71b0de40bd42be37e74ac755570dd",
-    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/README.md"
+    "size_bytes": 1227,
+    "sha256": "284d79258afc822e0bdfd6f330abe7794131f8c7073be041d7612f596e291a77",
+    "source_path": "Coder candidate independent-workspaces-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/README.md"
   },
   {
     "included": true,
     "included_path": "artifacts/ali-prod/kubernetes-gpu-unified/main.tf",
-    "size_bytes": 14951,
-    "sha256": "8c9336782f7f57e70b0f1a2d6b457bc7cfca3ac28718bc49e6a9b86c3b2946ec",
-    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/main.tf"
+    "size_bytes": 15202,
+    "sha256": "3cb83da5dc2e46d17fc1a1f956464e32ca51feba866f43c57ccd29bd4258f36b",
+    "source_path": "Coder candidate independent-workspaces-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/main.tf"
   },
   {
     "included": true,
@@ -1074,9 +1074,9 @@
   {
     "included": true,
     "included_path": "artifacts/ali-prod/kubernetes-gpu-unified/nodes.tf",
-    "size_bytes": 1284,
-    "sha256": "413107fcd0651e82b994a6178a00ff7620d4d2000c502a66dc26d809a3e6b0e3",
-    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/nodes.tf"
+    "size_bytes": 2366,
+    "sha256": "9bbe66c811c59f1f24982d58e2e540cd1bdb4be7f2d468e1ce4a90a4d942bbec",
+    "source_path": "Coder candidate independent-workspaces-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/nodes.tf"
   },
   {
     "included": true,

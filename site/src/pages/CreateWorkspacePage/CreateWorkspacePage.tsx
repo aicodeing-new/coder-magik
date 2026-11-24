@@ -16,8 +16,13 @@ import {
 	templateVersion,
 	templateVersionPresets,
 } from "#/api/queries/templates";
-import { autoCreateWorkspace, createWorkspace } from "#/api/queries/workspaces";
+import {
+	autoCreateWorkspace,
+	createWorkspace,
+	invalidateWorkspaceListQueries,
+} from "#/api/queries/workspaces";
 import type {
+	CreateWorkspaceRequest,
 	DynamicParametersRequest,
 	DynamicParametersResponse,
 	MinimalUser,
@@ -34,6 +39,7 @@ import { pageTitle } from "#/utils/page";
 import type { AutofillBuildParameter } from "#/utils/richParameters";
 import { AutoCreateConsentDialog } from "./AutoCreateConsentDialog";
 import { CreateWorkspacePageView } from "./CreateWorkspacePageView";
+import { batchIdParameter, createWorkspaceBatch } from "./createWorkspaceBatch";
 import {
 	type CreateWorkspacePermissions,
 	createWorkspaceChecks,
@@ -77,6 +83,23 @@ const CreateWorkspacePage: React.FC = () => {
 		autoCreateWorkspace(queryClient),
 	);
 	const createWorkspaceMutation = useMutation(createWorkspace(queryClient));
+	const batchAttempt = useRef<{ key: string; id: string } | null>(null);
+	const batchMutation = useMutation({
+		mutationFn: async ({
+			request,
+			ownerId,
+		}: {
+			request: CreateWorkspaceRequest;
+			ownerId: string;
+		}) => {
+			const key = JSON.stringify([ownerId, request]);
+			if (batchAttempt.current?.key !== key) {
+				batchAttempt.current = { key, id: crypto.randomUUID() };
+			}
+			await createWorkspaceBatch(request, ownerId, batchAttempt.current.id);
+		},
+		onSettled: () => invalidateWorkspaceListQueries(queryClient),
+	});
 
 	const templateQuery = useQuery(
 		templateByName(organizationName, templateName),
@@ -395,6 +418,12 @@ const CreateWorkspacePage: React.FC = () => {
 		return [...latestResponse.parameters].sort((a, b) => a.order - b.order);
 	}, [latestResponse?.parameters]);
 
+	const visibleParameters = useMemo(
+		() =>
+			sortedParams.filter((parameter) => parameter.name !== batchIdParameter),
+		[sortedParams],
+	);
+
 	const isInitializing =
 		!latestResponse ||
 		Number.isNaN(initId) ||
@@ -447,11 +476,15 @@ const CreateWorkspacePage: React.FC = () => {
 						canUpdateTemplate={permissionsQuery.data?.canUpdateTemplate}
 						error={
 							wsError ||
+							batchMutation.error ||
 							createWorkspaceMutation.error ||
 							autoCreateError ||
 							autoCreateWorkspaceMutation.error
 						}
-						resetMutation={createWorkspaceMutation.reset}
+						resetMutation={() => {
+							createWorkspaceMutation.reset();
+							batchMutation.reset();
+						}}
 						template={templateQuery.data}
 						versionId={realizedVersionId}
 						versionName={templateVersionQuery.data?.name}
@@ -460,7 +493,7 @@ const CreateWorkspacePage: React.FC = () => {
 						startPollingExternalAuth={startPollingExternalAuth}
 						hasAllRequiredExternalAuth={hasAllRequiredExternalAuth}
 						permissions={permissionsQuery.data as CreateWorkspacePermissions}
-						parameters={sortedParams}
+						parameters={visibleParameters}
 						presets={presets}
 						urlPreset={urlPresetResult.preset}
 						urlPresetError={
@@ -469,7 +502,9 @@ const CreateWorkspacePage: React.FC = () => {
 								: urlPresetResult.error
 						}
 						hasIgnoredUrlParams={hasIgnoredUrlParams}
-						creatingWorkspace={createWorkspaceMutation.isPending}
+						creatingWorkspace={
+							createWorkspaceMutation.isPending || batchMutation.isPending
+						}
 						sendMessage={sendMessage}
 						onCancel={() => {
 							navigate(-1);
@@ -484,6 +519,24 @@ const CreateWorkspacePage: React.FC = () => {
 								};
 							}
 
+							const count = workspaceRequest.rich_parameter_values?.find(
+								(p) => p.name === "machine_count",
+							);
+							if (
+								sortedParams.some((p) => p.name === batchIdParameter) &&
+								Number(count?.value) > 1
+							) {
+								batchMutation.mutate(
+									{ request: workspaceRequest, ownerId: owner.id },
+									{
+										onSuccess: () =>
+											navigate(
+												`/workspaces?filter=${encodeURIComponent(`owner:${owner.username} template:${templateName}`)}`,
+											),
+									},
+								);
+								return;
+							}
 							const workspace = await createWorkspaceMutation.mutateAsync({
 								...workspaceRequest,
 								userId: owner.id,

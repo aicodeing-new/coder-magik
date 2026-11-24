@@ -366,45 +366,6 @@ resource "kubernetes_deployment_v1" "main" {
   }
 }
 
-data "coder_parameter" "workspace_service_port" {
-  name         = "workspace_service_port"
-  display_name = "工作空间互联端口"
-  description  = "在当前集群通过工作空间 DNS 开放一个 TCP 端口。旧版 ClusterIP 别名使用此端口；填 0 禁用旧别名。新节点 DNS 始终可用。"
-  type         = "number"
-  default      = "0"
-  mutable      = true
-  order        = 10
-  validation {
-    min = 0
-    max = 65535
-  }
-}
-
-locals {
-  # Coder names can start with a digit and have up to 32 characters each.
-  workspace_service_name = "ws-${substr(lower(data.coder_workspace.me.name), 0, 32)}-${substr(replace(data.coder_workspace.me.id, "-", ""), 0, 20)}"
-}
-
-resource "kubernetes_service_v1" "workspace" {
-  count = data.coder_workspace.me.start_count > 0 && tonumber(data.coder_parameter.workspace_service_port.value) > 0 ? 1 : 0
-
-  metadata {
-    name      = local.workspace_service_name
-    namespace = "coder-workspaces"
-  }
-
-  spec {
-    type     = "ClusterIP"
-    selector = { "app.kubernetes.io/instance" = "coder-workspace-${data.coder_workspace.me.id}" }
-    port {
-      name        = "workspace"
-      port        = tonumber(data.coder_parameter.workspace_service_port.value)
-      target_port = data.coder_parameter.workspace_service_port.value
-      protocol    = "TCP"
-    }
-  }
-}
-
 resource "coder_metadata" "parameter_update" {
   count       = data.coder_workspace.me.start_count
   resource_id = kubernetes_deployment_v1.main[count.index].id
