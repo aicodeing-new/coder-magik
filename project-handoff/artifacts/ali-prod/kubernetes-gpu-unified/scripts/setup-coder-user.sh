@@ -59,4 +59,20 @@ runuser -u coder -- env HOME=/home/coder USER=coder LOGNAME=coder sh -c '
     fi
   done
 '
+if [ -n "${CODER_WORKSPACE_PROMPT_NAME:-}" ]; then
+	# Host-network Pods retain the node hostname. Change only Bash's prompt.
+	cat >/etc/profile.d/coder-workspace-prompt.sh <<'PROMPT'
+if [ -n "${BASH_VERSION:-}" ] && [ -n "${PS1:-}" ] && [ -n "${CODER_WORKSPACE_PROMPT_NAME:-}" ]; then
+    case $PS1 in
+        *'\h'*|*'\H'*) PS1=${PS1//\\h/$CODER_WORKSPACE_PROMPT_NAME}; PS1=${PS1//\\H/$CODER_WORKSPACE_PROMPT_NAME} ;;
+    esac
+fi
+PROMPT
+	# Expand HOME in the coder account's shell.
+	# shellcheck disable=SC2016
+	runuser -u coder -- env HOME=/home/coder sh -c '
+		line="[ ! -r /etc/profile.d/coder-workspace-prompt.sh ] || . /etc/profile.d/coder-workspace-prompt.sh"
+		grep -Fqx "$line" "$HOME/.bashrc" 2>/dev/null || printf "\n%s\n" "$line" >> "$HOME/.bashrc"
+	'
+fi
 echo "Workspace account ready: coder, HOME=/home/coder, passwordless sudo verified."

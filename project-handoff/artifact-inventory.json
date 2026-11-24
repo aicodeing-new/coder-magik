@@ -955,9 +955,9 @@
   {
     "included": true,
     "included_path": "artifacts/ali-prod/kubernetes-cpu-unified/main.tf",
-    "size_bytes": 11721,
-    "sha256": "22aaaf859d1e02b0a579e02b396706198108000b8160ed70322cc37ac6c8ee67",
-    "source_path": "Coder active template headless-dns-only-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/main.tf"
+    "size_bytes": 11784,
+    "sha256": "51933b852c4e5f11f71d0bc4fe7b03f471843c10f624f54e1926498e5d5d6e67",
+    "source_path": "Coder workspace-hostname-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/main.tf"
   },
   {
     "included": true,
@@ -969,23 +969,23 @@
   {
     "included": true,
     "included_path": "artifacts/ali-prod/kubernetes-cpu-unified/node-1.tf",
-    "size_bytes": 8625,
-    "sha256": "a14b74381fa8fd01cd679acc35a352129dcfd8d05115f561d7a6065d05408a89",
-    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/node-1.tf"
+    "size_bytes": 8700,
+    "sha256": "04d6b05e3a8c028ec05fd44fc1313057fe0a3f6af0f4e99cd6b96464a2a3f28b",
+    "source_path": "Coder workspace-hostname-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/node-1.tf"
   },
   {
     "included": true,
     "included_path": "artifacts/ali-prod/kubernetes-cpu-unified/node-2.tf",
-    "size_bytes": 8625,
-    "sha256": "6c5dbe0b99bea9a868bad6230689760b3bb893bd15c0000953da4739f70b0d81",
-    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/node-2.tf"
+    "size_bytes": 8700,
+    "sha256": "86901266d259289c5248d25e9220b2b05fb73c984bec9ef88e0c97b1144da6ef",
+    "source_path": "Coder workspace-hostname-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/node-2.tf"
   },
   {
     "included": true,
     "included_path": "artifacts/ali-prod/kubernetes-cpu-unified/node-3.tf",
-    "size_bytes": 8624,
-    "sha256": "118f200a674831f6ecc7032253fafe3f11f451185f1ce2658453fbe90b0cedff",
-    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/node-3.tf"
+    "size_bytes": 8699,
+    "sha256": "9b6d50fa6e5f5179d06f0d80ece507648d45319e5b4e241961521ea1473bb2e0",
+    "source_path": "Coder workspace-hostname-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/node-3.tf"
   },
   {
     "included": true,
@@ -1039,9 +1039,9 @@
   {
     "included": true,
     "included_path": "artifacts/ali-prod/kubernetes-gpu-unified/main.tf",
-    "size_bytes": 15202,
-    "sha256": "3cb83da5dc2e46d17fc1a1f956464e32ca51feba866f43c57ccd29bd4258f36b",
-    "source_path": "Coder candidate independent-workspaces-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/main.tf"
+    "size_bytes": 15531,
+    "sha256": "eb260d09a962a7e45e1915302c783ab69078a70a05c0a3bcc32cbc547f5b3ecf",
+    "source_path": "Coder workspace-hostname-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/main.tf"
   },
   {
     "included": true,
@@ -1053,23 +1053,23 @@
   {
     "included": true,
     "included_path": "artifacts/ali-prod/kubernetes-gpu-unified/node-1.tf",
-    "size_bytes": 9661,
-    "sha256": "0766121772bd5dc4bb1e88453634d3aa3c37f02541799c139f831ddf7c11bf24",
-    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/node-1.tf"
+    "size_bytes": 9736,
+    "sha256": "b9a80ed05f62c213cb7509462e20bb240d3844e33d0a0fa685fdbb6619c94dd5",
+    "source_path": "Coder workspace-hostname-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/node-1.tf"
   },
   {
     "included": true,
     "included_path": "artifacts/ali-prod/kubernetes-gpu-unified/node-2.tf",
-    "size_bytes": 9661,
-    "sha256": "f162f07502ed192a6ce22cd5fa51c8880678f7a25f2e808fb8b031d77d02c581",
-    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/node-2.tf"
+    "size_bytes": 9736,
+    "sha256": "571af85c8f10142ac51fb83ce67c18efaaba844ab2265c0c2611b08bc0a66b73",
+    "source_path": "Coder workspace-hostname-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/node-2.tf"
   },
   {
     "included": true,
     "included_path": "artifacts/ali-prod/kubernetes-gpu-unified/node-3.tf",
-    "size_bytes": 9660,
-    "sha256": "f38977c3a94479a51ca6022e32a6825f63f21cc109ac4e4a946e21f07be9d47c",
-    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/node-3.tf"
+    "size_bytes": 9735,
+    "sha256": "b1c6ebb89b9f556195616ffed0d05c86e285d2e4388a584a9162163d3adda19e",
+    "source_path": "Coder workspace-hostname-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/node-3.tf"
   },
   {
     "included": true,
@@ -1102,9 +1102,9 @@
   {
     "included": true,
     "included_path": "artifacts/ali-prod/kubernetes-gpu-unified/scripts/setup-coder-user.sh",
-    "size_bytes": 2152,
-    "sha256": "7cbc94be354f3d952241b993993f71b9161bcc08618637a9b2d62573000273dd",
-    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/scripts/setup-coder-user.sh"
+    "size_bytes": 2919,
+    "sha256": "098ac174f35700059afa9bfa164085300e610108e816a8a7db521024311fb85c",
+    "source_path": "Coder workspace-hostname-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/scripts/setup-coder-user.sh"
   },
   {
     "included": true,

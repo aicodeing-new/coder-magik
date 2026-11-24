@@ -311,6 +311,7 @@ resource "kubernetes_deployment_v1" "main" {
       }
       spec {
         automount_service_account_token = false
+        hostname                        = local.requested_count == 1 ? null : local.workspace_name
         host_network                    = local.requested_count == 1
         dns_policy                      = local.requested_count == 1 ? "ClusterFirstWithHostNet" : "ClusterFirst"
         runtime_class_name              = local.gpu_count > 0 ? (local.metax ? "metax" : "nvidia") : null
@@ -352,6 +353,13 @@ resource "kubernetes_deployment_v1" "main" {
             # workspace using this template version is started.
             secret_ref {
               name = "coder-oss-pull"
+            }
+          }
+          dynamic "env" {
+            for_each = local.requested_count == 1 ? [1] : []
+            content {
+              name  = "CODER_WORKSPACE_PROMPT_NAME"
+              value = local.workspace_name
             }
           }
           env {

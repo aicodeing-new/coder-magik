@@ -108,6 +108,7 @@ resource "kubernetes_deployment_v1" "node-2" {
       }
       spec {
         automount_service_account_token = false
+        hostname                        = "${local.workspace_name}-node-2"
         host_network                    = false
         dns_policy                      = "ClusterFirst"
         node_selector                   = { "kubernetes.io/arch" = "amd64" }

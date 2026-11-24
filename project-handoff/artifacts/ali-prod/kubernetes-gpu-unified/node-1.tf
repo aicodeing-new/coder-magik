@@ -108,6 +108,7 @@ resource "kubernetes_deployment_v1" "node-1" {
       }
       spec {
         automount_service_account_token = false
+        hostname                        = "${local.workspace_name}-node-1"
         host_network                    = false
         dns_policy                      = "ClusterFirst"
         runtime_class_name              = local.gpu_count > 0 ? (local.metax ? "metax" : "nvidia") : null

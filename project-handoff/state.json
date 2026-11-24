@@ -30,8 +30,8 @@
   "template": {
     "name": "kubernetes-GPU",
     "id": "5620ff55-82d4-4830-81ee-ab411208916e",
-    "active_version_id": "4ec1c282-0776-4491-9f22-7b50676f38cb",
-    "active_version_name": "workspace-name-dns-20261124",
+    "active_version_id": "477c2f92-0f5f-40d6-af85-a9b5a2b019ef",
+    "active_version_name": "workspace-hostname-20261124",
     "clusters": [
       "beast01",
       "yunqiao",
@@ -218,9 +218,9 @@
     },
     "kubernetes-cpu": {
       "date": "2026-11-24",
-      "active_version_id": "761b215a-d98e-4e65-acd4-5a46ccc2207b",
+      "active_version_id": "108d34b4-f1f7-443a-9c4a-b5e9f64fe947",
       "template_id": "bfe57756-37c3-4c2c-bcb1-e020d8f7895a",
-      "version_name": "workspace-name-dns-20261124",
+      "version_name": "workspace-hostname-20261124",
       "current_template_source": "artifacts/ali-prod/kubernetes-cpu-unified",
       "connectivity_record": "02-CURRENT-DEPLOYMENT.txt",
       "memory_request": "128Gi",
@@ -239,8 +239,8 @@
     "kubernetes-GPU": {
       "date": "2026-11-24",
       "template_id": "5620ff55-82d4-4830-81ee-ab411208916e",
-      "active_version_id": "4ec1c282-0776-4491-9f22-7b50676f38cb",
-      "version_name": "workspace-name-dns-20261124",
+      "active_version_id": "477c2f92-0f5f-40d6-af85-a9b5a2b019ef",
+      "version_name": "workspace-hostname-20261124",
       "clusters": [
         "beast01",
         "yunqiao",

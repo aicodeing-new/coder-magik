@@ -244,6 +244,7 @@ resource "kubernetes_deployment_v1" "main" {
       }
       spec {
         automount_service_account_token = false
+        hostname                        = local.workspace_name
         host_network                    = false
         dns_policy                      = "ClusterFirst"
         node_selector                   = { "kubernetes.io/arch" = "amd64" }
