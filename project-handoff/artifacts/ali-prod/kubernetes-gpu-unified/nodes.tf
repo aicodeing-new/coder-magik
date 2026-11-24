@@ -31,14 +31,19 @@ locals {
   batch_id        = data.coder_parameter.workspace_batch_id.value
   requested_count = tonumber(data.coder_parameter.machine_count.value)
   machine_count   = local.batch_id == "" ? local.requested_count : 1
-  owner_workspace = lower("${data.coder_workspace.me.name}--${data.coder_workspace_owner.me.name}")
-  # Reserve space for the node prefix and keep long names collision-resistant.
-  dns_key      = length(local.owner_workspace) <= 58 ? local.owner_workspace : "${substr(local.owner_workspace, 0, 41)}-${substr(sha256(local.owner_workspace), 0, 16)}"
-  node_names   = [for n in range(local.machine_count) : "${n == 0 ? "ws" : "wn${n}"}-${local.dns_key}"]
-  batch_prefix = replace(lower(data.coder_workspace.me.name), "/-[1-4]$/", "")
-  batch_keys   = [for n in range(local.requested_count) : "${local.batch_prefix}-${n + 1}--${lower(data.coder_workspace_owner.me.name)}"]
-  batch_hosts  = [for key in local.batch_keys : "ws-${length(key) <= 58 ? key : "${substr(key, 0, 41)}-${substr(sha256(key), 0, 16)}"}.coder-workspaces.svc"]
-  peer_hosts   = local.batch_id != "" ? local.batch_hosts : [for name in local.node_names : "${name}.coder-workspaces.svc"]
+
+  workspace_name = lower(data.coder_workspace.me.name)
+  owner_name     = lower(data.coder_workspace_owner.me.name)
+
+  batch_prefix = replace(local.workspace_name, "/-[1-4]$/", "")
+  member_names = local.batch_id == "" ? [local.workspace_name] : [for n in range(local.requested_count) : "${local.batch_prefix}-${n + 1}"]
+
+  # Service names on clusters using RFC 1035 validation must start with a letter.
+  labels        = { for name in toset(concat([local.workspace_name], local.member_names)) : name => "${can(regex("^[0-9]", name)) ? "n--" : ""}${name}--${local.owner_name}" }
+  service_names = { for name, label in local.labels : name => length(label) <= 63 ? label : "${substr(label, 0, 46)}-${substr(sha256(label), 0, 16)}" }
+  main_name     = local.service_names[local.workspace_name]
+  node_names    = [for n in range(local.machine_count) : n == 0 ? local.main_name : (length(local.main_name) <= 59 ? "${local.main_name}--n${n}" : "${substr(local.main_name, 0, 42)}-${substr(sha256(local.main_name), 0, 16)}--n${n}")]
+  peer_hosts    = local.batch_id != "" ? [for name in local.member_names : "${local.service_names[name]}.coder-workspaces.svc"] : [for name in local.node_names : "${name}.coder-workspaces.svc"]
 }
 
 resource "kubernetes_service_v1" "main_dns" {

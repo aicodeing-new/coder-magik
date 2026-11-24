@@ -14,12 +14,18 @@ data "coder_parameter" "machine_count" {
 
 
 locals {
-  machine_count   = tonumber(data.coder_parameter.machine_count.value)
-  owner_workspace = lower("${data.coder_workspace.me.name}--${data.coder_workspace_owner.me.name}")
-  # Reserve space for the node prefix and keep long names collision-resistant.
-  dns_key    = length(local.owner_workspace) <= 58 ? local.owner_workspace : "${substr(local.owner_workspace, 0, 41)}-${substr(sha256(local.owner_workspace), 0, 16)}"
-  node_names = [for n in range(local.machine_count) : "${n == 0 ? "ws" : "wn${n}"}-${local.dns_key}"]
-  peer_hosts = [for name in local.node_names : "${name}.coder-workspaces.svc"]
+  machine_count = tonumber(data.coder_parameter.machine_count.value)
+
+  workspace_name = lower(data.coder_workspace.me.name)
+  owner_name     = lower(data.coder_workspace_owner.me.name)
+  member_names   = [local.workspace_name]
+
+  # Service names on clusters using RFC 1035 validation must start with a letter.
+  labels        = { for name in toset(concat([local.workspace_name], local.member_names)) : name => "${can(regex("^[0-9]", name)) ? "n--" : ""}${name}--${local.owner_name}" }
+  service_names = { for name, label in local.labels : name => length(label) <= 63 ? label : "${substr(label, 0, 46)}-${substr(sha256(label), 0, 16)}" }
+  main_name     = local.service_names[local.workspace_name]
+  node_names    = [for n in range(local.machine_count) : n == 0 ? local.main_name : (length(local.main_name) <= 59 ? "${local.main_name}--n${n}" : "${substr(local.main_name, 0, 42)}-${substr(sha256(local.main_name), 0, 16)}--n${n}")]
+  peer_hosts    = [for name in local.node_names : "${name}.coder-workspaces.svc"]
 }
 
 resource "kubernetes_service_v1" "main_dns" {

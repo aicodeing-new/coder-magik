@@ -139,3 +139,5 @@ Beast03 新建 CPU 单机与 GPU 模板双机（0 卡），三个 Agent 全连�
 2026-11-24 CPU 模板已激活 headless-dns-only-20261124，移除 workspace_service_port 和旧 ClusterIP 别名。每台机器继续使用 Headless Service。发布前核对三个集群均无旧别名，现有 CPU 空间没有设置该参数。发布后已核对线上参数列表，未重启已有空间。
 
 GPU 独立批量创建候选版 independent-workspaces-20261124（e06585ee-04da-4616-b498-23a5f4af81a5），源文件 kubernetes-gpu-unified。由 v1.0.7 网页识别批次参数，选择多台时创建带顺序后缀的独立 Coder 记录。既有多 Agent 工作空间沿用旧布局。Beast03 以 0 卡实测独立 PVC、跨节点调度、双向 DNS，停止一台时另一台仍 connected。生产升级由用户执行，候选模板需与新版网页配套激活。
+
+2026-11-24 最新：kubernetes-GPU（线上模板实际大小写）和 kubernetes-cpu 均已激活 workspace-name-dns-20261124，Service 使用 <空间>--<用户>.coder-workspaces.svc。取代上文候选版，无需升级后再 promote；独立批量创建的网页仍需用户升级 v1.0.7。两个跑包节点均在 dl.google.com 下载 Go 超时，tag 工作流改用 setup-go 从 GitHub 获取 go.mod 指定的 SDK，原发布标签保留。

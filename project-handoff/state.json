@@ -28,10 +28,10 @@
     }
   },
   "template": {
-    "name": "kubernetes-gpu",
+    "name": "kubernetes-GPU",
     "id": "5620ff55-82d4-4830-81ee-ab411208916e",
-    "active_version_id": "5b5175e6-ddf5-4eb2-b277-9e3c14fccae9",
-    "active_version_name": "unified-dns-20261124",
+    "active_version_id": "4ec1c282-0776-4491-9f22-7b50676f38cb",
+    "active_version_name": "workspace-name-dns-20261124",
     "clusters": [
       "beast01",
       "yunqiao",
@@ -218,9 +218,9 @@
     },
     "kubernetes-cpu": {
       "date": "2026-11-24",
-      "active_version_id": "9f68421d-947f-4256-aca8-32e291ff9fa2",
+      "active_version_id": "761b215a-d98e-4e65-acd4-5a46ccc2207b",
       "template_id": "bfe57756-37c3-4c2c-bcb1-e020d8f7895a",
-      "version_name": "headless-dns-only-20261124",
+      "version_name": "workspace-name-dns-20261124",
       "current_template_source": "artifacts/ali-prod/kubernetes-cpu-unified",
       "connectivity_record": "02-CURRENT-DEPLOYMENT.txt",
       "memory_request": "128Gi",
@@ -234,13 +234,13 @@
         1,
         4
       ],
-      "dns": "per-node headless Service, workspace and owner name, same cluster"
+      "dns": "<workspace>--<owner>.coder-workspaces.svc"
     },
-    "kubernetes-gpu": {
+    "kubernetes-GPU": {
       "date": "2026-11-24",
       "template_id": "5620ff55-82d4-4830-81ee-ab411208916e",
-      "active_version_id": "5b5175e6-ddf5-4eb2-b277-9e3c14fccae9",
-      "version_name": "unified-dns-20261124",
+      "active_version_id": "4ec1c282-0776-4491-9f22-7b50676f38cb",
+      "version_name": "workspace-name-dns-20261124",
       "clusters": [
         "beast01",
         "yunqiao",
@@ -260,15 +260,8 @@
         1,
         4
       ],
-      "dns": "per-node headless Service, workspace and owner name, same cluster",
-      "candidate_version": {
-        "name": "independent-workspaces-20261124",
-        "id": "e06585ee-04da-4616-b498-23a5f4af81a5",
-        "source": "artifacts/ali-prod/kubernetes-gpu-unified",
-        "required_web_release": "v1.0.7",
-        "status": "tested, pending operator promotion"
-      },
-      "active_source_git_ref": "v1.0.6:project-handoff/artifacts/ali-prod/kubernetes-gpu-unified"
+      "dns": "<workspace>--<owner>.coder-workspaces.svc",
+      "current_template_source": "artifacts/ali-prod/kubernetes-gpu-unified"
     }
   }
 }
