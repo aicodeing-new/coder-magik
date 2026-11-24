@@ -23,8 +23,8 @@
   {
     "source_path": "/root/coder-deploy/ali-prod/beast01-rbac.yaml",
     "included": true,
-    "size_bytes": 1235,
-    "sha256": "0d8d0f282d6190506aa25b451900df5cbd57ddda6ef082970ebeb6de98fff103",
+    "size_bytes": 1358,
+    "sha256": "c8f06098983aac6540f903d8a43b7651c013633cefe93af6053ece7ba45ccb04",
     "included_path": "artifacts/ali-prod/beast01-rbac.yaml"
   },
   {
@@ -219,8 +219,8 @@
   {
     "source_path": "/root/coder-deploy/ali-prod/yunqiao-rbac.yaml",
     "included": true,
-    "size_bytes": 1235,
-    "sha256": "0d8d0f282d6190506aa25b451900df5cbd57ddda6ef082970ebeb6de98fff103",
+    "size_bytes": 1358,
+    "sha256": "c8f06098983aac6540f903d8a43b7651c013633cefe93af6053ece7ba45ccb04",
     "included_path": "artifacts/ali-prod/yunqiao-rbac.yaml"
   },
   {
@@ -452,8 +452,8 @@
     "source_path": "/root/coder-deploy/ali-prod/mars2-rbac.yaml",
     "included": true,
     "included_path": "artifacts/ali-prod/mars2-rbac.yaml",
-    "sha256": "0d8d0f282d6190506aa25b451900df5cbd57ddda6ef082970ebeb6de98fff103",
-    "size_bytes": 1235
+    "sha256": "0091dca2369a56f1bbd262dd3fba8b22ace3ba59c811b9d8ddb3aeebff2577e6",
+    "size_bytes": 1247
   },
   {
     "source_path": "/root/coder-deploy/ali-prod/mars2-proxy.yaml",
@@ -634,8 +634,8 @@
     "source_path": "/root/coder-deploy/ali-prod/beast03-rbac.yaml",
     "included": true,
     "included_path": "artifacts/ali-prod/beast03-rbac.yaml",
-    "sha256": "0d8d0f282d6190506aa25b451900df5cbd57ddda6ef082970ebeb6de98fff103",
-    "size_bytes": 1235
+    "sha256": "c8f06098983aac6540f903d8a43b7651c013633cefe93af6053ece7ba45ccb04",
+    "size_bytes": 1358
   },
   {
     "source_path": "/root/coder-deploy/ali-prod/beast03-proxy.yaml",
@@ -643,5 +643,474 @@
     "included_path": "artifacts/ali-prod/beast03-proxy.yaml",
     "sha256": "946d341ac914e72fc2e1d812a7b5fa5aff22a84c9cccdfdb55f539d9f69d5998",
     "size_bytes": 619
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-cpu-20261124/README.md",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-template/README.md",
+    "sha256": "c5f5c95365314934a0353e45e9e0938240503977f886c5189e810aa2e46931b5",
+    "size_bytes": 949
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-cpu-20261124/main.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-template/main.tf",
+    "sha256": "b8bf42c8c94acd800ebfee07e8c2ae41b4fd40473550de7e8f9ee5985e978818",
+    "size_bytes": 10829
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-cpu-20261124/modules.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-template/modules.tf",
+    "sha256": "978146c323a01f8f0ba7c2c57c11144bc40089e6684b43c9ae9cc57998cbea5c",
+    "size_bytes": 1527
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-cpu-20261124/scripts/bootstrap-tools.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-template/scripts/bootstrap-tools.sh",
+    "sha256": "9e142d16ab275d3aa475e450c03a1b1df40090ed8b331e5408184491d8e84bde",
+    "size_bytes": 1324
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-cpu-20261124/scripts/configure-git-proxy.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-template/scripts/configure-git-proxy.sh",
+    "sha256": "75e013beb6e6834d1b079eda5b9aea3906983d224e10476e8e55751cbfb0f98b",
+    "size_bytes": 2989
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-cpu-20261124/scripts/install-codex-vscode.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-template/scripts/install-codex-vscode.sh",
+    "sha256": "9451ba6ce77f76f6f44661d7a7cf0182d698bb7dab0b238ba718a46b2387ae5c",
+    "size_bytes": 3179
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-cpu-20261124/scripts/setup-coder-user.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-template/scripts/setup-coder-user.sh",
+    "sha256": "7cbc94be354f3d952241b993993f71b9161bcc08618637a9b2d62573000273dd",
+    "size_bytes": 2152
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-cpu-20261124/scripts/ssh-http-proxy.py",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-template/scripts/ssh-http-proxy.py",
+    "sha256": "2e4a417815c667845ad6a46d554ca3a8bd0789b00b054cf4fc1ac5c2e1843243",
+    "size_bytes": 3344
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-polish-20261124/README.md",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-20261124/README.md",
+    "sha256": "78c33d1e1408ac3f6d94b045c6df6eb54f99923bf1303eaabd0749fe160cddec",
+    "size_bytes": 9033
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-polish-20261124/main.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-20261124/main.tf",
+    "sha256": "d9d83f4c5148ef879377502ef55a6e5bec0c1b05251dc42008f8c31d271818ce",
+    "size_bytes": 13618
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-polish-20261124/modules.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-20261124/modules.tf",
+    "sha256": "978146c323a01f8f0ba7c2c57c11144bc40089e6684b43c9ae9cc57998cbea5c",
+    "size_bytes": 1527
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-polish-20261124/scripts/bootstrap-tools.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-20261124/scripts/bootstrap-tools.sh",
+    "sha256": "9e142d16ab275d3aa475e450c03a1b1df40090ed8b331e5408184491d8e84bde",
+    "size_bytes": 1324
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-polish-20261124/scripts/configure-git-proxy.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-20261124/scripts/configure-git-proxy.sh",
+    "sha256": "75e013beb6e6834d1b079eda5b9aea3906983d224e10476e8e55751cbfb0f98b",
+    "size_bytes": 2989
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-polish-20261124/scripts/install-codex-vscode.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-20261124/scripts/install-codex-vscode.sh",
+    "sha256": "9451ba6ce77f76f6f44661d7a7cf0182d698bb7dab0b238ba718a46b2387ae5c",
+    "size_bytes": 3179
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-polish-20261124/scripts/setup-coder-user.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-20261124/scripts/setup-coder-user.sh",
+    "sha256": "7cbc94be354f3d952241b993993f71b9161bcc08618637a9b2d62573000273dd",
+    "size_bytes": 2152
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-dev-polish-20261124/scripts/ssh-http-proxy.py",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-dev-20261124/scripts/ssh-http-proxy.py",
+    "sha256": "2e4a417815c667845ad6a46d554ca3a8bd0789b00b054cf4fc1ac5c2e1843243",
+    "size_bytes": 3344
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-cpu-polish-20261124/README.md",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-20261124/README.md",
+    "sha256": "a363022340124a748e0898d12e3a64e7c0f9f41894a31d1dad212fb26059670e",
+    "size_bytes": 1327
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-cpu-polish-20261124/main.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-20261124/main.tf",
+    "sha256": "6674ad39365db602a37f765f21c8f5c4e69adfc45220f1062550f4df504c02f7",
+    "size_bytes": 12521
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-cpu-polish-20261124/modules.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-20261124/modules.tf",
+    "sha256": "978146c323a01f8f0ba7c2c57c11144bc40089e6684b43c9ae9cc57998cbea5c",
+    "size_bytes": 1527
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-cpu-polish-20261124/scripts/bootstrap-tools.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-20261124/scripts/bootstrap-tools.sh",
+    "sha256": "9e142d16ab275d3aa475e450c03a1b1df40090ed8b331e5408184491d8e84bde",
+    "size_bytes": 1324
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-cpu-polish-20261124/scripts/configure-git-proxy.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-20261124/scripts/configure-git-proxy.sh",
+    "sha256": "75e013beb6e6834d1b079eda5b9aea3906983d224e10476e8e55751cbfb0f98b",
+    "size_bytes": 2989
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-cpu-polish-20261124/scripts/install-codex-vscode.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-20261124/scripts/install-codex-vscode.sh",
+    "sha256": "9451ba6ce77f76f6f44661d7a7cf0182d698bb7dab0b238ba718a46b2387ae5c",
+    "size_bytes": 3179
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-cpu-polish-20261124/scripts/setup-coder-user.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-20261124/scripts/setup-coder-user.sh",
+    "sha256": "7cbc94be354f3d952241b993993f71b9161bcc08618637a9b2d62573000273dd",
+    "size_bytes": 2152
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-cpu-polish-20261124/scripts/ssh-http-proxy.py",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-20261124/scripts/ssh-http-proxy.py",
+    "sha256": "2e4a417815c667845ad6a46d554ca3a8bd0789b00b054cf4fc1ac5c2e1843243",
+    "size_bytes": 3344
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/mars2-k8s-polish-20261124/.terraform.lock.hcl",
+    "included": true,
+    "included_path": "artifacts/ali-prod/mars2-k8s-20261124/.terraform.lock.hcl",
+    "sha256": "d630e304f1ac8229f364306f077b3ce641afe33bc141bbfc547b639736bae858",
+    "size_bytes": 460
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/mars2-k8s-polish-20261124/main.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/mars2-k8s-20261124/main.tf",
+    "sha256": "f819d5dfb87817eb9a66d43b8b98af0ee3840c24d767dea41dec44ef12ee5fe1",
+    "size_bytes": 12706
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/mars2-k8s-polish-20261124/modules.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/mars2-k8s-20261124/modules.tf",
+    "sha256": "4bcdf0cdef13be283d8de6f228b2943e5cb36eef0499f7cefe055a0eca3e942c",
+    "size_bytes": 1776
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/mars2-k8s-polish-20261124/scripts/ensure-dev-tools.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/mars2-k8s-20261124/scripts/ensure-dev-tools.sh",
+    "sha256": "9d91470b2c6bbddf01a0ec37e39a55898dd1b693a15c7ea62b0956076d3b40a2",
+    "size_bytes": 1509
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/mars2-k8s-polish-20261124/scripts/install-codex-vscode.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/mars2-k8s-20261124/scripts/install-codex-vscode.sh",
+    "sha256": "640f96a7026942aa7031ddc26fbe2372e4f615c5c416fcfa7fd93a6b3ed68f9f",
+    "size_bytes": 3321
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-gpu-multi-20261124/README.md",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-multi-20261124/README.md",
+    "sha256": "ba47d24851eea73915887545478862649d28ae23a50f4bb3d56586a44ce358b8",
+    "size_bytes": 711
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-gpu-multi-20261124/main.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-multi-20261124/main.tf",
+    "sha256": "b122fd3d993202df277ae82e093e80fd8604361f8927ab2e35053b273f8deac0",
+    "size_bytes": 3504
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-gpu-multi-20261124/modules.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-multi-20261124/modules.tf",
+    "sha256": "b082a366d8e9951c18d593671dc9d051774cde07cdfe3523b44f511bfbb31503",
+    "size_bytes": 809
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-gpu-multi-20261124/node-0.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-multi-20261124/node-0.tf",
+    "sha256": "9217f3c90b978aa8eb74fe7b0c1851fdd950327007e8d5e035b6f9904f68b598",
+    "size_bytes": 9687
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-gpu-multi-20261124/node-1.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-multi-20261124/node-1.tf",
+    "sha256": "93cfae94924be006ce73f5c7580d551c884af2b2750a69a43113fe2d31a62faf",
+    "size_bytes": 9686
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-gpu-multi-20261124/node-2.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-multi-20261124/node-2.tf",
+    "sha256": "bd4da8c98ae13f1fd90975c8e406fbd1b72b0b05f664db0565c08e1976764305",
+    "size_bytes": 9686
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-gpu-multi-20261124/node-3.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-multi-20261124/node-3.tf",
+    "sha256": "476507e0c2fec9d26273f8dee2ed67cd946d0213583555a1fc148bb3fd755439",
+    "size_bytes": 9685
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-gpu-multi-20261124/nodes.tf",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-multi-20261124/nodes.tf",
+    "sha256": "36295a53a509157512433f4361882f10b9d73e0c8e3d56a6914d943ce4b983f5",
+    "size_bytes": 702
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-gpu-multi-20261124/scripts/bootstrap-tools.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-multi-20261124/scripts/bootstrap-tools.sh",
+    "sha256": "9e142d16ab275d3aa475e450c03a1b1df40090ed8b331e5408184491d8e84bde",
+    "size_bytes": 1324
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-gpu-multi-20261124/scripts/configure-git-proxy.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-multi-20261124/scripts/configure-git-proxy.sh",
+    "sha256": "75e013beb6e6834d1b079eda5b9aea3906983d224e10476e8e55751cbfb0f98b",
+    "size_bytes": 2989
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-gpu-multi-20261124/scripts/install-codex-vscode.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-multi-20261124/scripts/install-codex-vscode.sh",
+    "sha256": "9451ba6ce77f76f6f44661d7a7cf0182d698bb7dab0b238ba718a46b2387ae5c",
+    "size_bytes": 3179
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-gpu-multi-20261124/scripts/setup-coder-user.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-multi-20261124/scripts/setup-coder-user.sh",
+    "sha256": "7cbc94be354f3d952241b993993f71b9161bcc08618637a9b2d62573000273dd",
+    "size_bytes": 2152
+  },
+  {
+    "source_path": "/root/coder-deploy/ali-prod/kubernetes-gpu-multi-20261124/scripts/ssh-http-proxy.py",
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-multi-20261124/scripts/ssh-http-proxy.py",
+    "sha256": "2e4a417815c667845ad6a46d554ca3a8bd0789b00b054cf4fc1ac5c2e1843243",
+    "size_bytes": 3344
+  },
+  {
+    "source_path": "/root/coder/project-handoff/artifacts/ali-prod/workspace-pod-diagnostics.sh",
+    "included": true,
+    "included_path": "artifacts/ali-prod/workspace-pod-diagnostics.sh",
+    "sha256": "fe55239f2cc99e31ac04f68ac8ab25e50ec334b0da989fe5fb5a653869932193",
+    "size_bytes": 784
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-unified/README.md",
+    "size_bytes": 978,
+    "sha256": "9eb558181e4eaf81193687c7cb2f063f0963f58f99fd158f45131bda88afea47",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/README.md"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-unified/main.tf",
+    "size_bytes": 13046,
+    "sha256": "7fe826311c2cf22348f625721805fb0a0dbc9bead2a076f0bd9d6bc8e1fb6604",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/main.tf"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-unified/modules.tf",
+    "size_bytes": 1527,
+    "sha256": "978146c323a01f8f0ba7c2c57c11144bc40089e6684b43c9ae9cc57998cbea5c",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/modules.tf"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-unified/node-1.tf",
+    "size_bytes": 8625,
+    "sha256": "a14b74381fa8fd01cd679acc35a352129dcfd8d05115f561d7a6065d05408a89",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/node-1.tf"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-unified/node-2.tf",
+    "size_bytes": 8625,
+    "sha256": "6c5dbe0b99bea9a868bad6230689760b3bb893bd15c0000953da4739f70b0d81",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/node-2.tf"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-unified/node-3.tf",
+    "size_bytes": 8624,
+    "sha256": "118f200a674831f6ecc7032253fafe3f11f451185f1ce2658453fbe90b0cedff",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/node-3.tf"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-unified/nodes.tf",
+    "size_bytes": 1284,
+    "sha256": "413107fcd0651e82b994a6178a00ff7620d4d2000c502a66dc26d809a3e6b0e3",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/nodes.tf"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-unified/scripts/bootstrap-tools.sh",
+    "size_bytes": 1324,
+    "sha256": "9e142d16ab275d3aa475e450c03a1b1df40090ed8b331e5408184491d8e84bde",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/scripts/bootstrap-tools.sh"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-unified/scripts/configure-git-proxy.sh",
+    "size_bytes": 2989,
+    "sha256": "75e013beb6e6834d1b079eda5b9aea3906983d224e10476e8e55751cbfb0f98b",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/scripts/configure-git-proxy.sh"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-unified/scripts/install-codex-vscode.sh",
+    "size_bytes": 3179,
+    "sha256": "9451ba6ce77f76f6f44661d7a7cf0182d698bb7dab0b238ba718a46b2387ae5c",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/scripts/install-codex-vscode.sh"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-unified/scripts/setup-coder-user.sh",
+    "size_bytes": 2152,
+    "sha256": "7cbc94be354f3d952241b993993f71b9161bcc08618637a9b2d62573000273dd",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/scripts/setup-coder-user.sh"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-cpu-unified/scripts/ssh-http-proxy.py",
+    "size_bytes": 3344,
+    "sha256": "2e4a417815c667845ad6a46d554ca3a8bd0789b00b054cf4fc1ac5c2e1843243",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-cpu-unified/scripts/ssh-http-proxy.py"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-unified/README.md",
+    "size_bytes": 1023,
+    "sha256": "aeb6a71d7afc8ed36dc7614d54e49babf8d71b0de40bd42be37e74ac755570dd",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/README.md"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-unified/main.tf",
+    "size_bytes": 14951,
+    "sha256": "8c9336782f7f57e70b0f1a2d6b457bc7cfca3ac28718bc49e6a9b86c3b2946ec",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/main.tf"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-unified/modules.tf",
+    "size_bytes": 1527,
+    "sha256": "978146c323a01f8f0ba7c2c57c11144bc40089e6684b43c9ae9cc57998cbea5c",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/modules.tf"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-unified/node-1.tf",
+    "size_bytes": 9661,
+    "sha256": "0766121772bd5dc4bb1e88453634d3aa3c37f02541799c139f831ddf7c11bf24",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/node-1.tf"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-unified/node-2.tf",
+    "size_bytes": 9661,
+    "sha256": "f162f07502ed192a6ce22cd5fa51c8880678f7a25f2e808fb8b031d77d02c581",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/node-2.tf"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-unified/node-3.tf",
+    "size_bytes": 9660,
+    "sha256": "f38977c3a94479a51ca6022e32a6825f63f21cc109ac4e4a946e21f07be9d47c",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/node-3.tf"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-unified/nodes.tf",
+    "size_bytes": 1284,
+    "sha256": "413107fcd0651e82b994a6178a00ff7620d4d2000c502a66dc26d809a3e6b0e3",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/nodes.tf"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-unified/scripts/bootstrap-tools.sh",
+    "size_bytes": 1324,
+    "sha256": "9e142d16ab275d3aa475e450c03a1b1df40090ed8b331e5408184491d8e84bde",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/scripts/bootstrap-tools.sh"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-unified/scripts/configure-git-proxy.sh",
+    "size_bytes": 2989,
+    "sha256": "75e013beb6e6834d1b079eda5b9aea3906983d224e10476e8e55751cbfb0f98b",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/scripts/configure-git-proxy.sh"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-unified/scripts/install-codex-vscode.sh",
+    "size_bytes": 3179,
+    "sha256": "9451ba6ce77f76f6f44661d7a7cf0182d698bb7dab0b238ba718a46b2387ae5c",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/scripts/install-codex-vscode.sh"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-unified/scripts/setup-coder-user.sh",
+    "size_bytes": 2152,
+    "sha256": "7cbc94be354f3d952241b993993f71b9161bcc08618637a9b2d62573000273dd",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/scripts/setup-coder-user.sh"
+  },
+  {
+    "included": true,
+    "included_path": "artifacts/ali-prod/kubernetes-gpu-unified/scripts/ssh-http-proxy.py",
+    "size_bytes": 3344,
+    "sha256": "2e4a417815c667845ad6a46d554ca3a8bd0789b00b054cf4fc1ac5c2e1843243",
+    "source_path": "Coder active template unified-dns-20261124 / artifacts/ali-prod/kubernetes-gpu-unified/scripts/ssh-http-proxy.py"
   }
 ]

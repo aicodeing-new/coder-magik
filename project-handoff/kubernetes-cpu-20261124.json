@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-24",
+  "template_name": "kubernetes-cpu",
+  "template_id": "bfe57756-37c3-4c2c-bcb1-e020d8f7895a",
+  "active_version_name": "cpu-ubuntu-128gi-20261124",
+  "active_version_id": "35ddd318-68ab-4dab-a02f-1453b4eb95de",
+  "memory_request": "128Gi",
+  "memory_limit": "128Gi",
+  "host_network": false,
+  "privileged": false,
+  "clusters": [
+    "beast01",
+    "yunqiao",
+    "beast03"
+  ],
+  "acl_source": "kubernetes-dev",
+  "dry_runs": {
+    "beast01": {
+      "id": "61a30158-2407-41ce-b198-568684563a2f",
+      "status": "succeeded"
+    },
+    "yunqiao": {
+      "id": "a85c3856-172e-4f9b-93e7-cce95c83ccfe",
+      "status": "succeeded"
+    },
+    "beast03": {
+      "id": "1e1e4689-8364-455c-afd7-7559e818019a",
+      "status": "succeeded"
+    }
+  },
+  "beast03_probe": {
+    "node": "beast03-328",
+    "pod_ip": "10.250.4.31",
+    "node_ip": "192.168.200.28",
+    "memory": "128Gi",
+    "bootstrap_and_sudo_proxy": "passed",
+    "coder_health": "passed",
+    "temporary_resources_deleted": true
+  },
+  "active_source_readback_verified": true,
+  "full_workspace_build_tested": false
+}

@@ -186,6 +186,21 @@ const WorkspaceParametersPage: React.FC = () => {
 		},
 	});
 
+	// The template can opt in when applying a start build replaces its
+	// running compute resources without a separate stop build.
+	const supportsDirectParameterUpdate =
+		(templateVersionId
+			? templateVersionId === workspace.latest_build.template_version_id
+			: !workspace.outdated) &&
+		workspace.latest_build.resources.some(
+			(resource) =>
+				resource.type === "kubernetes_deployment_v1" &&
+				resource.metadata?.some(
+					(item) =>
+						item.key === "coder.parameter_update" && item.value === "recreate",
+				),
+		);
+
 	const restartWithParameters = useMutation({
 		mutationFn: async (buildParameters: WorkspaceBuildParameter[]) => {
 			const stopBuild = await API.stopWorkspace(workspace.id);
@@ -343,7 +358,12 @@ const WorkspaceParametersPage: React.FC = () => {
 				hideCancel={false}
 				open={confirmingRestart.open}
 				onConfirm={() => {
-					restartWithParameters.mutate(confirmingRestart.buildParameters ?? []);
+					const buildParameters = confirmingRestart.buildParameters ?? [];
+					if (supportsDirectParameterUpdate) {
+						startWithParameters.mutate(buildParameters);
+					} else {
+						restartWithParameters.mutate(buildParameters);
+					}
 					setConfirmingRestart({ open: false });
 				}}
 				onClose={() => setConfirmingRestart({ open: false })}

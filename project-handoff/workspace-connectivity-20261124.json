@@ -1,0 +1,66 @@
+{
+  "date": "2026-11-24",
+  "templates": {
+    "kubernetes-dev": {
+      "template_id": "5620ff55-82d4-4830-81ee-ab411208916e",
+      "active_version_id": "139e59bd-cdf0-4d50-8e04-faaf0372dd14",
+      "active_version_name": "recreate-parameters-20261124",
+      "source": "artifacts/ali-prod/kubernetes-dev-20261124"
+    },
+    "kubernetes-cpu": {
+      "template_id": "bfe57756-37c3-4c2c-bcb1-e020d8f7895a",
+      "active_version_id": "8b3c09b4-c54c-404c-a83d-515fb8a047b8",
+      "active_version_name": "recreate-parameters-20261124",
+      "source": "artifacts/ali-prod/kubernetes-cpu-20261124"
+    },
+    "mars2-k8s": {
+      "template_id": "5a5f58b6-f312-476e-af75-5f8281593bfa",
+      "active_version_id": "abe5600f-5eae-4241-9d5e-21c3055dba12",
+      "active_version_name": "recreate-parameters-20261124",
+      "source": "artifacts/ali-prod/mars2-k8s-20261124"
+    },
+    "kubernetes-gpu-multi": {
+      "template_id": "3fc77528-b63c-4419-a08a-e1d8fc4ca13b",
+      "active_version_id": "03d046ac-14b5-43e0-82a5-8d9eae2eed37",
+      "active_version_name": "multi-per-node-20261124",
+      "source": "artifacts/ali-prod/kubernetes-gpu-multi-20261124"
+    }
+  },
+  "vscode_dedup": "disabled built-in VS Code for agents that use the Desktop module",
+  "cpu_dns": {
+    "port_default": 0,
+    "environment": "WORKSPACE_SERVICE_HOST",
+    "configured_plans": {
+      "beast01": "/templateversions/3e6a7ed9-9d01-493e-9ed6-73efbfb688c2/dry-run/25d016a6-0c97-46c8-8af7-361c4d323687",
+      "yunqiao": "/templateversions/3e6a7ed9-9d01-493e-9ed6-73efbfb688c2/dry-run/3a47315e-9753-4e0b-9437-da61d23f4036",
+      "beast03": "/templateversions/3e6a7ed9-9d01-493e-9ed6-73efbfb688c2/dry-run/3307e192-d550-4095-9011-eeed8aafa6ae"
+    },
+    "beast03_service_dns_and_endpoint_probe": "passed"
+  },
+  "multi": {
+    "range": [
+      2,
+      4
+    ],
+    "tested_cluster": "beast03",
+    "live_nodes": 2,
+    "gpu_per_node_tested": 0,
+    "distinct_nodes": "passed",
+    "independent_agents_and_pvcs": "passed",
+    "pre_and_post_restart_bidirectional_http_via_dns": "passed",
+    "same_pvc_data_after_restart": "passed",
+    "four_node_one_gpu_plan": "passed",
+    "test_cleanup_build_status": "succeeded"
+  },
+  "parameter_update": {
+    "template_metadata_set": true,
+    "source_implemented": true,
+    "unit_suite": "passed",
+    "typescript": "passed",
+    "production_coder_release": false
+  },
+  "diagnostics": {
+    "operator_tool": "artifacts/ali-prod/workspace-pod-diagnostics.sh",
+    "workspace_ui_k8s_event_integration": false
+  }
+}

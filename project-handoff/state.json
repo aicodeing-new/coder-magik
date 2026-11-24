@@ -28,13 +28,15 @@
     }
   },
   "template": {
-    "name": "kubernetes",
-    "id": "dbf99fc1-e511-4958-9762-b4b7f8346919",
-    "active_version_id": "6453df5e-ab5c-401b-a6c3-9c95c57481cb",
-    "active_version_name": "codex-oss-preload-20261012",
+    "name": "kubernetes-gpu",
+    "id": "5620ff55-82d4-4830-81ee-ab411208916e",
+    "active_version_id": "5b5175e6-ddf5-4eb2-b277-9e3c14fccae9",
+    "active_version_name": "unified-dns-20261124",
     "clusters": [
       "beast01",
-      "yunqiao"
+      "yunqiao",
+      "beast03",
+      "mars2"
     ],
     "gpu_range": [
       0,
@@ -43,7 +45,7 @@
     "gpu_default": 8,
     "custom_image": true,
     "codex_vscode_preinstall": "oss-bundle",
-    "hostNetwork": true,
+    "hostNetwork": "single machine only",
     "privileged": true,
     "persistent_home": "/home/coder",
     "home_disk_mutable": true,
@@ -138,12 +140,12 @@
   },
   "additional_templates": {
     "mars2-k8s": {
-      "date": "2026-10-21",
+      "date": "2026-11-24",
       "timezone": "Asia/Shanghai",
       "template_name": "mars2-k8s",
       "template_id": "5a5f58b6-f312-476e-af75-5f8281593bfa",
-      "active_version_id": "c3401c5d-79d8-46f1-8582-9d97e1b35a6a",
-      "version_name": "mars2-cursor-20261021",
+      "active_version_id": "abe5600f-5eae-4241-9d5e-21c3055dba12",
+      "version_name": "recreate-parameters-20261124",
       "source_template": "kubernetes",
       "source_template_version": "6453df5e-ab5c-401b-a6c3-9c95c57481cb",
       "gpu_product": "MetaX MXC500",
@@ -209,17 +211,42 @@
       "initial_active_version_id": "1d6e213a-9e05-4552-8a3f-e692693ecf04",
       "startup_fix_record": "mars2-startup-fix-20261021.json",
       "git_proxy": "http://10.55.17.137:10809",
-      "cursor_enabled": true
+      "cursor_enabled": true,
+      "current_template_source": "artifacts/ali-prod/mars2-k8s-20261124",
+      "connectivity_record": "workspace-connectivity-20261124.json",
+      "deprecated": true
     },
-    "kubernetes-dev": {
-      "date": "2026-11-23",
-      "template_id": "5620ff55-82d4-4830-81ee-ab411208916e",
-      "active_version_id": "87634b6d-2466-4b45-91d0-489fef85d4e3",
-      "version_name": "beast03-cluster-20261123",
+    "kubernetes-cpu": {
+      "date": "2026-11-24",
+      "active_version_id": "042d172e-b171-48f5-970f-467f4256c69f",
+      "template_id": "bfe57756-37c3-4c2c-bcb1-e020d8f7895a",
+      "version_name": "unified-dns-20261124",
+      "current_template_source": "artifacts/ali-prod/kubernetes-cpu-unified",
+      "connectivity_record": "02-CURRENT-DEPLOYMENT.txt",
+      "memory_request": "128Gi",
+      "memory_limit": "128Gi",
       "clusters": [
         "beast01",
         "yunqiao",
         "beast03"
+      ],
+      "dns_parameter": "workspace_service_port controls additional legacy ClusterIP only",
+      "machine_count_range": [
+        1,
+        4
+      ],
+      "dns": "per-node headless Service, workspace and owner name, same cluster"
+    },
+    "kubernetes-gpu": {
+      "date": "2026-11-24",
+      "template_id": "5620ff55-82d4-4830-81ee-ab411208916e",
+      "active_version_id": "5b5175e6-ddf5-4eb2-b277-9e3c14fccae9",
+      "version_name": "unified-dns-20261124",
+      "clusters": [
+        "beast01",
+        "yunqiao",
+        "beast03",
+        "mars2"
       ],
       "cluster_mutable": false,
       "default_user": "coder",
@@ -228,7 +255,14 @@
       "sudo_proxy_preserved": true,
       "host_docker_containerd_sockets": false,
       "beast03_proxy": "http://192.168.200.3:10809",
-      "evidence": "beast03-integration-20261123.json"
+      "evidence": "beast03-integration-20261123.json",
+      "current_template_source": "artifacts/ali-prod/kubernetes-gpu-unified",
+      "connectivity_record": "02-CURRENT-DEPLOYMENT.txt",
+      "machine_count_range": [
+        1,
+        4
+      ],
+      "dns": "per-node headless Service, workspace and owner name, same cluster"
     }
   }
 }

@@ -1,4 +1,5 @@
 import { screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { act } from "react";
 import { API } from "#/api/api";
 import type * as TypesGen from "#/api/typesGenerated";
@@ -12,6 +13,7 @@ import {
 	MockWorkspaceBuildParameter1,
 	MockWorkspaceBuildParameter4,
 	MockWorkspaceBuildParameter7,
+	MockWorkspaceResource,
 } from "#/testHelpers/entities";
 import {
 	checkParameters,
@@ -76,6 +78,65 @@ describe("WorkspaceParametersPage", () => {
 	afterEach(() => {
 		vi.useRealTimers();
 		vi.restoreAllMocks();
+	});
+
+	it("submits one start build with the selected parameters for a recreate deployment", async () => {
+		vi.mocked(API.getWorkspaceByOwnerAndName)
+			.mockReset()
+			.mockResolvedValue({
+				...MockWorkspace,
+				outdated: false,
+				latest_build: {
+					...MockWorkspace.latest_build,
+					resources: [
+						{
+							...MockWorkspaceResource,
+							type: "kubernetes_deployment_v1",
+							metadata: [
+								{
+									key: "coder.parameter_update",
+									value: "recreate",
+									sensitive: false,
+								},
+							],
+						},
+					],
+				},
+			});
+		vi.mocked(API.postWorkspaceBuild)
+			.mockReset()
+			.mockResolvedValue(MockWorkspace.latest_build);
+		vi.spyOn(API, "getWorkspaceBuildParameters").mockResolvedValueOnce([]);
+		const [, mockPublisher] = mockDynamicParameterWebSocket();
+
+		renderWorkspaceParametersPage();
+		await connectWithInitialParameters(mockPublisher, [MockPreviewParameter1]);
+		await waitForLoaderToBeRemoved();
+
+		await userEvent.click(
+			screen.getByRole("button", { name: /update and restart/i }),
+		);
+		await userEvent.click(
+			within(screen.getByRole("dialog")).getByRole("button", {
+				name: "Restart",
+			}),
+		);
+
+		await waitFor(() => {
+			expect(API.postWorkspaceBuild).toHaveBeenCalledTimes(1);
+			expect(API.postWorkspaceBuild).toHaveBeenCalledWith(
+				MockWorkspace.id,
+				expect.objectContaining({
+					transition: "start",
+					rich_parameter_values: [
+						{
+							name: MockPreviewParameter1.name,
+							value: MockPreviewParameter1.value.value,
+						},
+					],
+				}),
+			);
+		});
 	});
 
 	it("waits for and sends initial build parameters", async () => {

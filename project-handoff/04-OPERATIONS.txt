@@ -122,3 +122,16 @@ GPU代理为http://192.168.200.3:10809，非其他集群代理；从现有vllm P
 新集群context追加到现有Secret前需私有备份并保留原contexts；等待挂载投影更新后，再从控制面验证受限API连接。不要运行全量bootstrap覆盖整个Secret或数据库配置来添加单个集群。
 模板cluster创建后不可变，既有空间不能迁移PVC到beast03。beast03使用nvidia.com/gpu与nvidia RuntimeClass，存储类ceph-fs实际为Baidu CFS NFS。
 模板基础镜像仍可自定义，beast03本地验证镜像见集成记录；跨机房镜像拉取受节点containerd网络/仓库认证影响，Pod内HTTP_PROXY不负责kubelet拉镜像。
+
+变更工作空间参数后仍使用旧镜像或 GPU 数量（2026-11-24）
+参数页的 Update and restart 先发送 stop，等停止完成后再用新参数发送 start。连接中的 IDE 可能抢先自动启动并沿用旧参数。
+先核对最新构建的 reason 与 parameters，再看实际 Deployment 和 Pod。ivory-spider-96 的三次停止后不到一秒均产生 vscode_connection 启动，三次构建记录及 Deployment、Pod 均匹配旧 dev_image。
+操作时关闭该空间的 IDE 连接，在参数页提交 Update and restart，等待启动成功再连；也可通过 coder restart --parameter 显式提交。kubernetes-cpu 无 gpu_count 参数。
+ivory-spider-96 已通过单次 start 构建显式提交 dev_image=harbor-beast01.magikcloud.cn/library/ubuntu:24.04。原模板使用 Recreate，Kubernetes 替换 Pod，无单独 stop 构建产生的自动启动窗口。构建 8 参数、Pod 镜像与容器内 Ubuntu 24.04.4 已核对，原 HOME PVC 继续绑定。此方式已验证于该模板，不能推广为所有模板的重启语义。
+
+2026-11-24 工作空间诊断与更新
+使用 bash artifacts/ali-prod/workspace-pod-diagnostics.sh <目标集群 kubeconfig> <工作空间 UUID> 查看 Deployment、Pod、PVC 及 Warning 事件，需目标集群读取权限。Pod 层事件尚未汇入 Coder 网页。
+已在前端源码对带 coder.parameter_update=recreate 标记的当前版本实现单次 start 更新；生产 Coder 尚未发布此改动。模板中的标记由各 Deployment 的 coder_metadata 提供，不能用于需要单独 stop 的模板。
+CPU 的工作空间互联端口默认 0，开启后为集群内 Service，应用需认证。多机节点地址列表位于每台的 /home/coder/hosts.txt。跨集群互联和 GPU/RDMA 未测试。
+
+统一模板 unified-dns-20261124：同集群可按 ws-<空间>--<用户>.coder-workspaces.svc 访问运行中的主节点，附加节点用 wn1、wn2、wn3 前缀。超过长度限制的名称会缩短并附哈希。用 echo "$WORKSPACE_SERVICE_HOST" 查看实际地址，echo "$WORKSPACE_PEERS" 列出本空间所有节点。解析由 Kubernetes headless Service 和 CoreDNS 提供，CPU 旧 workspace_service_port 仅用于附加的兼容 ClusterIP。GPU 单机保留 hostNetwork，目标为节点 IP，应用需协调监听端口。GPU 多机和全部 CPU 使用 Pod 网络。已有空间需更新模板后才创建这些 Service。旧 Mars2 空间仍关联弃用模板。
